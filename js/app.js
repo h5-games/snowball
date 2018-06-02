@@ -26,16 +26,35 @@ class Ball {
   }
 }
 
+class Terr {
+  constructor (canvas, config = {}) {
+    this.canvas = canvas
+    const left = canvas.width / 2
+    const top = canvas.height / 2
+    const id = Math.floor(Math.random() * 8999999 + 1000000)
+
+    Object.assign(this, {
+      id,
+      left,
+      top,
+      ...config
+    })
+  }
+}
+
 let engine = {
   fatherEle: {},
   config: {},
   ball: {},
+  terrLists: {},
+  canvas: {},
   context: {},
   timer: null,
 
   init (id, config = {}) {
     this.fatherEle = document.getElementById(id)
     this.config = {
+      terrNum: 1,
       canvasClassName: 'ball-canvas',
       ...config
     }
@@ -60,27 +79,40 @@ let engine = {
   },
 
   startGame () {
-    const { canvas } = this
+    const { canvas, config } = this
+    const { terrNum } = config
 
     const ball = new Ball(canvas)
     ball.move()
 
     this.ball = ball
 
+    for (let i = 0; i < terrNum; i++) {
+      const terr = new Terr(canvas)
+      this.terrLists[terr.id] = terr
+    }
+
     this.timer = setInterval(() => {
-      this.paintingCanvas()
+      this.paintCanvas()
     }, 30)
   },
 
-  paintingCanvas () {
-    const { ball, context, canvas } = this
+  paintCanvas () {
+    const { ball, context, canvas, terrLists } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
-    const { radius, left, top } = ball
+    const { radius: ballRadius, left: ballLeft, top: ballTop } = ball
 
     context.clearRect(0, 0, canvasWidth, canvasHeight)
     context.beginPath()
-    context.arc(left, top, radius, 0, 2*Math.PI)
+    context.arc(ballLeft, ballTop, ballRadius, 0, 2*Math.PI)
     context.fill()
+
+    for (key in terrLists) {
+      const terr = terrLists[key]
+      const { left: terrLeft, top: terrTop } = terr
+      context.beginPath()
+      context.fillRect(terrLeft, terrTop, 10, 10)
+    }
   },
 
   gameOver () {
