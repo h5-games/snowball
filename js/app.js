@@ -10,7 +10,8 @@ class Ball {
       degree: 0.1,
       left,
       top,
-      direction: 0,
+      direction: false,
+      space: 1,
       ...config
     })
   }
@@ -24,14 +25,16 @@ class Ball {
 
     clearInterval(this.timer)
     this.timer = setInterval(() => {
-      let { direction, top, left, degree } = this
+      let { direction, top, left, degree, space } = this
       if (direction) {
         left += degree
       } else {
         left -= degree
       }
 
-      top += 1
+      if (top < 400) {
+        top += space
+      }
 
       if (e && e.type === 'touchstart') {
         if (degree <= 5) {
@@ -64,6 +67,7 @@ class Terr {
       left,
       top,
       speed: 10,
+      space: 1,
       ...config
     })
   }
@@ -73,7 +77,8 @@ class Terr {
 
     clearInterval(this.timer)
     this.timer = setInterval(() => {
-      this.top -= 1
+      const { space } = this
+      this.top -= space
     }, speed)
   }
 }
@@ -87,11 +92,13 @@ const engine = {
   context: {},
   timer: null,
   hasStart: false,
+  ballSpace: 1,
+  terrSpace: 0,
 
   init (id, config = {}) {
     this.fatherEle = document.getElementById(id)
     this.config = {
-      terrNum: 6,
+      terrNum: 10,
       canvasClassName: 'ball-canvas',
       ...config
     }
@@ -118,7 +125,7 @@ const engine = {
   },
 
   initGame () {
-    const { canvas, config } = this
+    const { canvas, config, terrSpace } = this
     const { terrNum } = config
     const terrLists = {}
 
@@ -126,12 +133,14 @@ const engine = {
 
     for (let i = 0; i < terrNum; i++) {
       const terr = new Terr(canvas, {
-        top: Math.floor(Math.random() * (canvas.height - 200) + 200)
+        top: Math.floor(Math.random() * (canvas.height - 100) + 100),
+        space: terrSpace
       })
       terrLists[terr.id] = terr
     }
 
     canvas.addEventListener('touchstart', e => {
+      e.preventDefault()
       if (this.hasStart) {
 
       } else {
@@ -154,28 +163,43 @@ const engine = {
     this.hasStart = true
     this.terrNum = 20
 
-    const { terrLists, canvas, terrNum } = this
-    for (let key in terrLists) {
-      terrLists[key].move()
-    }
+    const { canvas } = this
 
     clearInterval(this.timer)
     this.timer = setInterval(() => {
-      const { terrLists } = this
+      const { terrLists, ball, terrNum, ballSpace, terrSpace } = this
+
+      ball.space = 1 - ball.top / 400
+      // todo 将 apace 同步到 ballSpace
+
       for (let key in terrLists) {
-        if (terrLists[key].top < 0) {
-          delete terrLists[key]
-        }
+        terrLists[key].move()
       }
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
         const terr = new Terr(canvas, {
-          top: Math.floor(Math.random() * canvas.height + canvas.height)
+          top: Math.floor(Math.random() * canvas.height + canvas.height),
+          space: terrSpace
         })
         terr.move()
         terrLists[terr.id] = terr
       }
 
+      for (let key in terrLists) {
+        let terr = terrLists[key]
+        if (terr.top < 0) {
+          delete terrLists[key]
+          continue
+        }
+        terr.space = ball.top / 400
+      }
+
+      Object.assign(this, {
+        terrLists,
+        ball,
+        ballSpace,
+        terrSpace
+      })
       this.paintCanvas()
     }, 20)
   },
