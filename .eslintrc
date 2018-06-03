@@ -1,3 +1,8 @@
 {
-  "extends": "eslint:recommended"
+  "extends": [
+    "standard"
+  ],
+  "rules": {
+    "generator-star-spacing": "off"
+  }
 }

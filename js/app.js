@@ -6,22 +6,48 @@ class Ball {
 
     Object.assign(this, {
       radius: 10,
-      speed: 100,
+      speed: 10,
+      degree: 0.1,
       left,
       top,
+      direction: 0,
       ...config
     })
   }
 
-  move () {
-    let { speed } = this
+  move (e) {
+    const { speed, direction } = this
+    if (e && e.type === 'touchstart') {
+      this.direction = !direction
+      this.degree = 0.1
+    }
 
+    clearInterval(this.timer)
     this.timer = setInterval(() => {
-      this.top += 1
+      let { direction, top, left, degree } = this
+      if (direction) {
+        left += degree
+      } else {
+        left -= degree
+      }
+
+      top += 1
+
+      if (e && e.type === 'touchstart') {
+        if (degree <= 5) {
+          degree += 0.05
+        }
+      }
+
+      Object.assign(this, {
+        top,
+        left,
+        degree
+      })
     }, speed)
   }
 
-  clear () {
+  clearTimer () {
     clearInterval(this.timer)
   }
 }
@@ -29,20 +55,30 @@ class Ball {
 class Terr {
   constructor (canvas, config = {}) {
     this.canvas = canvas
-    const left = canvas.width / 2
-    const top = canvas.height / 2
+    const left = Math.floor(Math.random() * canvas.width + -10)
+    const top = Math.floor(Math.random() * (canvas.height * 2) + canvas.height)
     const id = Math.floor(Math.random() * 8999999 + 1000000)
 
     Object.assign(this, {
       id,
       left,
       top,
+      speed: 10,
       ...config
     })
   }
+
+  move () {
+    const { speed } = this
+
+    clearInterval(this.timer)
+    this.timer = setInterval(() => {
+      this.top -= 1
+    }, speed)
+  }
 }
 
-let engine = {
+const engine = {
   fatherEle: {},
   config: {},
   ball: {},
@@ -50,11 +86,12 @@ let engine = {
   canvas: {},
   context: {},
   timer: null,
+  hasStart: false,
 
   init (id, config = {}) {
     this.fatherEle = document.getElementById(id)
     this.config = {
-      terrNum: 1,
+      terrNum: 6,
       canvasClassName: 'ball-canvas',
       ...config
     }
@@ -76,25 +113,71 @@ let engine = {
     fatherEle.appendChild(canvas)
     this.canvas = canvas
     this.context = canvas.getContext('2d')
+
+    this.initGame()
+  },
+
+  initGame () {
+    const { canvas, config } = this
+    const { terrNum } = config
+    const terrLists = {}
+
+    const ball = new Ball(canvas)
+
+    for (let i = 0; i < terrNum; i++) {
+      const terr = new Terr(canvas, {
+        top: Math.floor(Math.random() * (canvas.height - 200) + 200)
+      })
+      terrLists[terr.id] = terr
+    }
+
+    canvas.addEventListener('touchstart', e => {
+      if (this.hasStart) {
+
+      } else {
+        this.startGame()
+      }
+      ball.move(e)
+    })
+
+    canvas.addEventListener('touchend', e => {
+      ball.move(e)
+    })
+
+    this.ball = ball
+    this.terrLists = terrLists
+
+    this.paintCanvas()
   },
 
   startGame () {
-    const { canvas, config } = this
-    const { terrNum } = config
+    this.hasStart = true
+    this.terrNum = 20
 
-    const ball = new Ball(canvas)
-    ball.move()
-
-    this.ball = ball
-
-    for (let i = 0; i < terrNum; i++) {
-      const terr = new Terr(canvas)
-      this.terrLists[terr.id] = terr
+    const { terrLists, canvas, terrNum } = this
+    for (let key in terrLists) {
+      terrLists[key].move()
     }
 
+    clearInterval(this.timer)
     this.timer = setInterval(() => {
+      const { terrLists } = this
+      for (let key in terrLists) {
+        if (terrLists[key].top < 0) {
+          delete terrLists[key]
+        }
+      }
+
+      for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
+        const terr = new Terr(canvas, {
+          top: Math.floor(Math.random() * canvas.height + canvas.height)
+        })
+        terr.move()
+        terrLists[terr.id] = terr
+      }
+
       this.paintCanvas()
-    }, 30)
+    }, 20)
   },
 
   paintCanvas () {
@@ -104,14 +187,14 @@ let engine = {
 
     context.clearRect(0, 0, canvasWidth, canvasHeight)
     context.beginPath()
-    context.arc(ballLeft, ballTop, ballRadius, 0, 2*Math.PI)
+    context.arc(ballLeft, ballTop, ballRadius, 0, 2 * Math.PI)
     context.fill()
 
-    for (key in terrLists) {
+    for (let key in terrLists) {
       const terr = terrLists[key]
       const { left: terrLeft, top: terrTop } = terr
       context.beginPath()
-      context.fillRect(terrLeft, terrTop, 10, 10)
+      context.fillRect(terrLeft, terrTop, 6, 10)
     }
   },
 
@@ -121,4 +204,4 @@ let engine = {
 }
 
 engine.init('container')
-engine.startGame()
+// engine.startGame()
