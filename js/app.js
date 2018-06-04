@@ -179,7 +179,7 @@ const engine = {
 
     clearInterval(this.timer)
     this.timer = setInterval(() => {
-      const { terrLists, ball, terrNum, level } = this
+      const { terrLists, ball, terrNum, level, tailLists } = this
       let { ballSpace, terrSpace } = this
 
       ballSpace = (1 - ball.top / ballEndPosition) * level
@@ -207,8 +207,17 @@ const engine = {
         terrLists[key].move()
       }
 
+      tailLists.unshift({
+        left: ball.left,
+        top: ball.top
+      })
+      tailLists.splice(50)
+
+      if (tailLists.length > 50) {
+        return
+      }
+
       Object.assign(this, {
-        terrLists,
         ball,
         ballSpace,
         terrSpace
@@ -225,7 +234,7 @@ const engine = {
   },
 
   paintCanvas () {
-    const { ball, context, canvas, terrLists } = this
+    const { ball, context, canvas, terrLists, tailLists } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
     const { radius: ballRadius, left: ballLeft, top: ballTop } = ball
 
@@ -240,6 +249,14 @@ const engine = {
       context.beginPath()
       context.fillRect(terrLeft, terrTop, terrWidth, terrHeight)
     }
+
+    context.beginPath()
+    for (let i = 0; i < tailLists.length; i++) {
+      const tail = tailLists[i]
+      context.lineTo(tail.left, tail.top)
+    }
+    // context.closePath()
+    context.stroke()
   },
 
   gameOver () {
@@ -248,4 +265,3 @@ const engine = {
 }
 
 engine.init('container')
-// engine.startGame()
