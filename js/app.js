@@ -5,19 +5,20 @@ class Ball {
     const top = canvas.height / 10
 
     Object.assign(this, {
-      radius: 10,
+      radius: 9,
       speed: 10,
       degree: 0.1,
       left,
       top,
       direction: false,
       space: 1,
+      endPosition: canvas.height / 2,
       ...config
     })
   }
 
   move (e) {
-    const { speed, direction } = this
+    const { speed, direction, endPosition } = this
     if (e && e.type === 'touchstart') {
       this.direction = !direction
       this.degree = 0.1
@@ -32,7 +33,7 @@ class Ball {
         left -= degree
       }
 
-      if (top < 400) {
+      if (top < endPosition) {
         top += space
       }
 
@@ -66,6 +67,8 @@ class Terr {
       id,
       left,
       top,
+      width: 6,
+      height: 10,
       speed: 10,
       space: 1,
       ...config
@@ -87,6 +90,7 @@ const engine = {
   fatherEle: {},
   config: {},
   ball: {},
+  ballEndPosition: 0,
   terrLists: {},
   canvas: {},
   context: {},
@@ -94,6 +98,10 @@ const engine = {
   hasStart: false,
   ballSpace: 1,
   terrSpace: 0,
+  level: 2,
+  point: 0,
+  pointTimer: null,
+  tailLists: [],
 
   init (id, config = {}) {
     this.fatherEle = document.getElementById(id)
@@ -118,8 +126,12 @@ const engine = {
     canvas.className = config.canvasClassName
 
     fatherEle.appendChild(canvas)
-    this.canvas = canvas
-    this.context = canvas.getContext('2d')
+
+    Object.assign(this, {
+      ballEndPosition: canvas.height / 2,
+      canvas,
+      context: canvas.getContext('2d')
+    })
 
     this.initGame()
   },
@@ -163,35 +175,36 @@ const engine = {
     this.hasStart = true
     this.terrNum = 20
 
-    const { canvas } = this
+    const { canvas, ballEndPosition } = this
 
     clearInterval(this.timer)
     this.timer = setInterval(() => {
-      const { terrLists, ball, terrNum, ballSpace, terrSpace } = this
+      const { terrLists, ball, terrNum, level } = this
+      let { ballSpace, terrSpace } = this
 
-      ball.space = 1 - ball.top / 400
-      // todo 将 apace 同步到 ballSpace
-
-      for (let key in terrLists) {
-        terrLists[key].move()
-      }
+      ballSpace = (1 - ball.top / ballEndPosition) * level
+      ball.space = ballSpace
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
         const terr = new Terr(canvas, {
           top: Math.floor(Math.random() * canvas.height + canvas.height),
           space: terrSpace
         })
-        terr.move()
         terrLists[terr.id] = terr
       }
 
+      terrSpace = ball.top / ballEndPosition * 1.5 * level
       for (let key in terrLists) {
         let terr = terrLists[key]
         if (terr.top < 0) {
           delete terrLists[key]
           continue
         }
-        terr.space = ball.top / 400
+        terr.space = terrSpace
+      }
+
+      for (let key in terrLists) {
+        terrLists[key].move()
       }
 
       Object.assign(this, {
@@ -201,6 +214,13 @@ const engine = {
         terrSpace
       })
       this.paintCanvas()
+    }, 20)
+
+    clearInterval(this.pointTimer)
+    this.pointTimer = setInterval(() => {
+      const point = this.point + 1
+      this.point = point
+      this.level = 1 + point / 500
     }, 20)
   },
 
@@ -216,9 +236,9 @@ const engine = {
 
     for (let key in terrLists) {
       const terr = terrLists[key]
-      const { left: terrLeft, top: terrTop } = terr
+      const { left: terrLeft, top: terrTop, width: terrWidth, height: terrHeight } = terr
       context.beginPath()
-      context.fillRect(terrLeft, terrTop, 6, 10)
+      context.fillRect(terrLeft, terrTop, terrWidth, terrHeight)
     }
   },
 
