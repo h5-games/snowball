@@ -2,10 +2,10 @@ class Ball {
   constructor (canvas, config = {}) {
     this.canvas = canvas
     const left = canvas.width / 2
-    const top = canvas.height / 10
+    const top = canvas.height / 8
 
     Object.assign(this, {
-      radius: 9,
+      radius: 6,
       speed: 10,
       degree: 0.1,
       left,
@@ -22,6 +22,7 @@ class Ball {
     if (e && e.type === 'touchstart') {
       this.direction = !direction
       this.degree = 0.1
+      this.top += this.space
     }
 
     clearInterval(this.timer)
@@ -91,6 +92,7 @@ const engine = {
   pointTimer: null,
   tailLists: [],
   position: 0,
+  halfCanvasHeight: 0,
 
   init (id, config = {}) {
     this.fatherEle = document.getElementById(id)
@@ -119,7 +121,8 @@ const engine = {
     Object.assign(this, {
       ballEndPosition: canvas.height / 2,
       canvas,
-      context: canvas.getContext('2d')
+      context: canvas.getContext('2d'),
+      halfCanvasHeight: fatherHeight / 2
     })
 
     this.initGame()
@@ -163,66 +166,83 @@ const engine = {
     this.hasStart = true
     this.terrNum = 20
 
-    const { canvas } = this
+    const { canvas, halfCanvasHeight } = this
 
     clearInterval(this.timer)
     this.timer = setInterval(() => {
       this.position += 1
-      const { terrLists, ball, terrNum, tailLists } = this
+
+      const { terrLists, ball, terrNum, tailLists, position } = this
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
         const terr = new Terr(canvas, {
-          top: Math.floor(Math.random() * canvas.height + canvas.height)
+          top: Math.floor(Math.random() * canvas.height + canvas.height + position)
         })
         terrLists[terr.id] = terr
+      }
+
+      for (let key in terrLists) {
+        const terr = terrLists[key]
+        if (terr.top < position - halfCanvasHeight) {
+          delete terrLists[key]
+        }
       }
 
       tailLists.unshift({
         left: ball.left,
         top: ball.top
       })
-      tailLists.splice(30)
+      tailLists.splice(50)
 
       this.paintCanvas()
-    }, 20)
+    }, 10)
 
     clearInterval(this.pointTimer)
     this.pointTimer = setInterval(() => {
       const point = this.point + 1
       this.point = point
       this.level = 1 + point / 500
-    }, 20)
+    }, 1000)
   },
 
   paintCanvas () {
-    const { ball, context, canvas, terrLists, tailLists, position } = this
+    const { ball, context, canvas, terrLists, tailLists, position, halfCanvasHeight } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
     const { radius: ballRadius, left: ballLeft, top: ballTop } = ball
 
+    const _ballTop = computedBeyond(position, halfCanvasHeight, ballTop)
+
     context.clearRect(0, 0, canvasWidth, canvasHeight)
     context.beginPath()
-    context.arc(ballLeft, ballTop - position, ballRadius, 0, 2 * Math.PI)
+    context.arc(ballLeft, _ballTop, ballRadius, 0, 2 * Math.PI)
     context.fill()
-
-    for (let key in terrLists) {
-      const terr = terrLists[key]
-      const { left: terrLeft, top: terrTop, width: terrWidth, height: terrHeight } = terr
-      context.beginPath()
-      context.fillRect(terrLeft, terrTop - position, terrWidth, terrHeight)
-    }
 
     context.beginPath()
     for (let i = 0; i < tailLists.length; i++) {
       const tail = tailLists[i]
-      context.lineTo(tail.left, tail.top - position)
+      const { left: tailLeft, top: tailTop } = tail
+      const _tailTop = computedBeyond(position, halfCanvasHeight, tailTop)
+      context.lineTo(tailLeft, _tailTop)
     }
     // context.closePath()
     context.stroke()
+
+    for (let key in terrLists) {
+      const terr = terrLists[key]
+      const { left: terrLeft, top: terrTop, width: terrWidth, height: terrHeight } = terr
+      const _terrTop = computedBeyond(position, halfCanvasHeight, terrTop)
+      context.beginPath()
+      context.fillRect(terrLeft, _terrTop, terrWidth, terrHeight)
+    }
   },
 
   gameOver () {
     this.ball.clear()
   }
+}
+
+function computedBeyond (position, halfCanvasHeight, top) {
+  return position < halfCanvasHeight ? top : top - position + halfCanvasHeight
 }
 
 engine.init('container')
