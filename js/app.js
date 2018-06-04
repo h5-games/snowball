@@ -18,7 +18,7 @@ class Ball {
   }
 
   move (e) {
-    const { speed, direction, endPosition } = this
+    const { speed, direction } = this
     if (e && e.type === 'touchstart') {
       this.direction = !direction
       this.degree = 0.1
@@ -33,9 +33,7 @@ class Ball {
         left -= degree
       }
 
-      if (top < endPosition) {
-        top += space
-      }
+      top += space
 
       if (e && e.type === 'touchstart') {
         if (degree <= 5) {
@@ -74,16 +72,6 @@ class Terr {
       ...config
     })
   }
-
-  move () {
-    const { speed } = this
-
-    clearInterval(this.timer)
-    this.timer = setInterval(() => {
-      const { space } = this
-      this.top -= space
-    }, speed)
-  }
 }
 
 const engine = {
@@ -102,6 +90,7 @@ const engine = {
   point: 0,
   pointTimer: null,
   tailLists: [],
+  position: 0,
 
   init (id, config = {}) {
     this.fatherEle = document.getElementById(id)
@@ -137,7 +126,7 @@ const engine = {
   },
 
   initGame () {
-    const { canvas, config, terrSpace } = this
+    const { canvas, config } = this
     const { terrNum } = config
     const terrLists = {}
 
@@ -145,8 +134,7 @@ const engine = {
 
     for (let i = 0; i < terrNum; i++) {
       const terr = new Terr(canvas, {
-        top: Math.floor(Math.random() * (canvas.height - 100) + 100),
-        space: terrSpace
+        top: Math.floor(Math.random() * (canvas.height - 100) + 100)
       })
       terrLists[terr.id] = terr
     }
@@ -175,53 +163,26 @@ const engine = {
     this.hasStart = true
     this.terrNum = 20
 
-    const { canvas, ballEndPosition } = this
+    const { canvas } = this
 
     clearInterval(this.timer)
     this.timer = setInterval(() => {
-      const { terrLists, ball, terrNum, level, tailLists } = this
-      let { ballSpace, terrSpace } = this
-
-      ballSpace = (1 - ball.top / ballEndPosition) * level
-      ball.space = ballSpace
+      this.position += 1
+      const { terrLists, ball, terrNum, tailLists } = this
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
         const terr = new Terr(canvas, {
-          top: Math.floor(Math.random() * canvas.height + canvas.height),
-          space: terrSpace
+          top: Math.floor(Math.random() * canvas.height + canvas.height)
         })
         terrLists[terr.id] = terr
-      }
-
-      terrSpace = ball.top / ballEndPosition * 1.5 * level
-      for (let key in terrLists) {
-        let terr = terrLists[key]
-        if (terr.top < 0) {
-          delete terrLists[key]
-          continue
-        }
-        terr.space = terrSpace
-      }
-
-      for (let key in terrLists) {
-        terrLists[key].move()
       }
 
       tailLists.unshift({
         left: ball.left,
         top: ball.top
       })
-      tailLists.splice(50)
+      tailLists.splice(30)
 
-      if (tailLists.length > 50) {
-        return
-      }
-
-      Object.assign(this, {
-        ball,
-        ballSpace,
-        terrSpace
-      })
       this.paintCanvas()
     }, 20)
 
@@ -234,26 +195,26 @@ const engine = {
   },
 
   paintCanvas () {
-    const { ball, context, canvas, terrLists, tailLists } = this
+    const { ball, context, canvas, terrLists, tailLists, position } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
     const { radius: ballRadius, left: ballLeft, top: ballTop } = ball
 
     context.clearRect(0, 0, canvasWidth, canvasHeight)
     context.beginPath()
-    context.arc(ballLeft, ballTop, ballRadius, 0, 2 * Math.PI)
+    context.arc(ballLeft, ballTop - position, ballRadius, 0, 2 * Math.PI)
     context.fill()
 
     for (let key in terrLists) {
       const terr = terrLists[key]
       const { left: terrLeft, top: terrTop, width: terrWidth, height: terrHeight } = terr
       context.beginPath()
-      context.fillRect(terrLeft, terrTop, terrWidth, terrHeight)
+      context.fillRect(terrLeft, terrTop - position, terrWidth, terrHeight)
     }
 
     context.beginPath()
     for (let i = 0; i < tailLists.length; i++) {
       const tail = tailLists[i]
-      context.lineTo(tail.left, tail.top)
+      context.lineTo(tail.left, tail.top - position)
     }
     // context.closePath()
     context.stroke()
