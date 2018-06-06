@@ -6,31 +6,22 @@ export default class Ball {
     Object.assign(this, {
       radius: 7,
       degree: 0.1,
-      maxDegree: 3,
-      minDegree: -3,
+      maxDegree: 3.6,
+      minDegree: -3.6,
       left,
       top,
       direction: false,
       space: 1,
       endPosition: canvas.height / 2,
-      hasDown: false,
       ...config
     })
   }
 
-  tabDirection (e) {
-    const { direction, hasDown } = this
-    if (e && e.type === 'touchstart') {
-      this.direction = !direction
-    }
-    this.hasDown = !hasDown
-  }
-
-  move (space) {
-    let { direction, degree, left, top, hasDown, maxDegree, minDegree } = this
+  move (space, isDown) {
+    let { direction, degree, left, top, maxDegree, minDegree } = this
     left += degree
 
-    if (hasDown) {
+    if (isDown) {
       if (direction) {
         const _degree = degree + 0.1
         degree = _degree > maxDegree ? maxDegree : _degree

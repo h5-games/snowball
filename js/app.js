@@ -1,6 +1,6 @@
 import Ball from './ball.js'
 import Terr from './terr.js'
-import { computedBeyond } from './utils.js'
+import { computedBeyond, isCrash } from './utils.js'
 import { levelLists } from './lists.js'
 
 const engine = {
@@ -21,6 +21,7 @@ const engine = {
   position: 0,
   halfCanvasHeight: 0,
   level: 0,
+  isDown: false,
 
   init (id, config = {}) {
     this.fatherEle = document.getElementById(id)
@@ -78,11 +79,12 @@ const engine = {
       if (!this.hasStart) {
         this.startGame()
       }
-      ball.tabDirection(e)
+      this.isDown = true
+      ball.direction = !ball.direction
     })
 
-    canvas.addEventListener('touchend', e => {
-      ball.tabDirection(e)
+    canvas.addEventListener('touchend', () => {
+      this.isDown = false
     })
 
     this.ball = ball
@@ -98,14 +100,14 @@ const engine = {
     config.terrNum += 20
 
     const animate = () => {
-      const { terrLists, ball, config, tailLists, canvasAddSpace } = this
+      const { terrLists, ball, config, tailLists, canvasAddSpace, isDown } = this
       const terrNum = config.terrNum
       let { position, canvasSpace } = this
       const ballTop = ball.top
       canvasSpace = ballTop - position > halfCanvasHeight ? canvasAddSpace : (ballTop - position) / halfCanvasHeight * canvasAddSpace
       position += canvasSpace
 
-      ball.move(canvasAddSpace)
+      ball.move(canvasAddSpace, isDown)
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
         const terr = new Terr(canvas, {
@@ -119,6 +121,10 @@ const engine = {
           const terr = terrLists[key]
           if (terr.top < position - halfCanvasHeight) {
             delete terrLists[key]
+            continue
+          }
+          if (isCrash(ball, terr)) {
+            terr.color = '#ff00ff'
           }
         }
       }
@@ -179,7 +185,7 @@ const engine = {
       context.lineTo(tailLeft - ball.radius + (ball.radius * (i + 1) / tailListsLength), _tailTop)
     }
 
-    for (let i = tailListsLength - 1; i > 0; i--) {
+    for (let i = tailListsLength - 1; i >= 0; i--) {
       const tail = tailLists[i]
       const { left: tailLeft, top: tailTop } = tail
       const _tailTop = computedBeyond(tailTop, position)
@@ -200,6 +206,7 @@ const engine = {
         const terr = terrLists[key]
         const { left: terrLeft, top: terrTop, width: terrWidth, height: terrHeight } = terr
         const _terrTop = computedBeyond(terrTop, position)
+        context.fillStyle = terr.color
         context.beginPath()
         context.fillRect(terrLeft, _terrTop, terrWidth, terrHeight)
       }

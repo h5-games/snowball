@@ -10,6 +10,7 @@ export default class Terr {
       top,
       width: 6,
       height: 10,
+      color: '#000',
       ...config
     })
   }
