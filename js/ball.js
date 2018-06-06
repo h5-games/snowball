@@ -13,6 +13,7 @@ export default class Ball {
       direction: false,
       space: 1,
       endPosition: canvas.height / 2,
+      isCrash: false,
       ...config
     })
   }

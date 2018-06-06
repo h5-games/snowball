@@ -1,6 +1,6 @@
 import Ball from './ball.js'
 import Terr from './terr.js'
-import { computedBeyond, isCrash } from './utils.js'
+import { computedBeyond, isCrash, isNear } from './utils.js'
 import { levelLists } from './lists.js'
 
 const engine = {
@@ -100,14 +100,17 @@ const engine = {
     config.terrNum += 20
 
     const animate = () => {
-      const { terrLists, ball, config, tailLists, canvasAddSpace, isDown } = this
+      const { terrLists, ball, config, tailLists, canvasAddSpace, isDown, position } = this
       const terrNum = config.terrNum
-      let { position, canvasSpace } = this
       const ballTop = ball.top
-      canvasSpace = ballTop - position > halfCanvasHeight ? canvasAddSpace : (ballTop - position) / halfCanvasHeight * canvasAddSpace
-      position += canvasSpace
+      const ballLeft = ball.left
 
       ball.move(canvasAddSpace, isDown)
+
+      if (ballLeft < 0 || ballLeft > canvas.width) {
+        window.alert('GG')
+        return
+      }
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
         const terr = new Terr(canvas, {
@@ -123,8 +126,16 @@ const engine = {
             delete terrLists[key]
             continue
           }
-          if (isCrash(ball, terr)) {
-            terr.color = '#ff00ff'
+
+          if (!terr.isNear && isNear(ball, terr, 30)) {
+            terr.color = '#00ffff'
+            terr.isNear = true
+          }
+
+          if (!terr.isCrash && isCrash(ball, terr)) {
+            terr.isCrash = true
+            window.alert('GG')
+            return
           }
         }
       }
@@ -135,10 +146,8 @@ const engine = {
       })
       tailLists.splice(50)
 
-      Object.assign(this, {
-        position,
-        canvasSpace
-      })
+      this.canvasSpace = ballTop - position > halfCanvasHeight ? canvasAddSpace : (ballTop - position) / halfCanvasHeight * canvasAddSpace
+      this.position += this.canvasSpace
 
       this.paintCanvas()
       window.requestAnimationFrame(animate)
@@ -149,7 +158,7 @@ const engine = {
     clearInterval(this.pointTimer)
     this.pointTimer = setInterval(() => {
       this.addPoint(1)
-    }, 100)
+    }, 300)
   },
 
   addPoint (addNum) {
@@ -161,7 +170,7 @@ const engine = {
     for (let key in levelLists) {
       if (levelLists.hasOwnProperty(key) && point > key && levelLists[key] > level) {
         this.level = levelLists[key]
-        this.canvasAddSpace += 0.3
+        this.canvasAddSpace += 0.5
         this.config.terrNum += 1
         break
       }
@@ -211,10 +220,6 @@ const engine = {
         context.fillRect(terrLeft, _terrTop, terrWidth, terrHeight)
       }
     }
-  },
-
-  gameOver () {
-    this.ball.clear()
   }
 }
 

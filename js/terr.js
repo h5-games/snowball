@@ -11,6 +11,7 @@ export default class Terr {
       width: 6,
       height: 10,
       color: '#000',
+      isNear: false,
       ...config
     })
   }
