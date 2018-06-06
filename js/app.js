@@ -1,6 +1,7 @@
 import Ball from './ball.js'
 import Terr from './terr.js'
 import { computedBeyond } from './utils.js'
+import { levelLists } from './lists.js'
 
 const engine = {
   fatherEle: {},
@@ -61,12 +62,15 @@ const engine = {
     const { canvas, config } = this
     const { terrNum } = config
     const terrLists = {}
+    const minTerrTop = canvas.height / 4
 
-    const ball = new Ball(canvas)
+    const ball = new Ball(canvas, {
+      top: minTerrTop / 2
+    })
 
     for (let i = 0; i < terrNum; i++) {
       const terr = new Terr(canvas, {
-        top: Math.floor(Math.random() * (canvas.height - 100) + 100)
+        top: Math.floor(Math.random() * (canvas.height - minTerrTop) + minTerrTop)
       })
       terrLists[terr.id] = terr
     }
@@ -150,17 +154,6 @@ const engine = {
     point += addNum
     this.point = point
 
-    const levelLists = {
-      3000: 9,
-      2000: 8,
-      1500: 7,
-      1000: 6,
-      500: 4,
-      200: 3,
-      100: 2,
-      50: 1
-    }
-
     for (let key in levelLists) {
       if (levelLists.hasOwnProperty(key) && point > key && levelLists[key] > level) {
         this.level = levelLists[key]
@@ -183,16 +176,27 @@ const engine = {
     context.arc(ballLeft, _ballTop, ballRadius, 0, 2 * Math.PI)
     context.fill()
 
+    const tailListsLength = tailLists.length
+
+    context.fillStyle = 'rgba(0,0,0,0.3)'
     context.beginPath()
-    for (let i = 0; i < tailLists.length; i++) {
+    for (let i = 0; i < tailListsLength; i++) {
       const tail = tailLists[i]
       const { left: tailLeft, top: tailTop } = tail
       const _tailTop = computedBeyond(tailTop, position)
-      context.lineTo(tailLeft, _tailTop)
+      context.lineTo(tailLeft - ball.radius + (ball.radius * (i + 1) / tailListsLength), _tailTop)
     }
-    // context.closePath()
-    context.stroke()
 
+    for (let i = tailListsLength - 1; i > 0; i--) {
+      const tail = tailLists[i]
+      const { left: tailLeft, top: tailTop } = tail
+      const _tailTop = computedBeyond(tailTop, position)
+      context.lineTo(tailLeft + ball.radius - (ball.radius * (i + 1) / tailListsLength), _tailTop)
+    }
+    context.closePath()
+    context.fill()
+
+    context.fillStyle = '#000'
     for (let key in terrLists) {
       if (terrLists.hasOwnProperty(key)) {
         const terr = terrLists[key]

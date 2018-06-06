@@ -1,8 +1,7 @@
 export default class Ball {
   constructor (canvas, config = {}) {
-    this.canvas = canvas
     const left = canvas.width / 2
-    const top = canvas.height / 8
+    const top = 6
 
     Object.assign(this, {
       radius: 6,
