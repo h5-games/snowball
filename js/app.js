@@ -11,12 +11,10 @@ const engine = {
   terrLists: {},
   canvas: {},
   canvasSpace: 0,
-  canvasAddSpace: 1.6,
+  canvasAddSpace: 3,
   context: {},
   timer: null,
   hasStart: false,
-  ballSpace: 1,
-  terrSpace: 0,
   point: 0,
   pointTimer: null,
   tailLists: [],
@@ -77,16 +75,14 @@ const engine = {
 
     canvas.addEventListener('touchstart', e => {
       e.preventDefault()
-      if (this.hasStart) {
-
-      } else {
+      if (!this.hasStart) {
         this.startGame()
       }
-      ball.move(e)
+      ball.tabDirection(e)
     })
 
     canvas.addEventListener('touchend', e => {
-      ball.move(e)
+      ball.tabDirection(e)
     })
 
     this.ball = ball
@@ -101,8 +97,7 @@ const engine = {
     const { canvas, halfCanvasHeight, config } = this
     config.terrNum += 20
 
-    clearInterval(this.timer)
-    this.timer = setInterval(() => {
+    const animate = () => {
       const { terrLists, ball, config, tailLists, canvasAddSpace } = this
       const terrNum = config.terrNum
       let { position, canvasSpace } = this
@@ -110,7 +105,7 @@ const engine = {
       canvasSpace = ballTop - position > halfCanvasHeight ? canvasAddSpace : (ballTop - position) / halfCanvasHeight * canvasAddSpace
       position += canvasSpace
 
-      ball.space = canvasAddSpace
+      ball.move(canvasAddSpace)
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
         const terr = new Terr(canvas, {
@@ -132,7 +127,7 @@ const engine = {
         left: ball.left,
         top: ball.top
       })
-      tailLists.splice(60)
+      tailLists.splice(50)
 
       Object.assign(this, {
         position,
@@ -140,7 +135,10 @@ const engine = {
       })
 
       this.paintCanvas()
-    }, 10)
+      window.requestAnimationFrame(animate)
+    }
+
+    window.requestAnimationFrame(animate)
 
     clearInterval(this.pointTimer)
     this.pointTimer = setInterval(() => {
@@ -169,16 +167,10 @@ const engine = {
     const { width: canvasWidth, height: canvasHeight } = canvas
     const { radius: ballRadius, left: ballLeft, top: ballTop } = ball
 
-    const _ballTop = computedBeyond(ballTop, position)
-
-    context.clearRect(0, 0, canvasWidth, canvasHeight)
-    context.beginPath()
-    context.arc(ballLeft, _ballTop, ballRadius, 0, 2 * Math.PI)
-    context.fill()
-
     const tailListsLength = tailLists.length
 
-    context.fillStyle = 'rgba(0,0,0,0.3)'
+    context.clearRect(0, 0, canvasWidth, canvasHeight)
+    context.fillStyle = '#e8d04e'
     context.beginPath()
     for (let i = 0; i < tailListsLength; i++) {
       const tail = tailLists[i]
@@ -195,8 +187,14 @@ const engine = {
     }
     context.closePath()
     context.fill()
-
     context.fillStyle = '#000'
+
+    const _ballTop = computedBeyond(ballTop, position)
+
+    context.beginPath()
+    context.arc(ballLeft, _ballTop, ballRadius, 0, 2 * Math.PI)
+    context.fill()
+
     for (let key in terrLists) {
       if (terrLists.hasOwnProperty(key)) {
         const terr = terrLists[key]
