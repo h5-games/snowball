@@ -16,7 +16,10 @@ const engine = {
   timer: null,
   hasStart: false,
   point: 0,
+  addPointNum: 0,
   pointTimer: null,
+  updatePointTime: 2000,
+  updatePointTimer: null,
   tailLists: [],
   position: 0,
   halfCanvasHeight: 0,
@@ -47,18 +50,24 @@ const engine = {
 
     fatherEle.appendChild(canvas)
 
+    const terrImg = new window.Image()
+    terrImg.src = './images/terr.png'
+
     Object.assign(this, {
       ballEndPosition: canvas.height / 2,
       canvas,
       context: canvas.getContext('2d'),
-      halfCanvasHeight: fatherHeight / 2
+      halfCanvasHeight: fatherHeight / 2,
+      terrImg
     })
 
-    this.initGame()
+    terrImg.onload = () => {
+      this.initGame()
+    }
   },
 
   initGame () {
-    const { canvas, config } = this
+    const { canvas, config, terrImg } = this
     const { terrNum } = config
     const terrLists = {}
     const minTerrTop = canvas.height / 4
@@ -70,7 +79,7 @@ const engine = {
     for (let i = 0; i < terrNum; i++) {
       const terr = new Terr(canvas, {
         top: Math.floor(Math.random() * (canvas.height - minTerrTop) + minTerrTop)
-      })
+      }, terrImg)
       terrLists[terr.id] = terr
     }
 
@@ -96,11 +105,11 @@ const engine = {
   startGame () {
     this.hasStart = true
 
-    const { canvas, halfCanvasHeight, config } = this
-    config.terrNum += 20
+    const { canvas, halfCanvasHeight, config, terrImg } = this
+    config.terrNum += 10
 
     const animate = () => {
-      const { terrLists, ball, config, tailLists, canvasAddSpace, isDown, position } = this
+      const { terrLists, ball, config, tailLists, canvasAddSpace, isDown, position, addPointNum } = this
       const terrNum = config.terrNum
       const ballTop = ball.top
       const ballLeft = ball.left
@@ -108,14 +117,13 @@ const engine = {
       ball.move(canvasAddSpace, isDown)
 
       if (ballLeft < 0 || ballLeft > canvas.width) {
-        window.alert('GG')
         return
       }
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
         const terr = new Terr(canvas, {
           top: Math.floor(Math.random() * canvas.height + canvas.height + position)
-        })
+        }, terrImg)
         terrLists[terr.id] = terr
       }
 
@@ -128,13 +136,13 @@ const engine = {
           }
 
           if (!terr.isNear && isNear(ball, terr, 30)) {
-            terr.color = '#00ffff'
+            terr.color = 'green'
             terr.isNear = true
+            this.updatePointNum(addPointNum + 1)
           }
 
           if (!terr.isCrash && isCrash(ball, terr)) {
             terr.isCrash = true
-            window.alert('GG')
             return
           }
         }
@@ -150,15 +158,15 @@ const engine = {
       this.position += this.canvasSpace
 
       this.paintCanvas()
-      window.requestAnimationFrame(animate)
+      this.timer = window.requestAnimationFrame(animate)
     }
 
-    window.requestAnimationFrame(animate)
+    this.timer = window.requestAnimationFrame(animate)
 
     clearInterval(this.pointTimer)
     this.pointTimer = setInterval(() => {
       this.addPoint(1)
-    }, 300)
+    }, 1000)
   },
 
   addPoint (addNum) {
@@ -177,15 +185,25 @@ const engine = {
     }
   },
 
+  updatePointNum (num) {
+    const { updatePointTime, updatePointTimer } = this
+    this.addPoint(num)
+    this.addPointNum = num
+    clearTimeout(updatePointTimer)
+    this.updatePointTimer = setTimeout(() => {
+      this.addPointNum = 0
+    }, updatePointTime)
+  },
+
   paintCanvas () {
-    const { ball, context, canvas, terrLists, tailLists, position } = this
+    const { ball, context, canvas, terrLists, tailLists, position, point } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
-    const { radius: ballRadius, left: ballLeft, top: ballTop } = ball
+    const { radius: ballRadius, left: ballLeft, top: ballTop, color: bollColor } = ball
 
     const tailListsLength = tailLists.length
 
     context.clearRect(0, 0, canvasWidth, canvasHeight)
-    context.fillStyle = '#e8d04e'
+
     context.beginPath()
     for (let i = 0; i < tailListsLength; i++) {
       const tail = tailLists[i]
@@ -193,7 +211,6 @@ const engine = {
       const _tailTop = computedBeyond(tailTop, position)
       context.lineTo(tailLeft - ball.radius + (ball.radius * (i + 1) / tailListsLength), _tailTop)
     }
-
     for (let i = tailListsLength - 1; i >= 0; i--) {
       const tail = tailLists[i]
       const { left: tailLeft, top: tailTop } = tail
@@ -201,25 +218,41 @@ const engine = {
       context.lineTo(tailLeft + ball.radius - (ball.radius * (i + 1) / tailListsLength), _tailTop)
     }
     context.closePath()
+    if (tailListsLength) {
+      const firstTail = tailLists[0]
+      const lastTail = tailLists[tailListsLength - 1]
+      const firstTailTop = computedBeyond(firstTail.top, position)
+      const lastTailTop = computedBeyond(lastTail.top, position)
+      const line = context.createLinearGradient(firstTail.left, firstTailTop, lastTail.left, lastTailTop)
+      line.addColorStop(0, 'rgba(0, 0, 0, 0.3)')
+      line.addColorStop(1, 'rgba(0, 0, 0, 0.1)')
+      context.fillStyle = line
+    }
     context.fill()
-    context.fillStyle = '#000'
 
+    context.fillStyle = bollColor
     const _ballTop = computedBeyond(ballTop, position)
-
     context.beginPath()
     context.arc(ballLeft, _ballTop, ballRadius, 0, 2 * Math.PI)
     context.fill()
 
+    context.fillStyle = '#000'
     for (let key in terrLists) {
       if (terrLists.hasOwnProperty(key)) {
         const terr = terrLists[key]
-        const { left: terrLeft, top: terrTop, width: terrWidth, height: terrHeight } = terr
+        const { left: terrLeft, top: terrTop, width: terrWidth, height: terrHeight,
+          terrImg, terrImgWidth, terrImgHeight, terrImgLeft, terrImgTop } = terr
         const _terrTop = computedBeyond(terrTop, position)
-        context.fillStyle = terr.color
+        const _terrImgTop = computedBeyond(terrImgTop, position)
+        context.drawImage(terrImg, terrImgLeft, _terrImgTop, terrImgWidth, terrImgHeight)
         context.beginPath()
-        context.fillRect(terrLeft, _terrTop, terrWidth, terrHeight)
+        // context.fillRect(terrLeft, _terrTop, terrWidth, terrHeight)
       }
     }
+
+    context.fillStyle = '#000'
+    context.font = '16px sans'
+    context.fillText(`分数：${point}`, 10, 24)
   }
 }
 

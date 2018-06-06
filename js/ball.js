@@ -4,7 +4,7 @@ export default class Ball {
     const top = 6
 
     Object.assign(this, {
-      radius: 7,
+      radius: 6,
       degree: 0.1,
       maxDegree: 3.6,
       minDegree: -3.6,
@@ -14,6 +14,7 @@ export default class Ball {
       space: 1,
       endPosition: canvas.height / 2,
       isCrash: false,
+      color: '#efc751',
       ...config
     })
   }

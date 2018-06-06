@@ -8,3 +8,14 @@ export const levelLists = {
   100: 2,
   50: 1
 }
+
+export const terrSizeLists = [
+  {
+    width: 5,
+    height: 10
+  },
+  {
+    width: 7,
+    height: 14
+  }
+]
