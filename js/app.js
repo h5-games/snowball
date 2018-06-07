@@ -3,7 +3,7 @@ import Terr from './terr.js'
 import { computedBeyond, isCrash, isNear } from './utils.js'
 import { levelLists, stateColors } from './lists.js'
 
-window.engine = {
+const engine = {
   fatherEle: {},
   config: {},
   ball: {},
@@ -66,6 +66,9 @@ window.engine = {
     terrImg.onload = () => {
       this.initGame()
     }
+
+    canvas.addEventListener('touchstart', this.gameTouchStart.bind(this))
+    canvas.addEventListener('touchend', this.gameTouchEnd.bind(this))
   },
 
   initGame () {
@@ -95,25 +98,26 @@ window.engine = {
       this.terrLists[item[0]] = item[1]
     })
 
-    canvas.addEventListener('touchstart', e => {
-      e.preventDefault()
-      if (!this.hasStart) {
-        this.startGame()
-      }
-      this.isDown = true
-      ball.direction = !ball.direction
-    })
-
-    canvas.addEventListener('touchend', () => {
-      this.isDown = false
-    })
-
     Object.assign(this, {
       ball,
       stateColor
     })
 
-    this.paintCanvas()
+    this.paintGameCanvas()
+  },
+
+  gameTouchStart (e) {
+    const { ball } = this
+    e.preventDefault()
+    if (!this.hasStart) {
+      this.startGame()
+    }
+    this.isDown = true
+    ball.direction = !ball.direction
+  },
+
+  gameTouchEnd () {
+    this.isDown = false
   },
 
   startGame () {
@@ -122,7 +126,10 @@ window.engine = {
 
     this.move()
 
-    clearInterval(this.pointTimer)
+    this.startAddPoint()
+  },
+
+  startAddPoint () {
     this.pointTimer = setInterval(() => {
       this.addPoint(1)
     }, 1000)
@@ -140,6 +147,7 @@ window.engine = {
       ball.move(canvasAddSpace, isDown)
 
       if (ballLeft < 0 || ballLeft > canvas.width) {
+        this.gameOver()
         return
       }
 
@@ -168,6 +176,7 @@ window.engine = {
 
           if (!terr.isCrash && isCrash(ball, terr)) {
             terr.isCrash = true
+            this.gameOver()
             return
           }
         }
@@ -190,7 +199,7 @@ window.engine = {
         terrLists[item[0]] = item[1]
       })
 
-      this.paintCanvas()
+      this.paintGameCanvas()
       this.timer = window.requestAnimationFrame(animate)
     }
 
@@ -238,7 +247,7 @@ window.engine = {
     }, updatePointTime)
   },
 
-  paintCanvas () {
+  paintGameCanvas () {
     const { ball, context, canvas, terrLists, tailLists, position, point, stateColor } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
     const { radius: ballRadius, left: ballLeft, top: ballTop, color: ballColor } = ball
@@ -296,16 +305,44 @@ window.engine = {
         if (point) {
           context.fillStyle = terr.pointColor
           context.font = '800 16px sans'
-          context.fillText(`+${point}`, terrImgLeft, _terrImgTop)
+          context.textAlign = 'center'
+          context.fillText(`+${point}`, terrImgLeft + terrImgWidth / 2, _terrImgTop - 5)
           terr.clearPoint()
         }
       }
     }
 
     context.fillStyle = pointColor
-    context.font = '16px sans'
-    context.fillText(`分数：${point}`, 10, 24)
+    context.font = '600 18px sans'
+    context.textAlign = 'left'
+    context.fillText(`Point: ${point}`, 10, 24)
+  },
+
+  gameOver () {
+    clearInterval(this.pointTimer)
+
+    const { context, canvas, point } = this
+    const { width: canvasWidth, height: canvasHeight } = canvas
+
+    context.fillStyle = 'rgba(0, 0, 0, 0.5)'
+    context.fillRect(0, 0, canvasWidth, canvasHeight)
+    context.fill()
+    context.fillStyle = '#fff'
+    context.font = '28px sans'
+    context.textAlign = 'center'
+    context.fillText('game over', canvasWidth / 2, 200)
+    context.font = '18px sans'
+    context.fillText(`获得 ${point} 分`, canvasWidth / 2, 250)
+    context.font = '14px sans'
+    context.fillText('（点击屏幕重新开始）', canvasWidth / 2, 300)
+
+    const resetGame = () => {
+      console.log('reset')
+      canvas.removeEventListener('touchstart', resetGame)
+    }
+
+    canvas.addEventListener('touchstart', resetGame)
   }
 }
 
-window.engine.init('container')
+engine.init('container')
