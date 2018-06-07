@@ -11,11 +11,29 @@ export const levelLists = {
 
 export const terrSizeLists = [
   {
-    width: 5,
-    height: 10
+    width: 3,
+    height: 3
   },
   {
-    width: 7,
-    height: 14
+    width: 5,
+    height: 5
+  }
+]
+
+export const stateColors = [
+  {
+    gradualColor: ['rgb(210, 210, 210)', 'rgba(240, 240, 240)'],
+    pointColor: 'rgb(0, 0, 0)',
+    ballColor: '#b7e8e8'
+  },
+  {
+    gradualColor: ['rgba(255, 154, 37, 0.6)', 'rgba(228, 154, 37, 0.1)'],
+    pointColor: 'rgb(228, 154, 37)',
+    ballColor: 'rgb(255, 154, 37)'
+  },
+  {
+    gradualColor: ['rgba(255, 0, 0, 0.6)', 'rgba(231, 57, 39, 0.1)'],
+    pointColor: 'rgb(231, 57, 39)',
+    ballColor: 'rgb(255, 0, 0)'
   }
 ]

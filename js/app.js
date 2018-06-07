@@ -1,9 +1,9 @@
 import Ball from './ball.js'
 import Terr from './terr.js'
 import { computedBeyond, isCrash, isNear } from './utils.js'
-import { levelLists } from './lists.js'
+import { levelLists, stateColors } from './lists.js'
 
-const engine = {
+window.engine = {
   fatherEle: {},
   config: {},
   ball: {},
@@ -11,20 +11,22 @@ const engine = {
   terrLists: {},
   canvas: {},
   canvasSpace: 0,
-  canvasAddSpace: 3,
+  canvasAddSpace: 3.2,
   context: {},
   timer: null,
   hasStart: false,
   point: 0,
   addPointNum: 0,
   pointTimer: null,
-  updatePointTime: 2000,
+  updatePointTime: 3000,
   updatePointTimer: null,
   tailLists: [],
   position: 0,
   halfCanvasHeight: 0,
   level: 0,
   isDown: false,
+  stateColor: {},
+  nearDistance: 40,
 
   init (id, config = {}) {
     this.fatherEle = document.getElementById(id)
@@ -71,9 +73,11 @@ const engine = {
     const { terrNum } = config
     const terrLists = {}
     const minTerrTop = canvas.height / 4
+    const stateColor = stateColors[0]
 
     const ball = new Ball(canvas, {
-      top: minTerrTop / 2
+      top: minTerrTop / 2,
+      color: stateColor.ballColor
     })
 
     for (let i = 0; i < terrNum; i++) {
@@ -82,6 +86,14 @@ const engine = {
       }, terrImg)
       terrLists[terr.id] = terr
     }
+
+    const terrListsArr = Object.entries(terrLists)
+    terrListsArr.sort((x, y) => {
+      return x[1].top - y[1].top
+    })
+    terrListsArr.forEach(item => {
+      this.terrLists[item[0]] = item[1]
+    })
 
     canvas.addEventListener('touchstart', e => {
       e.preventDefault()
@@ -96,17 +108,28 @@ const engine = {
       this.isDown = false
     })
 
-    this.ball = ball
-    this.terrLists = terrLists
+    Object.assign(this, {
+      ball,
+      stateColor
+    })
 
     this.paintCanvas()
   },
 
   startGame () {
     this.hasStart = true
+    this.config.terrNum += 10
 
-    const { canvas, halfCanvasHeight, config, terrImg } = this
-    config.terrNum += 10
+    this.move()
+
+    clearInterval(this.pointTimer)
+    this.pointTimer = setInterval(() => {
+      this.addPoint(1)
+    }, 1000)
+  },
+
+  move () {
+    const { canvas, halfCanvasHeight, terrImg, nearDistance } = this
 
     const animate = () => {
       const { terrLists, ball, config, tailLists, canvasAddSpace, isDown, position, addPointNum } = this
@@ -135,10 +158,12 @@ const engine = {
             continue
           }
 
-          if (!terr.isNear && isNear(ball, terr, 30)) {
+          if (!terr.isNear && isNear(ball, terr, nearDistance)) {
+            const point = addPointNum + 1
             terr.color = 'green'
             terr.isNear = true
-            this.updatePointNum(addPointNum + 1)
+            this.updatePointNum(point)
+            terr.initPoint(point, this.stateColor)
           }
 
           if (!terr.isCrash && isCrash(ball, terr)) {
@@ -157,16 +182,19 @@ const engine = {
       this.canvasSpace = ballTop - position > halfCanvasHeight ? canvasAddSpace : (ballTop - position) / halfCanvasHeight * canvasAddSpace
       this.position += this.canvasSpace
 
+      const terrListsArr = Object.entries(terrLists)
+      terrListsArr.sort((x, y) => {
+        return x[1].top - y[1].top
+      })
+      terrListsArr.forEach(item => {
+        terrLists[item[0]] = item[1]
+      })
+
       this.paintCanvas()
       this.timer = window.requestAnimationFrame(animate)
     }
 
     this.timer = window.requestAnimationFrame(animate)
-
-    clearInterval(this.pointTimer)
-    this.pointTimer = setInterval(() => {
-      this.addPoint(1)
-    }, 1000)
   },
 
   addPoint (addNum) {
@@ -178,8 +206,8 @@ const engine = {
     for (let key in levelLists) {
       if (levelLists.hasOwnProperty(key) && point > key && levelLists[key] > level) {
         this.level = levelLists[key]
-        this.canvasAddSpace += 0.5
-        this.config.terrNum += 1
+        this.canvasAddSpace += 0.3
+        this.config.terrNum += 3
         break
       }
     }
@@ -189,16 +217,32 @@ const engine = {
     const { updatePointTime, updatePointTimer } = this
     this.addPoint(num)
     this.addPointNum = num
+
+    if (num > 15) {
+      this.stateColor = stateColors[2]
+      this.ball.color = stateColors[2].ballColor
+    } else if (num > 6) {
+      this.stateColor = stateColors[1]
+      this.ball.color = stateColors[1].ballColor
+    } else {
+      this.stateColor = stateColors[0]
+      this.ball.color = stateColors[0].ballColor
+    }
+
     clearTimeout(updatePointTimer)
     this.updatePointTimer = setTimeout(() => {
       this.addPointNum = 0
+      this.stateColor = stateColors[0]
+      this.ball.color = stateColors[0].ballColor
+      clearTimeout(this.updatePointTimer)
     }, updatePointTime)
   },
 
   paintCanvas () {
-    const { ball, context, canvas, terrLists, tailLists, position, point } = this
+    const { ball, context, canvas, terrLists, tailLists, position, point, stateColor } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
-    const { radius: ballRadius, left: ballLeft, top: ballTop, color: bollColor } = ball
+    const { radius: ballRadius, left: ballLeft, top: ballTop, color: ballColor } = ball
+    const { pointColor } = stateColor
 
     const tailListsLength = tailLists.length
 
@@ -224,13 +268,14 @@ const engine = {
       const firstTailTop = computedBeyond(firstTail.top, position)
       const lastTailTop = computedBeyond(lastTail.top, position)
       const line = context.createLinearGradient(firstTail.left, firstTailTop, lastTail.left, lastTailTop)
-      line.addColorStop(0, 'rgba(0, 0, 0, 0.3)')
-      line.addColorStop(1, 'rgba(0, 0, 0, 0.1)')
+      const { gradualColor } = stateColor
+      line.addColorStop(0, gradualColor[0])
+      line.addColorStop(1, gradualColor[1])
       context.fillStyle = line
     }
     context.fill()
 
-    context.fillStyle = bollColor
+    context.fillStyle = ballColor
     const _ballTop = computedBeyond(ballTop, position)
     context.beginPath()
     context.arc(ballLeft, _ballTop, ballRadius, 0, 2 * Math.PI)
@@ -247,13 +292,20 @@ const engine = {
         context.drawImage(terrImg, terrImgLeft, _terrImgTop, terrImgWidth, terrImgHeight)
         context.beginPath()
         // context.fillRect(terrLeft, _terrTop, terrWidth, terrHeight)
+        const point = terr.point
+        if (point) {
+          context.fillStyle = terr.pointColor
+          context.font = '800 16px sans'
+          context.fillText(`+${point}`, terrImgLeft, _terrImgTop)
+          terr.clearPoint()
+        }
       }
     }
 
-    context.fillStyle = '#000'
+    context.fillStyle = pointColor
     context.font = '16px sans'
     context.fillText(`分数：${point}`, 10, 24)
   }
 }
 
-engine.init('container')
+window.engine.init('container')

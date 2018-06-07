@@ -4,17 +4,17 @@ export default class Ball {
     const top = 6
 
     Object.assign(this, {
-      radius: 6,
+      radius: 7,
       degree: 0.1,
-      maxDegree: 3.6,
-      minDegree: -3.6,
+      maxDegree: 4,
+      minDegree: -4,
       left,
       top,
       direction: false,
       space: 1,
       endPosition: canvas.height / 2,
       isCrash: false,
-      color: '#efc751',
+      color: '#000',
       ...config
     })
   }
@@ -25,10 +25,10 @@ export default class Ball {
 
     if (isDown) {
       if (direction) {
-        const _degree = degree + 0.1
+        const _degree = degree + 0.14
         degree = _degree > maxDegree ? maxDegree : _degree
       } else {
-        const _degree = degree - 0.1
+        const _degree = degree - 0.14
         degree = _degree < minDegree ? minDegree : _degree
       }
     }
