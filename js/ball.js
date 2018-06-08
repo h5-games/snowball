@@ -19,11 +19,11 @@ export default class Ball {
     })
   }
 
-  move (space, isDown) {
+  move (space, isTouch) {
     let { direction, degree, left, top, maxDegree, minDegree } = this
     left += degree
 
-    if (isDown) {
+    if (isTouch) {
       if (direction) {
         const _degree = degree + 0.14
         degree = _degree > maxDegree ? maxDegree : _degree

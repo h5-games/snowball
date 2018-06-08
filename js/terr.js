@@ -39,17 +39,17 @@ export default class Terr {
     })
   }
 
-  initPoint (point, stateColor) {
-    const { pointColor } = stateColor
+  initPoint (point, pointColor) {
     Object.assign(this, {
       pointColor,
       point
     })
-  }
-
-  clearPoint () {
-    setTimeout(() => {
+    this.zeroPointTimer = setTimeout(() => {
       this.point = 0
     }, 500)
+  }
+
+  clearPointTimer () {
+    clearTimeout(this.zeroPointTimer)
   }
 }

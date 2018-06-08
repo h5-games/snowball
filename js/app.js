@@ -1,45 +1,56 @@
 import Ball from './ball.js'
 import Terr from './terr.js'
-import { computedBeyond, isCrash, isNear } from './utils.js'
+import { computedBeyond, isCrash, isNear, sortTerr } from './utils.js'
 import { levelLists, stateColors } from './lists.js'
 
 const engine = {
-  fatherEle: {},
-  config: {},
-  ball: {},
-  ballEndPosition: 0,
-  terrLists: {},
-  canvas: {},
-  canvasSpace: 0,
-  canvasAddSpace: 3.2,
-  context: {},
-  timer: null,
-  hasStart: false,
-  point: 0,
-  addPointNum: 0,
-  pointTimer: null,
-  updatePointTime: 3000,
-  updatePointTimer: null,
-  tailLists: [],
-  position: 0,
-  halfCanvasHeight: 0,
-  level: 0,
-  isDown: false,
-  stateColor: {},
-  nearDistance: 40,
+  config: {}, // 配置对象
+  fatherEle: {}, // 父元素
+  canvas: {}, // canvas 对象
+  canvasSpace: 0, // canvas 每次实际位移的距离
+  tailLists: [], // 小球的尾巴的列表
+  context: {}, // canvas context
+  isStart: false, // 游戏是否开始
+  ball: {}, // 小球对象
+  terrLists: {}, // 树列表
+  gameTimer: null, // 游戏的计时器
+  point: 0, // 分数
+  pointTimer: null, // 分数计时器
+  pointAddNum: 0, // 分数增值
+  addPointTimer: null, // 更新分数增值的计时器
+  position: 0, // canvas 总位移
+  level: 0, // 游戏等级
+  isTouch: false, // 是否处于按下
+  stateColor: {}, // 当前状态的颜色
 
   init (id, config = {}) {
-    this.fatherEle = document.getElementById(id)
-    this.config = {
-      terrNum: 10,
-      canvasClassName: 'ball-canvas',
+    // 初始化函数
+    const fatherEle = document.getElementById(id)
+    const height = fatherEle.offsetHeight
+
+    // 默认配置
+    const _config = {
+      canvasClassName: 'ball-canvas', // canvas 的 class
+      terrNum: 10, // 初始树的数量
+      updatePointTime: 3000, // 更新分数增值计时器的超时时间
+      nearDistance: 40, // 小球靠近树的距离
+      canvasAddSpace: 3.2, // canvas 位移的加距离
+      ballEndPosition: height / 2, // 小球停留位置
+      terrMinTop: height / 4, // 初始化树 最小的 top
+      tailNum: 50, // 尾巴的坐标数
       ...config
     }
+
+    Object.assign(this, {
+      config: _config,
+      fatherEle
+    })
 
     this.createCanvas()
   },
 
   createCanvas () {
+    // 创建 canvas
     const { fatherEle, config } = this
     const fatherWidth = fatherEle.offsetWidth
     const fatherHeight = fatherEle.offsetHeight
@@ -55,103 +66,98 @@ const engine = {
     const terrImg = new window.Image()
     terrImg.src = './images/terr.png'
 
-    Object.assign(this, {
-      ballEndPosition: canvas.height / 2,
-      canvas,
-      context: canvas.getContext('2d'),
-      halfCanvasHeight: fatherHeight / 2,
-      terrImg
-    })
-
     terrImg.onload = () => {
       this.initGame()
     }
 
     canvas.addEventListener('touchstart', this.gameTouchStart.bind(this))
     canvas.addEventListener('touchend', this.gameTouchEnd.bind(this))
-  },
-
-  initGame () {
-    const { canvas, config, terrImg } = this
-    const { terrNum } = config
-    const terrLists = {}
-    const minTerrTop = canvas.height / 4
-    const stateColor = stateColors[0]
-
-    const ball = new Ball(canvas, {
-      top: minTerrTop / 2,
-      color: stateColor.ballColor
-    })
-
-    for (let i = 0; i < terrNum; i++) {
-      const terr = new Terr(canvas, {
-        top: Math.floor(Math.random() * (canvas.height - minTerrTop) + minTerrTop)
-      }, terrImg)
-      terrLists[terr.id] = terr
-    }
-
-    const terrListsArr = Object.entries(terrLists)
-    terrListsArr.sort((x, y) => {
-      return x[1].top - y[1].top
-    })
-    terrListsArr.forEach(item => {
-      this.terrLists[item[0]] = item[1]
-    })
 
     Object.assign(this, {
-      ball,
-      stateColor
+      canvas,
+      terrImg,
+      context: canvas.getContext('2d')
     })
-
-    this.paintGameCanvas()
   },
 
   gameTouchStart (e) {
     const { ball } = this
     e.preventDefault()
-    if (!this.hasStart) {
+    if (!this.isStart) {
       this.startGame()
     }
-    this.isDown = true
+    this.isTouch = true
     ball.direction = !ball.direction
   },
 
   gameTouchEnd () {
-    this.isDown = false
+    this.isTouch = false
+  },
+
+  initGame () {
+    const { config } = this
+    Object.assign(this, {
+      ...config,
+      isStart: false,
+      canvasSpace: 0,
+      tailLists: [],
+      ball: {},
+      terrLists: {},
+      point: 0,
+      pointAddNum: 0,
+      position: 0,
+      level: 0,
+      isTouch: false,
+      stateColor: stateColors[0]
+    })
+
+    const { canvas, terrImg, terrNum, terrMinTop, stateColor } = this
+    const terrLists = {}
+
+    this.ball = new Ball(canvas, {
+      top: terrMinTop / 2,
+      color: stateColor.ballColor
+    })
+
+    for (let i = 0; i < terrNum; i++) {
+      const terr = new Terr(canvas, {
+        top: Math.floor(Math.random() * (canvas.height - terrMinTop) + terrMinTop)
+      }, terrImg)
+      terrLists[terr.id] = terr
+    }
+
+    this.terrLists = sortTerr(terrLists)
+
+    this.paintGameCanvas()
   },
 
   startGame () {
-    this.hasStart = true
-    this.config.terrNum += 10
-
+    this.isStart = true
+    this.terrNum += 10
     this.move()
-
     this.startAddPoint()
   },
 
-  startAddPoint () {
-    this.pointTimer = setInterval(() => {
-      this.addPoint(1)
-    }, 1000)
-  },
-
   move () {
-    const { canvas, halfCanvasHeight, terrImg, nearDistance } = this
+    const { canvas, terrImg, nearDistance, tailNum } = this
+    const halfCanvasHeight = canvas.height / 2
 
     const animate = () => {
-      const { terrLists, ball, config, tailLists, canvasAddSpace, isDown, position, addPointNum } = this
-      const terrNum = config.terrNum
+      const { terrLists, ball, tailLists, canvasAddSpace, isTouch, position, pointAddNum, terrNum, stateColor } = this
+
+      ball.move(canvasAddSpace, isTouch)
+
       const ballTop = ball.top
       const ballLeft = ball.left
 
-      ball.move(canvasAddSpace, isDown)
-
       if (ballLeft < 0 || ballLeft > canvas.width) {
+        // 小球超出边界
         this.gameOver()
         return
       }
 
       for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
+        // 给下一屏绘制的树
         const terr = new Terr(canvas, {
           top: Math.floor(Math.random() * canvas.height + canvas.height + position)
         }, terrImg)
@@ -161,20 +167,21 @@ const engine = {
       for (let key in terrLists) {
         if (terrLists.hasOwnProperty(key)) {
           const terr = terrLists[key]
-          if (terr.top < position - halfCanvasHeight) {
+          if (terr.top < position - terr.height) {
             delete terrLists[key]
             continue
           }
 
           if (!terr.isNear && isNear(ball, terr, nearDistance)) {
-            const point = addPointNum + 1
-            terr.color = 'green'
+            // 小球靠近这个树
+            const point = pointAddNum + 1
             terr.isNear = true
-            this.updatePointNum(point)
-            terr.initPoint(point, this.stateColor)
+            this.updatePointAddNum(point)
+            terr.initPoint(point, stateColor.pointColor)
           }
 
           if (!terr.isCrash && isCrash(ball, terr)) {
+            // 小球撞上这个树
             terr.isCrash = true
             this.gameOver()
             return
@@ -182,28 +189,32 @@ const engine = {
         }
       }
 
+      // 更新尾巴列表 保留最后50个坐标
       tailLists.unshift({
-        left: ball.left,
-        top: ball.top
+        left: ballLeft,
+        top: ballTop
       })
-      tailLists.splice(50)
+      tailLists.splice(tailNum)
 
-      this.canvasSpace = ballTop - position > halfCanvasHeight ? canvasAddSpace : (ballTop - position) / halfCanvasHeight * canvasAddSpace
-      this.position += this.canvasSpace
-
-      const terrListsArr = Object.entries(terrLists)
-      terrListsArr.sort((x, y) => {
-        return x[1].top - y[1].top
-      })
-      terrListsArr.forEach(item => {
-        terrLists[item[0]] = item[1]
-      })
+      const canvasSpace = ballTop - position > halfCanvasHeight ? canvasAddSpace : (ballTop - position) / halfCanvasHeight * canvasAddSpace
 
       this.paintGameCanvas()
-      this.timer = window.requestAnimationFrame(animate)
+
+      Object.assign(this, {
+        canvasSpace,
+        position: position + canvasSpace,
+        terrLists: sortTerr(terrLists),
+        gameTimer: window.requestAnimationFrame(animate)
+      })
     }
 
-    this.timer = window.requestAnimationFrame(animate)
+    this.gameTimer = window.requestAnimationFrame(animate)
+  },
+
+  startAddPoint () {
+    this.pointTimer = setInterval(() => {
+      this.addPoint(1)
+    }, 1000)
   },
 
   addPoint (addNum) {
@@ -222,27 +233,19 @@ const engine = {
     }
   },
 
-  updatePointNum (num) {
+  updatePointAddNum (num) {
     const { updatePointTime, updatePointTimer } = this
     this.addPoint(num)
-    this.addPointNum = num
+    this.pointAddNum = num
 
-    if (num > 15) {
-      this.stateColor = stateColors[2]
-      this.ball.color = stateColors[2].ballColor
-    } else if (num > 6) {
-      this.stateColor = stateColors[1]
-      this.ball.color = stateColors[1].ballColor
-    } else {
-      this.stateColor = stateColors[0]
-      this.ball.color = stateColors[0].ballColor
-    }
+    const index = num > 15 ? 2 : num > 6 ? 1 : 0
+
+    this.stateColor = stateColors[index]
+    this.ball.color = stateColors[index].ballColor
 
     clearTimeout(updatePointTimer)
     this.updatePointTimer = setTimeout(() => {
-      this.addPointNum = 0
-      this.stateColor = stateColors[0]
-      this.ball.color = stateColors[0].ballColor
+      this.updatePointAddNum(0)
       clearTimeout(this.updatePointTimer)
     }, updatePointTime)
   },
@@ -307,15 +310,14 @@ const engine = {
           context.font = '800 16px sans'
           context.textAlign = 'center'
           context.fillText(`+${point}`, terrImgLeft + terrImgWidth / 2, _terrImgTop - 5)
-          terr.clearPoint()
         }
       }
     }
 
     context.fillStyle = pointColor
-    context.font = '600 18px sans'
+    context.font = '18px sans'
     context.textAlign = 'left'
-    context.fillText(`Point: ${point}`, 10, 24)
+    context.fillText(`分数：${point}`, 10, 24)
   },
 
   gameOver () {
@@ -330,7 +332,7 @@ const engine = {
     context.fillStyle = '#fff'
     context.font = '28px sans'
     context.textAlign = 'center'
-    context.fillText('game over', canvasWidth / 2, 200)
+    context.fillText('游戏结束', canvasWidth / 2, 200)
     context.font = '18px sans'
     context.fillText(`获得 ${point} 分`, canvasWidth / 2, 250)
     context.font = '14px sans'
