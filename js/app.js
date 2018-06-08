@@ -33,8 +33,8 @@ const engine = {
       canvasClassName: 'ball-canvas', // canvas 的 class
       terrNum: 10, // 初始树的数量
       updatePointTime: 3000, // 更新分数增值计时器的超时时间
-      nearDistance: 40, // 小球靠近树的距离
-      canvasAddSpace: 3.2, // canvas 位移的加距离
+      nearDistance: 50, // 小球靠近树的距离
+      canvasAddSpace: 3, // canvas 位移的加距离
       ballEndPosition: height / 2, // 小球停留位置
       terrMinTop: height / 4, // 初始化树 最小的 top
       tailNum: 50, // 尾巴的坐标数
@@ -227,7 +227,7 @@ const engine = {
       if (levelLists.hasOwnProperty(key) && point > key && levelLists[key] > level) {
         this.level = levelLists[key]
         this.canvasAddSpace += 0.3
-        this.config.terrNum += 3
+        this.terrNum += 3
         break
       }
     }
@@ -321,10 +321,17 @@ const engine = {
   },
 
   gameOver () {
-    clearInterval(this.pointTimer)
-
-    const { context, canvas, point } = this
+    const { context, canvas, terrLists, point, pointTimer, updatePointTimer } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
+
+    clearInterval(pointTimer)
+    clearInterval(updatePointTimer)
+    for (let key in terrLists) {
+      if (terrLists.hasOwnProperty(key)) {
+        terrLists[key].clearPointTimer()
+        delete terrLists[key]
+      }
+    }
 
     context.fillStyle = 'rgba(0, 0, 0, 0.5)'
     context.fillRect(0, 0, canvasWidth, canvasHeight)
@@ -339,7 +346,7 @@ const engine = {
     context.fillText('（点击屏幕重新开始）', canvasWidth / 2, 300)
 
     const resetGame = () => {
-      console.log('reset')
+      this.initGame()
       canvas.removeEventListener('touchstart', resetGame)
     }
 

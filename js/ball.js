@@ -14,7 +14,7 @@ export default class Ball {
       space: 1,
       endPosition: canvas.height / 2,
       isCrash: false,
-      color: '#000',
+      color: 'red',
       ...config
     })
   }
