@@ -29,3 +29,7 @@ export function sortTerr (terrLists) {
   })
   return _terrLists
 }
+
+export function computedPixe (pixe) {
+  return pixe * (window.devicePixelRatio || 1)
+}

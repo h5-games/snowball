@@ -1,4 +1,5 @@
 import { terrSizeLists } from './lists.js'
+import { computedPixe } from './utils.js'
 
 export default class Terr {
   constructor (canvas, config = {}, terrImg) {
@@ -8,7 +9,9 @@ export default class Terr {
 
     const random = Math.floor(Math.random() * terrSizeLists.length)
     const randomSize = terrSizeLists[random]
-    const { width, height } = randomSize
+    let { width, height } = randomSize
+    width = computedPixe(width)
+    height = computedPixe(height)
     const terrImage = {}
     if (terrImg) {
       const terrImgWidth = width * 6

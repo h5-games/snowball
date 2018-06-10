@@ -1,6 +1,6 @@
 import Ball from './ball.js'
 import Terr from './terr.js'
-import { computedBeyond, isCrash, isNear, sortTerr } from './utils.js'
+import { computedBeyond, isCrash, isNear, sortTerr, computedPixe } from './utils.js'
 import { levelLists, stateColors } from './lists.js'
 
 const engine = {
@@ -35,8 +35,8 @@ const engine = {
       canvasClassName: 'ball-canvas', // canvas 的 class
       terrNum: 10, // 初始树的数量
       updatePointTime: 3000, // 更新分数增值计时器的超时时间
-      nearDistance: 50, // 小球靠近树的距离
-      canvasAddSpace: 3, // canvas 位移的加距离
+      nearDistance: computedPixe(50), // 小球靠近树的距离
+      canvasAddSpace: computedPixe(3), // canvas 位移的加距离
       ballEndPosition: fatherHeight / 2, // 小球停留位置
       terrMinTop: fatherHeight / 4, // 初始化树 最小的 top
       tailNum: 50, // 尾巴的坐标数
@@ -103,7 +103,12 @@ const engine = {
       stateColor: stateColors[0]
     })
 
-    const { canvas, terrImg, terrNum, terrMinTop, stateColor } = this
+    const { canvas, terrImg, terrNum, terrMinTop, stateColor, gameTimer, pointTimer, updatePointTimer } = this
+
+    window.cancelAnimationFrame(gameTimer)
+    window.clearInterval(pointTimer)
+    window.clearInterval(updatePointTimer)
+
     const terrLists = {}
 
     this.ball = new Ball(canvas, {
@@ -181,7 +186,7 @@ const engine = {
         }
       }
 
-      // 更新尾巴列表 保留最后50个坐标
+      // 更新尾巴列表
       tailLists.unshift({
         left: ballLeft,
         top: ballTop
@@ -190,21 +195,21 @@ const engine = {
 
       const canvasSpace = ballTop - position > halfCanvasHeight ? canvasAddSpace : (ballTop - position) / halfCanvasHeight * canvasAddSpace
 
-      this.paintGameCanvas()
-
       Object.assign(this, {
         canvasSpace,
         position: position + canvasSpace,
         terrLists: sortTerr(terrLists),
         gameTimer: window.requestAnimationFrame(animate)
       })
+
+      this.paintGameCanvas()
     }
 
     this.gameTimer = window.requestAnimationFrame(animate)
   },
 
   startAddPoint () {
-    this.pointTimer = setInterval(() => {
+    this.pointTimer = window.setInterval(() => {
       this.addPoint(1)
     }, 1000)
   },
@@ -236,7 +241,7 @@ const engine = {
     this.ball.color = stateColors[index].ballColor
 
     clearTimeout(updatePointTimer)
-    this.updatePointTimer = setTimeout(() => {
+    this.updatePointTimer = window.setTimeout(() => {
       this.updatePointAddNum(0)
       clearTimeout(this.updatePointTimer)
     }, updatePointTime)
@@ -251,22 +256,24 @@ const engine = {
     const tailListsLength = tailLists.length
 
     context.clearRect(0, 0, canvasWidth, canvasHeight)
+    context.fillStyle = '#fff'
+    context.fillRect(0, 0, canvasWidth, canvasHeight)
 
-    context.beginPath()
-    for (let i = 0; i < tailListsLength; i++) {
-      const tail = tailLists[i]
-      const { left: tailLeft, top: tailTop } = tail
-      const _tailTop = computedBeyond(tailTop, position)
-      context.lineTo(tailLeft - ball.radius + (ball.radius * (i + 1) / tailListsLength), _tailTop)
-    }
-    for (let i = tailListsLength - 1; i >= 0; i--) {
-      const tail = tailLists[i]
-      const { left: tailLeft, top: tailTop } = tail
-      const _tailTop = computedBeyond(tailTop, position)
-      context.lineTo(tailLeft + ball.radius - (ball.radius * (i + 1) / tailListsLength), _tailTop)
-    }
-    context.closePath()
     if (tailListsLength) {
+      context.beginPath()
+      for (let i = 0; i < tailListsLength; i++) {
+        const tail = tailLists[i]
+        const { left: tailLeft, top: tailTop } = tail
+        const _tailTop = computedBeyond(tailTop, position)
+        context.lineTo(tailLeft - ballRadius + (ballRadius * (i + 1) / tailListsLength), _tailTop)
+      }
+      for (let i = tailListsLength - 1; i >= 0; i--) {
+        const tail = tailLists[i]
+        const { left: tailLeft, top: tailTop } = tail
+        const _tailTop = computedBeyond(tailTop, position)
+        context.lineTo(tailLeft + ballRadius - (ballRadius * (i + 1) / tailListsLength), _tailTop)
+      }
+
       const firstTail = tailLists[0]
       const lastTail = tailLists[tailListsLength - 1]
       const firstTailTop = computedBeyond(firstTail.top, position)
@@ -289,17 +296,14 @@ const engine = {
     for (let key in terrLists) {
       if (terrLists.hasOwnProperty(key)) {
         const terr = terrLists[key]
-        const { left: terrLeft, top: terrTop, width: terrWidth, height: terrHeight,
-          terrImg, terrImgWidth, terrImgHeight, terrImgLeft, terrImgTop } = terr
-        const _terrTop = computedBeyond(terrTop, position)
+        const { terrImg, terrImgWidth, terrImgHeight, terrImgLeft, terrImgTop } = terr
         const _terrImgTop = computedBeyond(terrImgTop, position)
         context.drawImage(terrImg, terrImgLeft, _terrImgTop, terrImgWidth, terrImgHeight)
         context.beginPath()
-        // context.fillRect(terrLeft, _terrTop, terrWidth, terrHeight)
         const point = terr.point
         if (point) {
           context.fillStyle = terr.pointColor
-          context.font = '800 16px sans'
+          context.font = computedPixe(16) + 'px sans'
           context.textAlign = 'center'
           context.fillText(`+${point}`, terrImgLeft + terrImgWidth / 2, _terrImgTop - 5)
         }
@@ -307,9 +311,9 @@ const engine = {
     }
 
     context.fillStyle = pointColor
-    context.font = '18px sans'
+    context.font = computedPixe(20) + 'px sans'
     context.textAlign = 'left'
-    context.fillText(`分数：${point}`, 10, 24)
+    context.fillText(`分数：${point}`, computedPixe(10), computedPixe(28))
   },
 
   gameOver () {
@@ -317,8 +321,11 @@ const engine = {
     const { width: canvasWidth, height: canvasHeight } = canvas
 
     window.cancelAnimationFrame(gameTimer)
-    clearInterval(pointTimer)
-    clearInterval(updatePointTimer)
+    window.clearInterval(pointTimer)
+    window.clearInterval(updatePointTimer)
+
+    this.paintGameCanvas()
+    this.isStart = false
     for (let key in terrLists) {
       if (terrLists.hasOwnProperty(key)) {
         terrLists[key].clearPointTimer()
@@ -330,20 +337,19 @@ const engine = {
     context.fillRect(0, 0, canvasWidth, canvasHeight)
     context.fill()
     context.fillStyle = '#fff'
-    context.font = '28px sans'
+    context.font = computedPixe(28) + 'px sans'
     context.textAlign = 'center'
-    context.fillText('游戏结束', canvasWidth / 2, 200)
-    context.font = '18px sans'
-    context.fillText(`获得 ${point} 分`, canvasWidth / 2, 250)
-    context.font = '14px sans'
-    context.fillText('（点击屏幕重新开始）', canvasWidth / 2, 300)
+    context.fillText('游戏结束', canvasWidth / 2, canvasHeight / 2.6)
+    context.font = computedPixe(18) + 'px sans'
+    context.fillText(`获得 ${point} 分`, canvasWidth / 2, canvasHeight / 1.8)
+    context.font = computedPixe(14) + 'px sans'
+    context.fillText('（点击屏幕重新开始）', canvasWidth / 2, canvasHeight / 1.65)
 
     const resetGame = e => {
       e.preventDefault()
       this.initGame()
       canvas.removeEventListener('touchstart', resetGame)
     }
-
     canvas.addEventListener('touchstart', resetGame)
   }
 }
