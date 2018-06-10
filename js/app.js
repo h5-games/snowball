@@ -25,8 +25,10 @@ const engine = {
 
   init (id, config = {}) {
     // 初始化函数
+    const devicePixelRatio = window.devicePixelRatio || 1
     const fatherEle = document.getElementById(id)
-    const height = fatherEle.offsetHeight
+    const fatherWidth = fatherEle.offsetWidth
+    const fatherHeight = fatherEle.offsetHeight
 
     // 默认配置
     const _config = {
@@ -35,33 +37,23 @@ const engine = {
       updatePointTime: 3000, // 更新分数增值计时器的超时时间
       nearDistance: 50, // 小球靠近树的距离
       canvasAddSpace: 3, // canvas 位移的加距离
-      ballEndPosition: height / 2, // 小球停留位置
-      terrMinTop: height / 4, // 初始化树 最小的 top
+      ballEndPosition: fatherHeight / 2, // 小球停留位置
+      terrMinTop: fatherHeight / 4, // 初始化树 最小的 top
       tailNum: 50, // 尾巴的坐标数
       ...config
     }
 
-    Object.assign(this, {
-      config: _config,
-      fatherEle
-    })
-
-    this.createCanvas()
-  },
-
-  createCanvas () {
-    // 创建 canvas
-    const { fatherEle, config } = this
-    const fatherWidth = fatherEle.offsetWidth
-    const fatherHeight = fatherEle.offsetHeight
-
     const canvas = document.createElement('canvas')
 
-    canvas.width = fatherWidth
-    canvas.height = fatherHeight
-    canvas.className = config.canvasClassName
+    canvas.width = fatherWidth * devicePixelRatio
+    canvas.height = fatherHeight * devicePixelRatio
+    canvas.style.width = fatherWidth + 'px'
+    canvas.style.height = fatherHeight + 'px'
+    canvas.className = _config.canvasClassName
 
     fatherEle.appendChild(canvas)
+
+    const context = canvas.getContext('2d')
 
     const terrImg = new window.Image()
     terrImg.src = './images/terr.png'
@@ -70,28 +62,28 @@ const engine = {
       this.initGame()
     }
 
-    canvas.addEventListener('touchstart', this.gameTouchStart.bind(this))
-    canvas.addEventListener('touchend', this.gameTouchEnd.bind(this))
-
     Object.assign(this, {
+      config: _config,
       canvas,
       terrImg,
-      context: canvas.getContext('2d')
+      context,
+      devicePixelRatio
     })
-  },
 
-  gameTouchStart (e) {
-    const { ball } = this
-    e.preventDefault()
-    if (!this.isStart) {
-      this.startGame()
-    }
-    this.isTouch = true
-    ball.direction = !ball.direction
-  },
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault()
+      const { ball } = this
+      if (!this.isStart) {
+        this.startGame()
+      }
+      this.isTouch = true
+      ball.direction = !ball.direction
+    })
 
-  gameTouchEnd () {
-    this.isTouch = false
+    canvas.addEventListener('touchend', e => {
+      e.preventDefault()
+      this.isTouch = false
+    })
   },
 
   initGame () {
@@ -321,9 +313,10 @@ const engine = {
   },
 
   gameOver () {
-    const { context, canvas, terrLists, point, pointTimer, updatePointTimer } = this
+    const { context, canvas, terrLists, point, pointTimer, updatePointTimer, gameTimer } = this
     const { width: canvasWidth, height: canvasHeight } = canvas
 
+    window.cancelAnimationFrame(gameTimer)
     clearInterval(pointTimer)
     clearInterval(updatePointTimer)
     for (let key in terrLists) {
@@ -345,7 +338,8 @@ const engine = {
     context.font = '14px sans'
     context.fillText('（点击屏幕重新开始）', canvasWidth / 2, 300)
 
-    const resetGame = () => {
+    const resetGame = e => {
+      e.preventDefault()
       this.initGame()
       canvas.removeEventListener('touchstart', resetGame)
     }
