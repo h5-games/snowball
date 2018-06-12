@@ -1,4 +1,4 @@
-export const levelLists = {
+const levelLists = {
   9999: 12,
   6666: 11,
   5000: 10,
@@ -13,7 +13,7 @@ export const levelLists = {
   50: 1
 }
 
-export const terrSizeLists = [
+const terrSizeLists = [
   {
     width: 3,
     height: 3
@@ -24,7 +24,7 @@ export const terrSizeLists = [
   }
 ]
 
-export const stateColors = [
+const stateColors = [
   {
     gradualColor: ['rgb(210, 210, 210)', 'rgba(240, 240, 240)'],
     pointColor: 'rgb(0, 0, 0)',

@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-2": "^6.24.1",
     "eslint": "^4.19.1"
   },
   "devDependencies": {
@@ -8,5 +11,9 @@
     "eslint-plugin-node": "^5.2.0",
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^3.0.1"
+  },
+  "scripts": {
+    "build": "babel js --out-file dist.js",
+    "watch": "babel js --out-file --watch dist.js"
   }
 }

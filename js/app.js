@@ -1,8 +1,3 @@
-import Ball from './ball.js'
-import Terr from './terr.js'
-import { computedBeyond, isCrash, isNear, sortTerr, computedPixe } from './utils.js'
-import { levelLists, stateColors } from './lists.js'
-
 const engine = {
   config: {}, // 配置对象
   fatherEle: {}, // 父元素

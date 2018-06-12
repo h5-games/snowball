@@ -1,7 +1,4 @@
-import { terrSizeLists } from './lists.js'
-import { computedPixe } from './utils.js'
-
-export default class Terr {
+class Terr {
   constructor (canvas, config = {}, terrImg) {
     const left = Math.floor(Math.random() * canvas.width + -10)
     const top = config.top || Math.floor(Math.random() * (canvas.height * 2) + canvas.height)

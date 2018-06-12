@@ -1,7 +1,5 @@
-import { computedPixe } from './utils.js'
-
-export default class Ball {
-  constructor (canvas, config = {}, ratio) {
+class Ball {
+  constructor (canvas, config = {}) {
     const radius = config.radius || 7
 
     Object.assign(this, {
