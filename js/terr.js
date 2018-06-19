@@ -1,4 +1,7 @@
-class Terr {
+import { terrSizeLists } from './lists'
+import { computedPixe } from './utils'
+
+export default class Terr {
   constructor (canvas, config = {}, terrImg) {
     const left = Math.floor(Math.random() * canvas.width + -10)
     const top = config.top || Math.floor(Math.random() * (canvas.height * 2) + canvas.height)
@@ -31,12 +34,12 @@ class Terr {
       top,
       width,
       height,
-      ...config
-    }, {
-      ...terrImage,
       isNear: false,
       point: 0
-    })
+    },
+    config,
+    terrImage
+    )
   }
 
   initPoint (point, pointColor) {

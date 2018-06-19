@@ -1,4 +1,6 @@
-class Ball {
+import { computedPixe } from './utils'
+
+export default class Ball {
   constructor (canvas, config = {}) {
     const radius = config.radius || 7
 
@@ -14,9 +16,8 @@ class Ball {
       space: 1,
       endPosition: canvas.height / 2,
       isCrash: false,
-      color: 'red',
-      ...config
-    })
+      color: 'red'
+    }, config)
   }
 
   move (space, isTouch) {

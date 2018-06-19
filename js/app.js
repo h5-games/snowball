@@ -1,3 +1,9 @@
+import 'babel-polyfill'
+import Ball from './ball'
+import Terr from './terr'
+import { computedBeyond, isCrash, isNear, sortTerr, computedPixe } from './utils'
+import { levelLists, stateColors } from './lists'
+
 const engine = {
   config: {}, // 配置对象
   fatherEle: {}, // 父元素
@@ -26,7 +32,7 @@ const engine = {
     const fatherHeight = fatherEle.offsetHeight
 
     // 默认配置
-    const _config = {
+    const _config = Object.assign({
       canvasClassName: 'ball-canvas', // canvas 的 class
       terrNum: 10, // 初始树的数量
       updatePointTime: 3000, // 更新分数增值计时器的超时时间
@@ -34,9 +40,8 @@ const engine = {
       canvasAddSpace: computedPixe(3), // canvas 位移的加距离
       ballEndPosition: fatherHeight / 2, // 小球停留位置
       terrMinTop: fatherHeight / 4, // 初始化树 最小的 top
-      tailNum: 50, // 尾巴的坐标数
-      ...config
-    }
+      tailNum: 50 // 尾巴的坐标数
+    }, config)
 
     const canvas = document.createElement('canvas')
 
@@ -83,8 +88,7 @@ const engine = {
 
   initGame () {
     const { config } = this
-    Object.assign(this, {
-      ...config,
+    Object.assign(this, config, {
       isStart: false,
       canvasSpace: 0,
       tailLists: [],
