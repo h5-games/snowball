@@ -1,4 +1,3 @@
-import 'babel-polyfill'
 import Ball from './ball'
 import Terr from './terr'
 import { computedBeyond, isCrash, isNear, sortTerr, computedPixe } from './utils'
@@ -152,7 +151,8 @@ const engine = {
         return
       }
 
-      for (let i = 0; i < terrNum - Object.keys(terrLists).length; i++) {
+      const _terrLists = Object.keys(terrLists)
+      for (let i = 0; i < terrNum - _terrLists.length; i++) {
         // 给下一屏绘制的树
         const terr = new Terr(canvas, {
           top: Math.floor(Math.random() * canvas.height + canvas.height + position)

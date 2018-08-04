@@ -1,22 +1,21 @@
 {
-  "dependencies": {
-    "babel-polyfill": "^6.26.0",
-    "eslint": "^4.19.1",
-    "webpack": "^4.12.0"
+  "name": "ball",
+  "version": "1.0.0",
+  "repository": "git@github.com:yijic/ball.git",
+  "author": "Jcae",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "webpack"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.4",
-    "babel-plugin-transform-object-assign": "^6.22.0",
+    "babel-loader": "^7.1.5",
     "babel-preset-env": "^1.7.0",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.12.0",
-    "eslint-plugin-node": "^5.2.0",
-    "eslint-plugin-promise": "^3.4.0",
-    "eslint-plugin-standard": "^3.0.1",
-    "webpack-cli": "^3.0.8"
+    "webpack": "^4.16.4",
+    "webpack-cli": "^3.1.0"
   },
-  "scripts": {
-    "build": "webpack"
+  "dependencies": {
+    "babel-polyfill": "^6.26.0"
   }
 }

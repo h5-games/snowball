@@ -1,15 +1,18 @@
-const path = require('path')
+const path = require('path');
 
 module.exports = {
-  entry: ['babel-polyfill', './js/app.js'],
+  mode: 'production',
+  entry: ['babel-polyfill', './src/index.js'],
   output: {
     path: path.resolve(__dirname),
     filename: 'dist.js'
   },
   module: {
     rules: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
+      {
+        test: /\.js$/,
+        use: 'babel-loader'
+      }
     ]
-  },
-  mode: 'production'
+  }
 }
