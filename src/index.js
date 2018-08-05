@@ -279,8 +279,13 @@ const engine = {
       const lastTailTop = computedBeyond(lastTail.top, position)
       const line = context.createLinearGradient(firstTail.left, firstTailTop, lastTail.left, lastTailTop)
       const { gradualColor } = stateColor
-      line.addColorStop(0, gradualColor[0])
-      line.addColorStop(1, gradualColor[1])
+      try {
+        // 手机不兼容
+        line.addColorStop(0, gradualColor[0])
+        line.addColorStop(1, gradualColor[1])
+      } catch (e) {
+        context.fillStyle = gradualColor[0]
+      }
       context.fillStyle = line
     }
     context.fill()
