@@ -3,10 +3,16 @@
 import Ball from './Ball';
 
 const engine: engine = {
-  config: {},
-  touchStartEventListener: [],
+  config: {
+    terrNum: 10,
+    terrImageSrc: ''
+  },
+  canvas: null,
+  context: null,
+  startStatus: false,
+  terrImage: null,
 
-  initEngine(el, config = {}) {
+  async initEngine(el, config) {
     const devicePixelRatio: number = window.devicePixelRatio || 1;
     const canvas: any = document.createElement('canvas');
     canvas.width = el.offsetWidth * devicePixelRatio;
@@ -15,31 +21,50 @@ const engine: engine = {
     canvas.style.height = `${el.offsetHeight}px`;
     el.appendChild(canvas);
 
-    (<any>Object).assign(this, {
+    const {terrImage} = await engine.loadResource(config);
+    (<any>Object).assign(engine, {
       config: {
-        terrNum: 10,
-        terrImageSrc: 'http://yijic.com/public/ball/images/terr.png',
+        ...engine.config,
         ...config
       },
       context: canvas.getContext('2d'),
       canvas,
-      el
+      terrImage
     });
-    this.initGame();
+    
+    engine.initGame();
+  },
+
+  loadResource({terrImageSrc}) {
+    return new Promise((resolve) => {
+      const terrImage: any = new Image();
+      terrImage.src = terrImageSrc;
+      terrImage.onload = function() {
+        resolve({
+          terrImage
+        })
+      };
+    })
   },
 
   initGame() {
-    const {
-      terrImageSrc
-    }: {
-      terrImageSrc: string
-    } = this.config;
-    const terrImage: any = new Image();
-    terrImage.src = terrImageSrc;
-    terrImage.onload = function() {
-      console.log('image load success!')
-    };
+    const { config, canvas } = engine;
+    const { terrImageSrc } = config;
+    
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (!engine.startStatus) {
+        engine.startGame();
+      }
+      engine.startStatus = true;
+    })
+  },
+
+  startGame() {
+    console.log('start game')
   }
 };
 
-engine.initEngine(document.body);
+engine.initEngine(document.body, {
+  terrImageSrc: 'http://yijic.com/public/ball/images/terr.png'
+});

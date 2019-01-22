@@ -1,14 +1,24 @@
-interface initConfig {
-  baseTerrNum?: number
+interface config {
+  terrNum?: number
+  terrImageSrc: string
 }
 
 interface initEngine {
-  (el: any, config?: initConfig): void
+  (el: any, config: config): void
+}
+
+interface loadResource {
+  (config: config): any
 }
 
 interface engine {
-  config: object
-  touchStartEventListener: any[]
+  config: config
+  canvas: any,
+  context: any,
+  terrImage: any
+  startStatus: boolean
   initEngine: initEngine
+  loadResource: loadResource
   initGame: any
+  startGame: any
 }
