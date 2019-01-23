@@ -1,6 +1,6 @@
 interface config {
   terrNum?: number
-  terrImageSrc: string
+  terrImagePath: string
 }
 
 interface initEngine {

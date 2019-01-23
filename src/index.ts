@@ -5,13 +5,18 @@ import Ball from './Ball';
 const engine: engine = {
   config: {
     terrNum: 10,
-    terrImageSrc: ''
+    terrImagePath: ''
   },
   canvas: null,
   context: null,
   startStatus: false,
   terrImage: null,
 
+  /**
+   * @description 初始化游戏引擎游戏引擎
+   * @param el {objcet} 父元素dom
+   * @param config {object} 配置
+   */
   async initEngine(el, config) {
     const devicePixelRatio: number = window.devicePixelRatio || 1;
     const canvas: any = document.createElement('canvas');
@@ -31,40 +36,46 @@ const engine: engine = {
       canvas,
       terrImage
     });
-    
+
     engine.initGame();
   },
 
-  loadResource({terrImageSrc}) {
+  /**
+   * @description loader资源
+   * @param terrImagePath {string} 树的图片路径
+   */
+  loadResource({ terrImagePath }) {
     return new Promise((resolve) => {
       const terrImage: any = new Image();
-      terrImage.src = terrImageSrc;
+      terrImage.src = terrImagePath;
       terrImage.onload = function() {
-        resolve({
-          terrImage
-        })
-      };
+        resolve({ terrImage })
+      }
     })
   },
 
+  /**
+   * @description 初始化游戏
+   */
   initGame() {
     const { config, canvas } = engine;
-    const { terrImageSrc } = config;
-    
+    const { terrImagePath } = config;
+
     canvas.addEventListener('touchstart', e => {
       e.preventDefault();
       if (!engine.startStatus) {
         engine.startGame();
       }
-      engine.startStatus = true;
     })
   },
 
   startGame() {
+    engine.startStatus = true;
+
     console.log('start game')
   }
 };
 
 engine.initEngine(document.body, {
-  terrImageSrc: 'http://yijic.com/public/ball/images/terr.png'
+  terrImagePath: 'http://yijic.com/public/ball/images/terr.png'
 });
