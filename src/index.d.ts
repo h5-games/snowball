@@ -1,24 +1,67 @@
-interface config {
+interface engineConfig {
   terrNum?: number
   terrImagePath: string
 }
 
-interface initEngine {
-  (el: any, config: config): void
-}
-
-interface loadResource {
-  (config: config): any
-}
-
-interface engine {
-  config: config
-  canvas: any,
-  context: any,
+interface engineInterface {
+  config: engineConfig
+  canvas: any
+  context: any
   terrImage: any
   startStatus: boolean
-  initEngine: initEngine
-  loadResource: loadResource
-  initGame: any
-  startGame: any
+  gameTimer: number
+  ball: BallInterface
+  terrList: TerrInterface[]
+
+  initEngine: {
+    (el: any, config: engineConfig): void
+  }
+  loadResource: {
+    (config: engineConfig): any
+  }
+  initGame: {
+    (): void
+  }
+  gameStart: {
+    (): void
+  }
+  animate: {
+    (): void
+  }
+  clearCanvas: {
+    (): void
+  }
+  paintBall: {
+    (): void
+  }
+}
+
+interface BallConfigInterface {
+  left?: number,
+  top?: number
+  direction?: boolean
+  radius?: number
+  color?: string
+  space: number
+}
+
+interface BallInterface {
+  left: number,
+  top: number
+  direction: boolean
+  radius: number
+  color: string
+  space: number
+
+  move: {
+    (): void
+  }
+}
+
+interface TerrConfigInterface {
+
+}
+
+interface TerrInterface {
+
 }

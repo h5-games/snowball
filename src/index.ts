@@ -1,8 +1,8 @@
 /// <reference path="index.d.ts"/>
-
 import Ball from './Ball';
+import { computedPixe } from './utils';
 
-const engine: engine = {
+const engine: engineInterface = {
   config: {
     terrNum: 10,
     terrImagePath: ''
@@ -11,6 +11,9 @@ const engine: engine = {
   context: null,
   startStatus: false,
   terrImage: null,
+  gameTimer: null,
+  ball: null,
+  terrList: [],
 
   /**
    * @description 初始化游戏引擎游戏引擎
@@ -26,7 +29,8 @@ const engine: engine = {
     canvas.style.height = `${el.offsetHeight}px`;
     el.appendChild(canvas);
 
-    const {terrImage} = await engine.loadResource(config);
+    const { terrImage } = await engine.loadResource(config);
+    console.log(`Resource loading completed.`);
     (<any>Object).assign(engine, {
       config: {
         ...engine.config,
@@ -59,20 +63,65 @@ const engine: engine = {
    */
   initGame() {
     const { config, canvas } = engine;
-    const { terrImagePath } = config;
+    const { terrNum } = config;
+    engine.ball = new Ball({
+      left: canvas.width / 2,
+      top: 100,
+      radius: computedPixe(8),
+      space: 2
+    });
+    for (let i = 0; i < terrNum; i ++) {
+
+    }
+
+    engine.paintBall();
 
     canvas.addEventListener('touchstart', e => {
       e.preventDefault();
       if (!engine.startStatus) {
-        engine.startGame();
+        engine.gameStart();
       }
     })
   },
 
-  startGame() {
+  /**
+   * @description 游戏开始
+   */
+  gameStart() {
     engine.startStatus = true;
+    console.log('start game');
+    engine.animate();
+  },
 
-    console.log('start game')
+  /**
+   * @description 改变对象
+   */
+  animate() {
+    const { ball } = engine;
+    ball.move();
+    engine.clearCanvas();
+    engine.paintBall();
+    engine.gameTimer = window.requestAnimationFrame(engine.animate);
+  },
+
+  /**
+   * @description 清除画布
+   */
+  clearCanvas() {
+    const { context, canvas } = engine;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+  },
+
+  /**
+   * @description 绘制雪球
+   */
+  paintBall() {
+    const { context } = engine;
+    const { color, left, top, radius } = this.ball;
+    context.fillStyle = color;
+    context.beginPath();
+    context.arc(left, top, radius, 0, 2 * Math.PI);
+    context.fill();
   }
 };
 
