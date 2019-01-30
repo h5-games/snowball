@@ -1,10 +1,12 @@
 /// <reference path="index.d.ts"/>
 import Ball from './Ball';
 import { computedPixe } from './utils';
+import Terr from './Terr';
+import baseConfig from './utils/config';
 
 const engine: engineInterface = {
   config: {
-    terrNum: 10,
+    terrNum: 12,
     terrImagePath: ''
   },
   canvas: null,
@@ -13,7 +15,7 @@ const engine: engineInterface = {
   terrImage: null,
   gameTimer: null,
   ball: null,
-  terrList: [],
+  terrList: {},
 
   /**
    * @description 初始化游戏引擎游戏引擎
@@ -62,19 +64,30 @@ const engine: engineInterface = {
    * @description 初始化游戏
    */
   initGame() {
-    const { config, canvas } = engine;
+    const { config, canvas, terrList, terrImage } = engine;
     const { terrNum } = config;
     engine.ball = new Ball({
       left: canvas.width / 2,
-      top: 100,
-      radius: computedPixe(8),
-      space: 2
+      top: canvas.height / 6,
+      radius: computedPixe(10),
+      space: computedPixe(2)
     });
+    engine.paintBall(engine.ball);
+
     for (let i = 0; i < terrNum; i ++) {
+      const size = Math.random() > 0.5 ? 1 : 2
+      const terr = new Terr({
+        size,
+        left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
+        top: canvas.height / 3 + Math.floor(Math.random() * (canvas.height - canvas.height / 3))
+      }, terrImage);
 
+      terrList[terr.id] = terr;
     }
-
-    engine.paintBall();
+    (<any>Object)
+      .values(terrList)
+      .sort((x, y) => (x.top + x.height) - (y.top + y.height))
+      .forEach(terr => engine.paintTerr(terr));
 
     canvas.addEventListener('touchstart', e => {
       e.preventDefault();
@@ -100,7 +113,7 @@ const engine: engineInterface = {
     const { ball } = engine;
     ball.move();
     engine.clearCanvas();
-    engine.paintBall();
+    engine.paintBall(ball);
     engine.gameTimer = window.requestAnimationFrame(engine.animate);
   },
 
@@ -115,13 +128,21 @@ const engine: engineInterface = {
   /**
    * @description 绘制雪球
    */
-  paintBall() {
+  paintBall({ color, left, top, radius }) {
     const { context } = engine;
-    const { color, left, top, radius } = this.ball;
     context.fillStyle = color;
     context.beginPath();
     context.arc(left, top, radius, 0, 2 * Math.PI);
     context.fill();
+  },
+
+  /**
+   * @description 绘制树
+   */
+  paintTerr({width, height, left, top}) {
+    const { context, terrImage } = engine;
+    context.beginPath();
+    context.drawImage(terrImage, left, top, width, height);
   }
 };
 

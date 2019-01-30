@@ -11,7 +11,9 @@ interface engineInterface {
   startStatus: boolean
   gameTimer: number
   ball: BallInterface
-  terrList: TerrInterface[]
+  terrList: {
+    [key: string]: TerrInterface
+  }
 
   initEngine: {
     (el: any, config: engineConfig): void
@@ -32,7 +34,10 @@ interface engineInterface {
     (): void
   }
   paintBall: {
-    (): void
+    (BallInterface): void
+  }
+  paintTerr: {
+    (TerrInterface): void
   }
 }
 
@@ -59,9 +64,15 @@ interface BallInterface {
 }
 
 interface TerrConfigInterface {
-
+  size: number
+  left: number
+  top: number
 }
 
 interface TerrInterface {
-
+  id: string
+  width: number
+  height: number
+  left: number
+  top: number
 }
