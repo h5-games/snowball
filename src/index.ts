@@ -27,8 +27,8 @@ const engine: engineInterface = {
     const canvas: any = document.createElement('canvas');
     canvas.width = el.offsetWidth * devicePixelRatio;
     canvas.height = el.offsetHeight * devicePixelRatio;
-    canvas.style.width = `${el.offsetWidth}px`;
-    canvas.style.height = `${el.offsetHeight}px`;
+    canvas.style.width = `${ el.offsetWidth }px`;
+    canvas.style.height = `${ el.offsetHeight }px`;
     el.appendChild(canvas);
 
     const { terrImage } = await engine.loadResource(config);
@@ -139,7 +139,7 @@ const engine: engineInterface = {
   /**
    * @description 绘制树
    */
-  paintTerr({width, height, left, top}) {
+  paintTerr({ width, height, left, top }) {
     const { context, terrImage } = engine;
     context.beginPath();
     context.drawImage(terrImage, left, top, width, height);
