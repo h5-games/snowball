@@ -1,8 +1,32 @@
-import {computedPixe} from './index';
-
-export default {
+interface config {
   terrSizes: {
-    1: computedPixe(20),
-    2: computedPixe(30)
+    1: number
+    2: number
+  }
+
+  ballRadius: number
+
+  init: {
+    (canvas: any): void
   }
 }
+
+const config: config = {
+  terrSizes: {
+    1: 0,
+    2: 0
+  },
+
+  ballRadius: 0,
+
+  init({width}) {
+
+    config.terrSizes = {
+      1: width * 0.08,
+      2: width * 0.1
+    }
+    config.ballRadius = width * 0.024
+  }
+}
+
+export default config;

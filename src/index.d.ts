@@ -1,6 +1,8 @@
 interface engineConfig {
   terrNum?: number
   terrImagePath: string
+  space?: number
+  ballInitialTop?: number
 }
 
 interface engineInterface {
@@ -47,7 +49,7 @@ interface BallConfigInterface {
   direction?: boolean
   radius?: number
   color?: string
-  space: number
+  space?: number
 }
 
 interface BallInterface {
@@ -57,10 +59,6 @@ interface BallInterface {
   radius: number
   color: string
   space: number
-
-  move: {
-    (): void
-  }
 }
 
 interface TerrConfigInterface {

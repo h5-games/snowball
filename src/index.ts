@@ -1,13 +1,15 @@
 /// <reference path="index.d.ts"/>
 import Ball from './Ball';
-import { computedPixe } from './utils';
+import { computedPixe, sortTerr } from './utils';
 import Terr from './Terr';
 import baseConfig from './utils/config';
 
 const engine: engineInterface = {
   config: {
-    terrNum: 12,
-    terrImagePath: ''
+    terrNum: 15,
+    terrImagePath: '',
+    space: 0,
+    ballInitialTop: 0
   },
   canvas: null,
   context: null,
@@ -30,12 +32,14 @@ const engine: engineInterface = {
     canvas.style.width = `${ el.offsetWidth }px`;
     canvas.style.height = `${ el.offsetHeight }px`;
     el.appendChild(canvas);
+    baseConfig.init(canvas);
 
     const { terrImage } = await engine.loadResource(config);
     console.log(`Resource loading completed.`);
     (<any>Object).assign(engine, {
       config: {
         ...engine.config,
+        ballInitialTop: canvas.height / 6,
         ...config
       },
       context: canvas.getContext('2d'),
@@ -47,7 +51,7 @@ const engine: engineInterface = {
   },
 
   /**
-   * @description loader资源
+   * @description 加载需要用到的资源
    * @param terrImagePath {string} 树的图片路径
    */
   loadResource({ terrImagePath }) {
@@ -55,7 +59,7 @@ const engine: engineInterface = {
       const terrImage: any = new Image();
       terrImage.src = terrImagePath;
       terrImage.onload = function() {
-        resolve({ terrImage })
+        resolve({ terrImage });
       }
     })
   },
@@ -65,12 +69,11 @@ const engine: engineInterface = {
    */
   initGame() {
     const { config, canvas, terrList, terrImage } = engine;
-    const { terrNum } = config;
+    const { terrNum, ballInitialTop } = config;
     engine.ball = new Ball({
-      left: canvas.width / 2,
-      top: canvas.height / 6,
-      radius: computedPixe(10),
-      space: computedPixe(2)
+      left: Math.floor(canvas.width / 2),
+      top: Math.floor(canvas.height / 6),
+      radius: baseConfig.ballRadius
     });
     engine.paintBall(engine.ball);
 
@@ -79,15 +82,13 @@ const engine: engineInterface = {
       const terr = new Terr({
         size,
         left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
-        top: canvas.height / 3 + Math.floor(Math.random() * (canvas.height - canvas.height / 3))
+        top: ballInitialTop + Math.floor(Math.random() * (canvas.height - ballInitialTop + ballInitialTop))
       }, terrImage);
 
       terrList[terr.id] = terr;
     }
-    (<any>Object)
-      .values(terrList)
-      .sort((x, y) => (x.top + x.height) - (y.top + y.height))
-      .forEach(terr => engine.paintTerr(terr));
+
+    sortTerr(terrList, engine.paintTerr);
 
     canvas.addEventListener('touchstart', e => {
       e.preventDefault();
@@ -110,10 +111,34 @@ const engine: engineInterface = {
    * @description 改变对象
    */
   animate() {
-    const { ball } = engine;
-    ball.move();
+    const { ball, terrList, canvas, config, terrImage } = engine;
+    if (ball.top >= canvas.height / 2) {
+
+    } else {
+      config.space += 0.1;
+      ball.space -= 0.02;
+      ball.top += ball.space;
+    }
     engine.clearCanvas();
     engine.paintBall(ball);
+    sortTerr(terrList, terr => {
+      terr.top -= config.space;
+      if (terr.top + terr.height <= 0) {
+        delete terrList[terr.id];
+        return
+      }
+      engine.paintTerr(terr);
+    });
+    for (let i = 0; i < config.terrNum - Object.keys(terrList).length; i ++) {
+      const size = Math.random() > 0.5 ? 1 : 2
+      const terr = new Terr({
+        size,
+        left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
+        top: Math.floor(Math.random() * canvas.height + canvas.height)
+      }, terrImage);
+
+      terrList[terr.id] = terr;
+    }
     engine.gameTimer = window.requestAnimationFrame(engine.animate);
   },
 

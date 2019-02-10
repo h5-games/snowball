@@ -6,17 +6,10 @@ export default class Ball implements BallInterface {
   direction = true;
   radius = 0;
   color = '#b7e8e8';
-  space = 0;
+  space = 5;
 
   constructor(config: BallConfigInterface) {
     (<any>Object).assign(this, config)
     console.log(this);
-  }
-
-  /**
-   * @description 小球移动
-   */
-  move() {
-    this.top += this.space;
   }
 }
