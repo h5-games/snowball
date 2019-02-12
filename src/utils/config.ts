@@ -1,4 +1,4 @@
-interface config {
+interface configInterface {
   terrSizes: {
     1: number
     2: number
@@ -11,7 +11,7 @@ interface config {
   }
 }
 
-const config: config = {
+const config: configInterface = {
   terrSizes: {
     1: 0,
     2: 0

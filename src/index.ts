@@ -36,7 +36,7 @@ const engine: engineInterface = {
 
     const { terrImage } = await engine.loadResource(config);
     console.log(`Resource loading completed.`);
-    (<any>Object).assign(engine, {
+    Object.assign(engine, {
       config: {
         ...engine.config,
         ballInitialTop: canvas.height / 6,
@@ -112,16 +112,18 @@ const engine: engineInterface = {
    */
   animate() {
     const { ball, terrList, canvas, config, terrImage } = engine;
+    const { ballInitialTop } = config;
     if (ball.top >= canvas.height / 2) {
 
     } else {
-      config.space += 0.1;
-      ball.space -= 0.02;
-      ball.top += ball.space;
+      const space = Math.ceil((ball.top - ballInitialTop) / (canvas.height / 2 - ballInitialTop) * 0.02 * 100) / 100;
+      config.space += computedPixe(space);
+      ball.top += computedPixe(1 - space);
     }
     engine.clearCanvas();
     engine.paintBall(ball);
     sortTerr(terrList, terr => {
+      // 排序完执行 位移并且绘制
       terr.top -= config.space;
       if (terr.top + terr.height <= 0) {
         delete terrList[terr.id];

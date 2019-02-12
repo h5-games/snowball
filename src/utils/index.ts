@@ -5,7 +5,7 @@ interface computedPixeInterface {
 }
 
 /**
- * @descriptions 根据当前屏幕计算像素比计算像素
+ * @descriptions 根据当前屏幕计算像素比计算像素（苹果手机高2/3倍像素）
  * @param pixe {number} 基础像素
  * @returns {number} 计算后的像素
  */
@@ -23,7 +23,7 @@ interface sortTerrInterface {
 }
 
 /**
- * @description 根据树距离屏幕顶部的位置来排序并作操作每个树
+ * @description 根据树距离屏幕顶部的位置来排序并作操作每个树（上面的树先绘制才能上下面的遮住上面的）
  * @param terrList {object} 树的对象列队
  * @param callback {function} 排序完成后每个树的回调
  */
