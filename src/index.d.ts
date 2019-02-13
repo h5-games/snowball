@@ -3,6 +3,9 @@ interface engineConfig {
   terrImagePath: string
   space?: number
   ballInitialTop?: number
+  ballInitialSpace?: number
+  ballTailMaxLength?: number
+  canvasOffsetTop?: number
 }
 
 interface engineInterface {
@@ -13,6 +16,7 @@ interface engineInterface {
   startStatus: boolean
   gameTimer: number
   ball: BallInterface
+  ballTailList: ballTailInterface[]
   terrList: {
     [key: string]: TerrInterface
   }
@@ -36,10 +40,13 @@ interface engineInterface {
     (): void
   }
   paintBall: {
-    (BallInterface): void
+    (ball: BallInterface): void
+  }
+  paintBallTail: {
+    (ballTailList: ballTailInterface[]): void
   }
   paintTerr: {
-    (TerrInterface): void
+    (terr: TerrInterface): void
   }
 }
 
@@ -49,7 +56,6 @@ interface BallConfigInterface {
   direction?: boolean
   radius?: number
   color?: string
-  space?: number
 }
 
 interface BallInterface {
@@ -58,7 +64,11 @@ interface BallInterface {
   direction: boolean
   radius: number
   color: string
-  space: number
+}
+
+interface ballTailInterface {
+  left: number
+  top: number
 }
 
 interface TerrConfigInterface {

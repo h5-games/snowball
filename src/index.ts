@@ -9,7 +9,10 @@ const engine: engineInterface = {
     terrNum: 15,
     terrImagePath: '',
     space: 0,
-    ballInitialTop: 0
+    ballInitialTop: 0,
+    ballInitialSpace: 2,
+    ballTailMaxLength: 50,
+    canvasOffsetTop: 0
   },
   canvas: null,
   context: null,
@@ -17,6 +20,7 @@ const engine: engineInterface = {
   terrImage: null,
   gameTimer: null,
   ball: null,
+  ballTailList: [],
   terrList: {},
 
   /**
@@ -111,20 +115,29 @@ const engine: engineInterface = {
    * @description 改变对象
    */
   animate() {
-    const { ball, terrList, canvas, config, terrImage } = engine;
-    const { ballInitialTop } = config;
-    if (ball.top >= canvas.height / 2) {
-
-    } else {
-      const space = Math.ceil((ball.top - ballInitialTop) / (canvas.height / 2 - ballInitialTop) * 0.02 * 100) / 100;
-      config.space += computedPixe(space);
-      ball.top += computedPixe(1 - space);
-    }
+    const { ball, terrList, canvas, config, terrImage, ballTailList} = engine;
+    const { ballInitialTop, ballInitialSpace, ballTailMaxLength } = config;
+    const space = Math.floor((ball.top - ballInitialTop) / (canvas.height / 2 - ballInitialTop) * 10) / 10 * ballInitialSpace;
     engine.clearCanvas();
+
+    ballTailList.unshift({
+      left: ball.left,
+      top: ball.top
+    });
+    ballTailList.splice(ballTailMaxLength);
+
+    if (ball.top < canvas.height / 2) {
+      config.space = computedPixe(space);
+      ball.top += Math.floor(computedPixe(ballInitialSpace - space));
+    }
+
+    engine.paintBallTail(ballTailList);
     engine.paintBall(ball);
+
+    config.canvasOffsetTop -= space;
     sortTerr(terrList, terr => {
       // 排序完执行 位移并且绘制
-      terr.top -= config.space;
+      terr.top -= space;
       if (terr.top + terr.height <= 0) {
         delete terrList[terr.id];
         return
@@ -160,6 +173,26 @@ const engine: engineInterface = {
     context.fillStyle = color;
     context.beginPath();
     context.arc(left, top, radius, 0, 2 * Math.PI);
+    context.fill();
+  },
+
+  paintBallTail(ballTailList) {
+    const { context } = engine;
+    const { ballRadius } = baseConfig;
+    const tailListsLength = ballTailList.length;
+    if (!tailListsLength) return;
+    context.beginPath();
+    for (let i = 0; i < tailListsLength; i ++) {
+      const tail = ballTailList[i];
+      const { left, top } = tail;
+      context.lineTo(left - ballRadius + (ballRadius * (i + 1) / tailListsLength), top)
+    }
+    for (let i = tailListsLength - 1; i >= 0; i --) {
+      const tail = ballTailList[i];
+      const { left, top } = tail;
+      context.lineTo(left + ballRadius - (ballRadius * (i + 1) / tailListsLength), top);
+    }
+    context.fillStyle = '#ccc';
     context.fill();
   },
 
