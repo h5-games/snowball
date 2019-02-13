@@ -19,7 +19,8 @@ interface engineInterface {
   ballTailList: ballTailInterface[]
   terrList: {
     [key: string]: TerrInterface
-  }
+  },
+  isTouch: boolean
 
   initEngine: {
     (el: any, config: engineConfig): void
@@ -64,6 +65,13 @@ interface BallInterface {
   direction: boolean
   radius: number
   color: string
+  space: number
+  degree: number
+  maxDegree: number
+  minDegree: number
+  move: {
+    (isTouch: boolean): void
+  }
 }
 
 interface ballTailInterface {

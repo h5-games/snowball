@@ -4,13 +4,15 @@ import { computedPixe, sortTerr } from './utils';
 import Terr from './Terr';
 import baseConfig from './utils/config';
 
+const devicePixelRatio: number = window.devicePixelRatio || 1;
+
 const engine: engineInterface = {
   config: {
-    terrNum: 15,
+    terrNum: 10,
     terrImagePath: '',
     space: 0,
     ballInitialTop: 0,
-    ballInitialSpace: 2,
+    ballInitialSpace: computedPixe(2),
     ballTailMaxLength: 50,
     canvasOffsetTop: 0
   },
@@ -22,6 +24,7 @@ const engine: engineInterface = {
   ball: null,
   ballTailList: [],
   terrList: {},
+  isTouch: false,
 
   /**
    * @description 初始化游戏引擎游戏引擎
@@ -29,7 +32,6 @@ const engine: engineInterface = {
    * @param config {object} 配置
    */
   async initEngine(el, config) {
-    const devicePixelRatio: number = window.devicePixelRatio || 1;
     const canvas: any = document.createElement('canvas');
     canvas.width = el.offsetWidth * devicePixelRatio;
     canvas.height = el.offsetHeight * devicePixelRatio;
@@ -81,6 +83,7 @@ const engine: engineInterface = {
     });
     engine.paintBall(engine.ball);
 
+    // 生成树木
     for (let i = 0; i < terrNum; i ++) {
       const size = Math.random() > 0.5 ? 1 : 2
       const terr = new Terr({
@@ -98,7 +101,19 @@ const engine: engineInterface = {
       e.preventDefault();
       if (!engine.startStatus) {
         engine.gameStart();
+        return
       }
+      engine.isTouch = true;
+      const {clientX} = e.targetTouches[0];
+      if (clientX > canvas.width / devicePixelRatio / 2) {
+        engine.ball.direction = true;
+      } else {
+        engine.ball.direction = false;
+      }
+    })
+
+    canvas.addEventListener('touchend', e => {
+      engine.isTouch = false;
     })
   },
 
@@ -115,41 +130,48 @@ const engine: engineInterface = {
    * @description 改变对象
    */
   animate() {
-    const { ball, terrList, canvas, config, terrImage, ballTailList} = engine;
+    const { ball, terrList, canvas, config, terrImage, ballTailList, isTouch } = engine;
     const { ballInitialTop, ballInitialSpace, ballTailMaxLength } = config;
-    const space = Math.floor((ball.top - ballInitialTop) / (canvas.height / 2 - ballInitialTop) * 10) / 10 * ballInitialSpace;
+    const space = (ball.top - ballInitialTop) / (canvas.height / 2);
     engine.clearCanvas();
 
+    if (space < 1) {
+      // 小球没走到一半则树木保持加速度
+      config.space = Math.floor(space * ballInitialSpace);
+      config.canvasOffsetTop += config.space;
+      // 小球速度初始速度一直保持
+      ball.space = ballInitialSpace;
+    } else {
+      config.canvasOffsetTop += ballInitialSpace;
+      ball.space = ballInitialSpace;
+    }
+
+    // 增加小尾巴坐标
     ballTailList.unshift({
       left: ball.left,
       top: ball.top
     });
     ballTailList.splice(ballTailMaxLength);
-
-    if (ball.top < canvas.height / 2) {
-      config.space = computedPixe(space);
-      ball.top += Math.floor(computedPixe(ballInitialSpace - space));
-    }
-
     engine.paintBallTail(ballTailList);
+
+    ball.move(isTouch);
     engine.paintBall(ball);
 
-    config.canvasOffsetTop -= space;
+    // 排序树木 并绘制
     sortTerr(terrList, terr => {
-      // 排序完执行 位移并且绘制
-      terr.top -= space;
-      if (terr.top + terr.height <= 0) {
+      if (terr.top + terr.height <= config.canvasOffsetTop) {
         delete terrList[terr.id];
         return
       }
       engine.paintTerr(terr);
     });
+    // 生成下一个屏幕的树
     for (let i = 0; i < config.terrNum - Object.keys(terrList).length; i ++) {
       const size = Math.random() > 0.5 ? 1 : 2
       const terr = new Terr({
         size,
         left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
-        top: Math.floor(Math.random() * canvas.height + canvas.height)
+        top: Math.floor(Math.random() * canvas.height + canvas.height + config.canvasOffsetTop)
       }, terrImage);
 
       terrList[terr.id] = terr;
@@ -167,17 +189,22 @@ const engine: engineInterface = {
 
   /**
    * @description 绘制雪球
+   * @param {objcet} 小球对象
    */
   paintBall({ color, left, top, radius }) {
-    const { context } = engine;
+    const { context, config } = engine;
     context.fillStyle = color;
     context.beginPath();
-    context.arc(left, top, radius, 0, 2 * Math.PI);
+    context.arc(left, top - config.canvasOffsetTop, radius, 0, 2 * Math.PI);
     context.fill();
   },
 
+  /**
+   * @description 绘制小球的尾巴
+   * @param ballTailList {array} 小球尾巴列表
+   */
   paintBallTail(ballTailList) {
-    const { context } = engine;
+    const { context, config } = engine;
     const { ballRadius } = baseConfig;
     const tailListsLength = ballTailList.length;
     if (!tailListsLength) return;
@@ -185,12 +212,12 @@ const engine: engineInterface = {
     for (let i = 0; i < tailListsLength; i ++) {
       const tail = ballTailList[i];
       const { left, top } = tail;
-      context.lineTo(left - ballRadius + (ballRadius * (i + 1) / tailListsLength), top)
+      context.lineTo(left - ballRadius + (ballRadius * (i + 1) / tailListsLength), top - config.canvasOffsetTop)
     }
     for (let i = tailListsLength - 1; i >= 0; i --) {
       const tail = ballTailList[i];
       const { left, top } = tail;
-      context.lineTo(left + ballRadius - (ballRadius * (i + 1) / tailListsLength), top);
+      context.lineTo(left + ballRadius - (ballRadius * (i + 1) / tailListsLength), top - config.canvasOffsetTop);
     }
     context.fillStyle = '#ccc';
     context.fill();
@@ -198,11 +225,12 @@ const engine: engineInterface = {
 
   /**
    * @description 绘制树
+   * @param {objcet} 树木对象
    */
   paintTerr({ width, height, left, top }) {
-    const { context, terrImage } = engine;
+    const { context, terrImage, config } = engine;
     context.beginPath();
-    context.drawImage(terrImage, left, top, width, height);
+    context.drawImage(terrImage, left, top - config.canvasOffsetTop, width, height);
   }
 };
 

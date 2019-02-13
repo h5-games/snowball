@@ -20,6 +20,7 @@ const config: configInterface = {
   ballRadius: 0,
 
   init({width}) {
+    // 这里依据canvas宽度来初始化部分属性 避免父盒非body造成比例错误
 
     config.terrSizes = {
       1: width * 0.08,
