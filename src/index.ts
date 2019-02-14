@@ -45,7 +45,7 @@ const engine: engineInterface = {
     Object.assign(engine, {
       config: {
         ...engine.config,
-        ballInitialTop: canvas.height / 6,
+        ballInitialTop: Math.floor(canvas.height / 6),
         ...config
       },
       context: canvas.getContext('2d'),
@@ -78,7 +78,7 @@ const engine: engineInterface = {
     const { terrNum, ballInitialTop } = config;
     engine.ball = new Ball({
       left: Math.floor(canvas.width / 2),
-      top: Math.floor(canvas.height / 6),
+      top: ballInitialTop,
       radius: baseConfig.ballRadius
     });
     engine.paintBall(engine.ball);
@@ -104,12 +104,7 @@ const engine: engineInterface = {
         return
       }
       engine.isTouch = true;
-      const {clientX} = e.targetTouches[0];
-      if (clientX > canvas.width / devicePixelRatio / 2) {
-        engine.ball.direction = true;
-      } else {
-        engine.ball.direction = false;
-      }
+      engine.ball.direction = !engine.ball.direction;
     })
 
     canvas.addEventListener('touchend', e => {
@@ -137,7 +132,7 @@ const engine: engineInterface = {
 
     if (space < 1) {
       // 小球没走到一半则树木保持加速度
-      config.space = Math.floor(space * ballInitialSpace);
+      config.space = space * ballInitialSpace;
       config.canvasOffsetTop += config.space;
       // 小球速度初始速度一直保持
       ball.space = ballInitialSpace;
@@ -146,16 +141,19 @@ const engine: engineInterface = {
       ball.space = ballInitialSpace;
     }
 
+    // 移动小球
+    ball.move(isTouch);
     // 增加小尾巴坐标
     ballTailList.unshift({
       left: ball.left,
-      top: ball.top
+      top: ball.top,
+      degree: ball.degree
     });
     ballTailList.splice(ballTailMaxLength);
+
+    engine.paintBall(ball);
     engine.paintBallTail(ballTailList);
 
-    ball.move(isTouch);
-    engine.paintBall(ball);
 
     // 排序树木 并绘制
     sortTerr(terrList, terr => {
@@ -211,8 +209,12 @@ const engine: engineInterface = {
     context.beginPath();
     for (let i = 0; i < tailListsLength; i ++) {
       const tail = ballTailList[i];
-      const { left, top } = tail;
-      context.lineTo(left - ballRadius + (ballRadius * (i + 1) / tailListsLength), top - config.canvasOffsetTop)
+      const { left, top, degree } = tail;
+      const deg = degree * 12;
+      const radius = ballRadius - (ballRadius * (i + 1) / tailListsLength);
+      const sin = Math.sin(2 * Math.PI / 360 * deg);
+
+      context.lineTo(left - radius, top - config.canvasOffsetTop)
     }
     for (let i = tailListsLength - 1; i >= 0; i --) {
       const tail = ballTailList[i];

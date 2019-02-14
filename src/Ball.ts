@@ -20,16 +20,17 @@ export default class Ball implements BallInterface {
   move(isTouch) {
     const {space, direction, degree, maxDegree, minDegree} = this;
     this.top += space;
-    this.left += degree
 
     if (isTouch) {
       if (direction) {
-        const _degree = degree + computedPixe(0.2)
-        this.degree = _degree > maxDegree ? maxDegree : _degree
+        const _degree = degree - computedPixe(0.1);
+        this.degree = _degree > maxDegree ? maxDegree : _degree;
       } else {
-        const _degree = degree - computedPixe(0.2)
-        this.degree = _degree < minDegree ? minDegree : _degree
+        const _degree = degree + computedPixe(0.1);
+        this.degree = _degree < minDegree ? minDegree : _degree;
       }
     }
+
+    this.left += this.degree;
   }
 }

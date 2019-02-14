@@ -77,6 +77,7 @@ interface BallInterface {
 interface ballTailInterface {
   left: number
   top: number
+  degree: number
 }
 
 interface TerrConfigInterface {
