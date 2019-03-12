@@ -41,7 +41,6 @@ const engine: engineInterface = {
     baseConfig.init(canvas);
 
     const { terrImage } = await engine.loadResource(config);
-    console.log(`Resource loading completed.`);
     Object.assign(engine, {
       config: {
         ...engine.config,
@@ -237,5 +236,5 @@ const engine: engineInterface = {
 };
 
 engine.initEngine(document.body, {
-  terrImagePath: 'http://yijic.com/public/ball/images/terr.png'
+  terrImagePath: 'http://yijic.com/static/ball/images/terr.png'
 });

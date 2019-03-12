@@ -8,9 +8,9 @@ export default class Ball implements BallInterface {
   radius = 0;
   color = '#b7e8e8';
   space = 0;
-  degree = 0.1;
-  maxDegree = computedPixe(4);
-  minDegree = computedPixe(-4);
+  degree = 0;
+  maxDegree = 50;
+  minDegree = -50;
 
   constructor(config: BallConfigInterface) {
     (<any>Object).assign(this, config)
@@ -31,6 +31,6 @@ export default class Ball implements BallInterface {
       }
     }
 
-    this.left += this.degree;
+    console.log(Math.sin(this.degree));
   }
 }
