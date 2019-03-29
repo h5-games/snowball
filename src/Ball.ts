@@ -13,24 +13,24 @@ export default class Ball implements BallInterface {
   minDegree = -50;
 
   constructor(config: BallConfigInterface) {
-    (<any>Object).assign(this, config)
-    console.log(this);
+    Object.assign(this, config)
   }
 
   move(isTouch) {
-    const {space, direction, degree, maxDegree, minDegree} = this;
+    const { space, direction, degree, maxDegree, minDegree } = this;
     this.top += space;
 
     if (isTouch) {
       if (direction) {
-        const _degree = degree - computedPixe(0.1);
+        const _degree = degree - computedPixe(0.2);
         this.degree = _degree > maxDegree ? maxDegree : _degree;
       } else {
-        const _degree = degree + computedPixe(0.1);
+        const _degree = degree + computedPixe(0.2);
         this.degree = _degree < minDegree ? minDegree : _degree;
       }
     }
 
-    console.log(Math.sin(this.degree));
+    this.left += Math.tan(this.degree * Math.PI/180);
+    console.log(this.degree);
   }
 }

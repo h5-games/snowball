@@ -10,7 +10,7 @@ export default class Terr implements TerrInterface {
   constructor({ left, top, size }: TerrConfigInterface, terrImage: any) {
     // 依据 size 计算 width 依据 width 计算同比例 height
     const width = config.terrSizes[size];
-    (<any>Object).assign(this, {
+    Object.assign(this, {
       id: 'TERR_' + Math.floor(Math.random() * 8999999 + 1000000),
       left,
       top,

@@ -32,7 +32,7 @@ const engine: engineInterface = {
    * @param config {object} 配置
    */
   async initEngine(el, config) {
-    const canvas: any = document.createElement('canvas');
+    const canvas: HTMLCanvasElement = document.createElement('canvas');
     canvas.width = el.offsetWidth * devicePixelRatio;
     canvas.height = el.offsetHeight * devicePixelRatio;
     canvas.style.width = `${ el.offsetWidth }px`;

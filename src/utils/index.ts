@@ -9,17 +9,12 @@ interface computedPixeInterface {
  * @param pixe {number} 基础像素
  * @returns {number} 计算后的像素
  */
-export const computedPixe: computedPixeInterface = function(pixe) {
+export const computedPixe: computedPixeInterface = function (pixe) {
   return pixe * (window.devicePixelRatio || 1)
 }
 
 interface sortTerrInterface {
-  (
-  terrList: {
-    [key: string]: TerrInterface
-  },
-  callback: any
-  ): void
+  (terrList: { [key: string]: TerrInterface}, callback: any): void
 }
 
 /**
@@ -28,7 +23,7 @@ interface sortTerrInterface {
  * @param callback {function} 排序完成后每个树的回调
  */
 export const sortTerr: sortTerrInterface = function (terrList, callback) {
-  (<any>Object)
+  Object
     .values(terrList)
     .sort((x, y) => (x.top + x.height) - (y.top + y.height))
     .forEach(terr => callback(terr));
