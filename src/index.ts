@@ -12,10 +12,9 @@ const engine: engineInterface = {
     terrImagePath: '',
     space: 0,
     ballInitialTop: 0,
-    ballInitialSpace: computedPixe(2),
-    ballTailMaxLength: 50,
-    canvasOffsetTop: 0
+    ballTailMaxLength: 50
   },
+  canvasOffsetTop: 0,
   canvas: null,
   context: null,
   startStatus: false,
@@ -107,6 +106,7 @@ const engine: engineInterface = {
     })
 
     canvas.addEventListener('touchend', e => {
+      e.preventDefault();
       engine.isTouch = false;
     })
   },
@@ -124,21 +124,10 @@ const engine: engineInterface = {
    * @description 改变对象
    */
   animate() {
-    const { ball, terrList, canvas, config, terrImage, ballTailList, isTouch } = engine;
-    const { ballInitialTop, ballInitialSpace, ballTailMaxLength } = config;
+    const { ball, terrList, canvas, config, terrImage, ballTailList, isTouch, canvasOffsetTop } = engine;
+    const { ballInitialTop, ballTailMaxLength } = config;
     const space = (ball.top - ballInitialTop) / (canvas.height / 2);
     engine.clearCanvas();
-
-    if (space < 1) {
-      // 小球没走到一半则树木保持加速度
-      config.space = space * ballInitialSpace;
-      config.canvasOffsetTop += config.space;
-      // 小球速度初始速度一直保持
-      ball.space = ballInitialSpace;
-    } else {
-      config.canvasOffsetTop += ballInitialSpace;
-      ball.space = ballInitialSpace;
-    }
 
     // 移动小球
     ball.move(isTouch);
@@ -156,7 +145,7 @@ const engine: engineInterface = {
 
     // 排序树木 并绘制
     sortTerr(terrList, terr => {
-      if (terr.top + terr.height <= config.canvasOffsetTop) {
+      if (terr.top + terr.height <= canvasOffsetTop) {
         delete terrList[terr.id];
         return
       }
@@ -168,7 +157,7 @@ const engine: engineInterface = {
       const terr = new Terr({
         size,
         left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
-        top: Math.floor(Math.random() * canvas.height + canvas.height + config.canvasOffsetTop)
+        top: Math.floor(Math.random() * canvas.height + canvas.height + canvasOffsetTop)
       }, terrImage);
 
       terrList[terr.id] = terr;
@@ -189,10 +178,10 @@ const engine: engineInterface = {
    * @param {objcet} 小球对象
    */
   paintBall({ color, left, top, radius }) {
-    const { context, config } = engine;
+    const { context, canvasOffsetTop } = engine;
     context.fillStyle = color;
     context.beginPath();
-    context.arc(left, top - config.canvasOffsetTop, radius, 0, 2 * Math.PI);
+    context.arc(left, top - canvasOffsetTop, radius, 0, 2 * Math.PI);
     context.fill();
   },
 
@@ -201,7 +190,7 @@ const engine: engineInterface = {
    * @param ballTailList {array} 小球尾巴列表
    */
   paintBallTail(ballTailList) {
-    const { context, config } = engine;
+    const { context, canvasOffsetTop } = engine;
     const { ballRadius } = baseConfig;
     const tailListsLength = ballTailList.length;
     if (!tailListsLength) return;
@@ -211,14 +200,13 @@ const engine: engineInterface = {
       const { left, top, degree } = tail;
       const deg = degree * 12;
       const radius = ballRadius - (ballRadius * (i + 1) / tailListsLength);
-      const sin = Math.sin(2 * Math.PI / 360 * deg);
 
-      context.lineTo(left - radius, top - config.canvasOffsetTop)
+      context.lineTo(left - radius, top - canvasOffsetTop)
     }
     for (let i = tailListsLength - 1; i >= 0; i --) {
       const tail = ballTailList[i];
       const { left, top } = tail;
-      context.lineTo(left + ballRadius - (ballRadius * (i + 1) / tailListsLength), top - config.canvasOffsetTop);
+      context.lineTo(left + ballRadius - (ballRadius * (i + 1) / tailListsLength), top - canvasOffsetTop);
     }
     context.fillStyle = '#ccc';
     context.fill();
@@ -229,12 +217,12 @@ const engine: engineInterface = {
    * @param {objcet} 树木对象
    */
   paintTerr({ width, height, left, top }) {
-    const { context, terrImage, config } = engine;
+    const { context, terrImage, canvasOffsetTop } = engine;
     context.beginPath();
-    context.drawImage(terrImage, left, top - config.canvasOffsetTop, width, height);
+    context.drawImage(terrImage, left, top - canvasOffsetTop, width, height);
   }
 };
 
 engine.initEngine(document.body, {
-  terrImagePath: 'http://yijic.com/static/ball/images/terr.png'
+  terrImagePath: '/static/images/terr.png'
 });

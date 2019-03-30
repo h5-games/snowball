@@ -5,11 +5,11 @@ interface engineConfig {
   ballInitialTop?: number
   ballInitialSpace?: number
   ballTailMaxLength?: number
-  canvasOffsetTop?: number
 }
 
 interface engineInterface {
   config: engineConfig
+  canvasOffsetTop?: number
   canvas: any
   context: any
   terrImage: any
@@ -23,7 +23,7 @@ interface engineInterface {
   isTouch: boolean
 
   initEngine: {
-    (el: HTMLElement, config: engineConfig): void
+    (el: HTMLElement, config?: engineConfig): void
   }
   loadResource: {
     (config: engineConfig): any

@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'production',
@@ -37,12 +38,17 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve('', 'src/index.html')
-    })
+    }),
+    new CopyWebpackPlugin([
+      { 
+        from: 'static',
+        context: path.resolve('')
+      }
+    ])
   ],
 
   devServer: {
     inline: true,
-    contentBase: './src',
     progress: true,
     overlay: {
       warnings: true,
