@@ -1,7 +1,5 @@
 interface engineConfig {
-  terrNum?: number
   terrImagePath: string
-  space?: number
   ballInitialTop?: number
   ballInitialSpace?: number
   ballTailMaxLength?: number
@@ -9,6 +7,8 @@ interface engineConfig {
 
 interface engineInterface {
   config: engineConfig
+  space: number
+  terrNum: number
   canvasOffsetTop?: number
   canvas: any
   context: any
@@ -52,20 +52,22 @@ interface engineInterface {
 }
 
 interface BallConfigInterface {
-  left?: number,
+  left?: number
   top?: number
   direction?: boolean
   radius?: number
   color?: string
+  space?: number
 }
 
 interface BallInterface {
-  left: number,
+  left: number
   top: number
   direction: boolean
   radius: number
   color: string
   space: number
+  ySpace: number
   degree: number
   maxDegree: number
   minDegree: number

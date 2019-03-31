@@ -9,11 +9,16 @@ export default class Ball implements BallInterface {
   color = '#b7e8e8';
   space = 0;
   degree = 0;
+  ySpace = 0;
   maxDegree = 50;
   minDegree = -50;
 
-  constructor(config: BallConfigInterface) {
-    Object.assign(this, config)
+  constructor(config: BallConfigInterface, ballInitialSpace: number) {
+    Object.assign(this, {
+      ...config,
+      space: ballInitialSpace,
+      ySpace: ballInitialSpace
+    })
   }
 
   move(isTouch) {
@@ -29,7 +34,9 @@ export default class Ball implements BallInterface {
       }
     }
 
-    this.top += (Math.cos(this.degree * Math.PI/180) * space);
+    const ySpace = (Math.cos(this.degree * Math.PI/180) * space);
+    this.ySpace = ySpace;
+    this.top += ySpace;
     this.left += (Math.sin(this.degree * Math.PI/180) * space);
   }
 }
