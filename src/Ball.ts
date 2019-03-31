@@ -6,37 +6,25 @@ export default class Ball implements BallInterface {
   top = 0;
   direction = true;
   radius = 0;
-  color = '#b7e8e8';
-  space = 0;
+  color = '#d2fdff';
   degree = 0;
-  ySpace = 0;
   maxDegree = 50;
   minDegree = -50;
 
-  constructor(config: BallConfigInterface, ballInitialSpace: number) {
-    Object.assign(this, {
-      ...config,
-      space: ballInitialSpace,
-      ySpace: ballInitialSpace
-    })
+  constructor(config: BallConfigInterface) {
+    Object.assign(this, config)
   }
 
-  move(isTouch) {
-    const { space, direction, degree, maxDegree, minDegree } = this;
+  move({ isTouch, space }) {
+    const { direction, degree, maxDegree, minDegree } = this;
 
     if (isTouch) {
-      if (direction) {
-        const _degree = degree - computedPixe(1);
-        this.degree = _degree < minDegree ? minDegree : _degree;
-      } else {
-        const _degree = degree + computedPixe(1);
-        this.degree = _degree > maxDegree ? maxDegree : _degree;
-      }
+      const _direction = direction ? 1 : -1;
+      const _degree = degree - computedPixe(1) * _direction;
+      this.degree = _degree > maxDegree ? maxDegree : _degree < minDegree ? minDegree : _degree; 
     }
 
-    const ySpace = (Math.cos(this.degree * Math.PI/180) * space);
-    this.ySpace = ySpace;
-    this.top += ySpace;
-    this.left += (Math.sin(this.degree * Math.PI/180) * space);
+    this.top += space;
+    this.left += (Math.tan(this.degree * Math.PI/180) * space);
   }
 }

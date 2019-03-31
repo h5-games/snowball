@@ -1,8 +1,5 @@
 interface configInterface {
-  terrSizes: {
-    1: number
-    2: number
-  }
+  terrSizes: number[]
 
   ballRadius: number
 
@@ -12,21 +9,15 @@ interface configInterface {
 }
 
 const config: configInterface = {
-  terrSizes: {
-    1: 0,
-    2: 0
-  },
+  terrSizes: [],
 
   ballRadius: 0,
 
-  init({width}) {
+  init({ width }) {
     // 这里依据canvas宽度来初始化部分属性 避免父盒非body造成比例错误
 
-    config.terrSizes = {
-      1: width * 0.08,
-      2: width * 0.1
-    }
-    config.ballRadius = width * 0.024
+    config.terrSizes = [width * 0.08, width * 0.1]
+    config.ballRadius = width * 0.022
   }
 }
 

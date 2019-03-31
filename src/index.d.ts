@@ -66,13 +66,11 @@ interface BallInterface {
   direction: boolean
   radius: number
   color: string
-  space: number
-  ySpace: number
   degree: number
   maxDegree: number
   minDegree: number
   move: {
-    (isTouch: boolean): void
+    (engine: engineInterface): void
   }
 }
 

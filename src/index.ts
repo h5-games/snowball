@@ -79,12 +79,12 @@ const engine: engineInterface = {
       left: Math.floor(canvas.width / 2),
       top: ballInitialTop,
       radius: baseConfig.ballRadius
-    }, ballInitialSpace);
+    });
     engine.paintBall(engine.ball);
 
     // 生成树木
     for (let i = 0; i < terrNum; i ++) {
-      const size = Math.random() > 0.5 ? 1 : 2
+      const size = Math.round(Math.random());
       const terr = new Terr({
         size,
         left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
@@ -129,11 +129,10 @@ const engine: engineInterface = {
     const { ballTailMaxLength } = config;
     engine.clearCanvas();
 
-    engine.space = computedPixe(1);
-    engine.canvasOffsetTop += ball.ySpace;
+    engine.canvasOffsetTop += engine.space;
 
     // 移动小球
-    ball.move(isTouch);
+    ball.move(engine);
     // 增加小尾巴坐标
     ballTailList.unshift({
       left: ball.left,
@@ -149,21 +148,19 @@ const engine: engineInterface = {
     sortTerr(terrList, terr => {
       if (terr.top + terr.height <= canvasOffsetTop) {
         delete terrList[terr.id];
+        const size = Math.round(Math.random());
+        const newTerr = new Terr({
+          size,
+          left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
+          top: Math.floor(Math.random() * canvas.height / 2 + canvas.height + canvasOffsetTop)
+        }, terrImage);
+  
+        terrList[newTerr.id] = newTerr;
         return
       }
       engine.paintTerr(terr);
     });
-    // 生成下一个屏幕的树
-    for (let i = 0; i < terrNum - Object.keys(terrList).length; i ++) {
-      const size = Math.random() > 0.5 ? 1 : 2
-      const terr = new Terr({
-        size,
-        left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
-        top: Math.floor(Math.random() * canvas.height + canvas.height + canvasOffsetTop)
-      }, terrImage);
 
-      terrList[terr.id] = terr;
-    }
     engine.gameTimer = window.requestAnimationFrame(engine.animate);
   },
 
@@ -181,8 +178,8 @@ const engine: engineInterface = {
    */
   paintBall({ color, left, top, radius }) {
     const { context, canvasOffsetTop } = engine;
-    context.fillStyle = color;
     context.beginPath();
+    context.fillStyle = color;
     context.arc(left, top - canvasOffsetTop, radius, 0, 2 * Math.PI);
     context.fill();
   },
@@ -202,6 +199,7 @@ const engine: engineInterface = {
     let step = 1;
     function paint() {
       if (index < 0) return;
+
       const { left, top, degree } = ballTailList[index];
       const radius = ballRadius - (ballRadius * (index + 1) / tailListsLength);
       const radian = degree * Math.PI / 180;
@@ -215,7 +213,7 @@ const engine: engineInterface = {
     };
     paint();
 
-    context.fillStyle = '#ccc';
+    context.fillStyle = '#EEE';
     context.fill();
   },
 
