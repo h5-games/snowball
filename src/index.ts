@@ -8,9 +8,9 @@ const devicePixelRatio: number = window.devicePixelRatio || 1;
 
 const engine: engineInterface = {
   config: {
-    terrImagePath: '',
+    resources: {},
+    initialSpace: computedPixe(2),
     ballInitialTop: computedPixe(200),
-    ballInitialSpace: computedPixe(2),
     ballTailMaxLength: 50
   },
   space: 0,
@@ -19,7 +19,6 @@ const engine: engineInterface = {
   canvas: null,
   context: null,
   startStatus: false,
-  terrImage: null,
   gameTimer: null,
   ball: null,
   ballTailList: [],
@@ -35,20 +34,19 @@ const engine: engineInterface = {
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     canvas.width = el.offsetWidth * devicePixelRatio;
     canvas.height = el.offsetHeight * devicePixelRatio;
-    canvas.style.width = `${ el.offsetWidth }px`;
-    canvas.style.height = `${ el.offsetHeight }px`;
+    canvas.style.width = `${el.offsetWidth}px`;
+    canvas.style.height = `${el.offsetHeight}px`;
     el.appendChild(canvas);
     baseConfig.init(canvas);
 
-    const { terrImage } = await engine.loadResource(config);
+    await engine.loadResource(config.resources, console.log);
     Object.assign(engine, {
       config: {
         ...engine.config,
         ...config
       },
       context: canvas.getContext('2d'),
-      canvas,
-      terrImage
+      canvas
     });
 
     engine.initGame();
@@ -56,40 +54,41 @@ const engine: engineInterface = {
 
   /**
    * @description 加载需要用到的资源
-   * @param terrImagePath {string} 树的图片路径
+   * @param resources {object} 资源对象
+   * @param callback {function} load资源进度的回调
    */
-  loadResource({ terrImagePath }) {
-    return new Promise((resolve) => {
-      const terrImage: any = new Image();
-      terrImage.src = terrImagePath;
-      terrImage.onload = function() {
-        resolve({ terrImage });
-      }
-    })
+  async loadResource(resources, callback) {
+    const resourceKeys = Object.keys(resources);
+    let _resources = {};
+    for (let i = 0; i < resourceKeys.length; i ++) {
+      const key = resourceKeys[i];
+      _resources[key] = await new Promise((resolve) => {
+        const img: HTMLImageElement = new Image();
+        img.src = resources[key];
+        img.onload = function () {
+          callback((i + 1) / resourceKeys.length);
+          resolve(img);
+        }
+      })
+    }
+    return _resources;
   },
 
   /**
    * @description 初始化游戏
    */
   initGame() {
-    const { config, canvas, terrList, terrImage, terrNum } = engine;
-    const { ballInitialTop, ballInitialSpace } = config;
-    engine.space = ballInitialSpace;
-    engine.ball = new Ball({
-      left: Math.floor(canvas.width / 2),
-      top: ballInitialTop,
-      radius: baseConfig.ballRadius
-    });
-    engine.paintBall(engine.ball);
+    const { config, canvas, terrList, terrNum } = engine;
+    const { initialSpace } = config;
+    const ball = new Ball(engine);
+    engine.space = initialSpace;
+    engine.ball = ball;
+    engine.paintBall(ball);
 
     // 生成树木
-    for (let i = 0; i < terrNum; i ++) {
+    for (let i = 0; i < terrNum; i++) {
       const size = Math.round(Math.random());
-      const terr = new Terr({
-        size,
-        left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
-        top: ballInitialTop + Math.floor(Math.random() * (canvas.height - ballInitialTop + ballInitialTop))
-      }, terrImage);
+      const terr = new Terr(engine);
 
       terrList[terr.id] = terr;
     }
@@ -117,15 +116,14 @@ const engine: engineInterface = {
    */
   gameStart() {
     engine.startStatus = true;
-    console.log('start game');
-    engine.animate();
+    engine.transform();
   },
 
   /**
    * @description 改变对象
    */
-  animate() {
-    const { ball, terrList, canvas, config, terrImage, ballTailList, isTouch, canvasOffsetTop, terrNum } = engine;
+  transform() {
+    const { ball, terrList, config, ballTailList, canvasOffsetTop } = engine;
     const { ballTailMaxLength } = config;
     engine.clearCanvas();
 
@@ -149,19 +147,16 @@ const engine: engineInterface = {
       if (terr.top + terr.height <= canvasOffsetTop) {
         delete terrList[terr.id];
         const size = Math.round(Math.random());
-        const newTerr = new Terr({
-          size,
-          left: Math.floor(Math.random() * (canvas.width - baseConfig.terrSizes[size])),
-          top: Math.floor(Math.random() * canvas.height / 2 + canvas.height + canvasOffsetTop)
-        }, terrImage);
-  
+        const newTerr = new Terr(engine);
+        console.log(newTerr);
+
         terrList[newTerr.id] = newTerr;
         return
       }
       engine.paintTerr(terr);
     });
 
-    engine.gameTimer = window.requestAnimationFrame(engine.animate);
+    engine.gameTimer = window.requestAnimationFrame(engine.transform);
   },
 
   /**
@@ -221,13 +216,20 @@ const engine: engineInterface = {
    * @description 绘制树
    * @param {objcet} 树木对象
    */
-  paintTerr({ width, height, left, top }) {
-    const { context, terrImage, canvasOffsetTop } = engine;
+  paintTerr({ width, height, left, top, trunk }) {
+    const { context, config, canvasOffsetTop } = engine;
     context.beginPath();
-    context.drawImage(terrImage, left, top - canvasOffsetTop, width, height);
+    const Img = new Image();
+    Img.src = config.resources.terrImagePath;
+    context.drawImage(Img, left, top - canvasOffsetTop, width, height);
+    context.fillStyle = '#333';
+    context.rect(trunk.left, trunk.top - canvasOffsetTop, trunk.width, trunk.height);
+    context.fill();
   }
 };
 
 engine.initEngine(document.body, {
-  terrImagePath: '/static/images/terr.png'
+  resources: {
+    terrImagePath: '/static/images/terr.png'
+  }
 });

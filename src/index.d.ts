@@ -1,7 +1,15 @@
+interface resourcesInterface {
+  terrImagePath?: string
+}
+
+interface resourcesElementInterface {
+  terrImagePath?: HTMLImageElement
+}
+
 interface engineConfig {
-  terrImagePath: string
+  resources: resourcesInterface
+  initialSpace?: number
   ballInitialTop?: number
-  ballInitialSpace?: number
   ballTailMaxLength?: number
 }
 
@@ -10,9 +18,8 @@ interface engineInterface {
   space: number
   terrNum: number
   canvasOffsetTop?: number
-  canvas: any
-  context: any
-  terrImage: any
+  canvas: HTMLCanvasElement
+  context: CanvasRenderingContext2D
   startStatus: boolean
   gameTimer: number
   ball: BallInterface
@@ -26,7 +33,12 @@ interface engineInterface {
     (el: HTMLElement, config?: engineConfig): void
   }
   loadResource: {
-    (config: engineConfig): any
+    (
+      resources: resourcesInterface, 
+      callback?: {
+        (progress: number): void
+      }
+    ): Promise<resourcesElementInterface>
   }
   initGame: {
     (): void
@@ -34,7 +46,7 @@ interface engineInterface {
   gameStart: {
     (): void
   }
-  animate: {
+  transform: {
     (): void
   }
   clearCanvas: {
@@ -92,4 +104,10 @@ interface TerrInterface {
   height: number
   left: number
   top: number
+  trunk: {
+    width: number
+    height: number
+    left: number
+    top: number
+  }
 }

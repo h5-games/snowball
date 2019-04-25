@@ -14,7 +14,7 @@ export const computedPixe: computedPixeInterface = function (pixe) {
 }
 
 interface sortTerrInterface {
-  (terrList: { [key: string]: TerrInterface}, callback: any): void
+  (terrList: { [key: string]: TerrInterface}, callback: CallableFunction): void
 }
 
 /**

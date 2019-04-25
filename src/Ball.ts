@@ -11,8 +11,8 @@ export default class Ball implements BallInterface {
   maxDegree = 50;
   minDegree = -50;
 
-  constructor(config: BallConfigInterface) {
-    Object.assign(this, config)
+  constructor(config: engineInterface) {
+    console.log(config);
   }
 
   move({ isTouch, space }) {
