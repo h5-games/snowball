@@ -8,4 +8,13 @@ interface ResourceD {
 interface EngineD {
   container: HTMLElement;
   devicePixelRatio: number;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D
+
+  loadResource(
+    resources: Array<ResourceD>,
+    callback?: {
+      (progress: number): void
+    }
+  ): Promise<Array<ResourceD>>
 }

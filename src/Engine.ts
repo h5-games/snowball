@@ -1,7 +1,9 @@
 /// <reference path="./Engine.d.ts"/>
 
 class Engine implements EngineD {
-  public devicePixelRatio;
+  public devicePixelRatio: number;
+  public canvas: HTMLCanvasElement;
+  public ctx: CanvasRenderingContext2D;
 
   constructor(public container: HTMLElement) {
     const devicePixelRatio: number = window.devicePixelRatio || 1;
@@ -11,14 +13,14 @@ class Engine implements EngineD {
     canvas.style.height = `${offsetHeight}px`;
     canvas.width = offsetWidth * devicePixelRatio;
     canvas.height = offsetHeight * devicePixelRatio;
+    container.appendChild(canvas);
 
-    Object.assign(this, {
-      devicePixelRatio,
-      canvas
-    });
+    this.devicePixelRatio = devicePixelRatio;
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
   }
 
-  async loadResource(
+  public async loadResource(
     resources: Array<ResourceD>,
     callback?: {
       (progress: number): void
@@ -50,6 +52,8 @@ class Engine implements EngineD {
     }
     return _resources;
   }
+
+  static
 }
 
 export default Engine;
