@@ -1,6 +1,6 @@
 /// <reference path="./Engine.d.ts"/>
 
-class Engine implements EngineD {
+class Engine {
   public devicePixelRatio: number;
   public canvas: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
@@ -20,12 +20,12 @@ class Engine implements EngineD {
     this.ctx = canvas.getContext('2d');
   }
 
-  public async loadResource(
+  static async loadResource(
     resources: Array<ResourceD>,
     callback?: {
       (progress: number): void
     }
-  ) {
+  ): Promise<Array<ResourceD>> {
     let _resources: Array<ResourceD> = [];
     for (let i = 0; i < resources.length; i++) {
       const res: ResourceD = await new Promise(resolve => {
@@ -52,8 +52,6 @@ class Engine implements EngineD {
     }
     return _resources;
   }
-
-  static
 }
 
 export default Engine;
