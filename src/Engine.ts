@@ -1,9 +1,10 @@
 /// <reference path="./Engine.d.ts"/>
 
 class Engine {
-  public devicePixelRatio: number;
+  public devicePixelRatio: number = 1;
   public canvas: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
+  public units = [];
 
   constructor(public container: HTMLElement) {
     const devicePixelRatio: number = window.devicePixelRatio || 1;
@@ -18,6 +19,16 @@ class Engine {
     this.devicePixelRatio = devicePixelRatio;
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+  }
+
+  public createUnit(unit: any, id?: string): string {
+    const _id = id ? id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`
+    this.units[_id] = unit;
+    return id;
+  }
+
+  public deleteUnit(id: string): void {
+    delete this.units[id];
   }
 
   static async loadResource(
