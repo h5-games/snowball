@@ -1,4 +1,4 @@
-/// <reference path="./Engine.d.ts"/>
+import { ResourceD } from './types';
 
 class Engine {
   public devicePixelRatio: number = 1;
@@ -22,7 +22,7 @@ class Engine {
   }
 
   public createUnit(unit: any, id?: string): string {
-    const _id = id ? id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`
+    const _id = id ? id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`;
     this.units[_id] = unit;
     return id;
   }
