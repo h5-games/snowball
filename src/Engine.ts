@@ -1,11 +1,23 @@
 import { ResourceInterface, UnitsInterface } from './types';
-import Animation from './Animation';
+
+interface eventInterface<E> {
+  (e: E): void
+}
+
+interface eventListenerInterface {
+  touchStart: eventInterface<TouchEvent>[];
+  touchEnd: eventInterface<TouchEvent>[];
+}
 
 class Engine {
   public devicePixelRatio: number = 1;
   public canvas: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
   public units: UnitsInterface = {};
+  public eventListener: eventListenerInterface = {
+    touchStart: [],
+    touchEnd: []
+  };
 
   constructor(public container: HTMLElement) {
     const devicePixelRatio: number = window.devicePixelRatio || 1;
@@ -20,6 +32,14 @@ class Engine {
     this.devicePixelRatio = devicePixelRatio;
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+
+    canvas.addEventListener('touchstart', e => {
+      this.eventListener['touchStart'].forEach(event => event(e));
+    });
+
+    canvas.addEventListener('touchend', e => {
+      this.eventListener['touchEnd'].forEach(event => event(e));
+    });
   }
 
   public createUnit<T>(unit: T, id?: string): string {
@@ -68,8 +88,31 @@ class Engine {
     return _resources;
   }
 
+  addEventListener(
+    eventName: 'touchStart' | 'touchEnd',
+    event
+  ) {
+    this.eventListener[eventName].push(event);
+  }
+
+  removeEventListener(
+    eventName: 'touchStart' | 'touchEnd',
+    event
+  ) {
+    const index = this.eventListener[eventName].findIndex(item => item === event);
+    delete this.eventListener[eventName][index];
+  }
+
+  public paintGame() {
+
+  }
+
+  public initialGame() {
+
+  }
+
   public startGame() {
-    return new Animation();
+
   }
 }
 

@@ -1,5 +1,4 @@
 export interface BallInterface {
-  zIndex: number;
   left: number;
   top: number;
   radius: number;
@@ -7,7 +6,6 @@ export interface BallInterface {
 }
 
 export default class Ball implements BallInterface {
-  zIndex: 0;
   left: 0;
   top: 0;
   radius: 0;
