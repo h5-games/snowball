@@ -1,10 +1,11 @@
-import { ResourceD } from './types';
+import { ResourceInterface, UnitsInterface } from './types';
+import Animation from './Animation';
 
 class Engine {
   public devicePixelRatio: number = 1;
   public canvas: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
-  public units = [];
+  public units: UnitsInterface = {};
 
   constructor(public container: HTMLElement) {
     const devicePixelRatio: number = window.devicePixelRatio || 1;
@@ -21,9 +22,12 @@ class Engine {
     this.ctx = canvas.getContext('2d');
   }
 
-  public createUnit(unit: any, id?: string): string {
+  public createUnit<T>(unit: T, id?: string): string {
     const _id = id ? id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`;
-    this.units[_id] = unit;
+    this.units[_id] = {
+      _id,
+      unit
+    };
     return id;
   }
 
@@ -32,14 +36,14 @@ class Engine {
   }
 
   static async loadResource(
-    resources: Array<ResourceD>,
+    resources: Array<ResourceInterface>,
     callback?: {
       (progress: number): void
     }
-  ): Promise<Array<ResourceD>> {
-    let _resources: Array<ResourceD> = [];
+  ): Promise<Array<ResourceInterface>> {
+    let _resources: Array<ResourceInterface> = [];
     for (let i = 0; i < resources.length; i++) {
-      const res: ResourceD = await new Promise(resolve => {
+      const res: ResourceInterface = await new Promise(resolve => {
         const img: HTMLImageElement = new Image();
         img.src = resources[i].src;
         img.onload = function () {
@@ -62,6 +66,10 @@ class Engine {
       _resources.push(res);
     }
     return _resources;
+  }
+
+  public startGame() {
+    return new Animation();
   }
 }
 

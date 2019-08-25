@@ -1,8 +1,8 @@
 import Engine from './Engine';
-import Ball from './Ball';
+import Ball, { BallInterface } from './Ball';
 
 const game = new Engine(document.body);
-game.createUnit(new Ball(), 'ball');
+game.createUnit<BallInterface>(new Ball(), 'ball');
 
 async function getResources() {
   const resources = await Engine.loadResource([
