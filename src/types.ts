@@ -1,6 +1,6 @@
-interface ResourceD {
+export interface ResourceD {
   src: string;
-  id: number | string;
+  readonly id: number | string;
   status?: string;
   resource?: HTMLImageElement;
 }

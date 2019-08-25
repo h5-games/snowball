@@ -1,4 +1,3 @@
-/// <reference path="index.d.ts"/>
 import Ball from './Ball';
 import { computedPixe, sortTerr } from './utils';
 import Terr from './Terr';

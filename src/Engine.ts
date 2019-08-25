@@ -1,4 +1,4 @@
-/// <reference path="./Engine.d.ts"/>
+import { ResourceD } from './types';
 
 class Engine {
   public devicePixelRatio: number;
