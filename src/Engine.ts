@@ -42,13 +42,10 @@ class Engine {
     });
   }
 
-  public createUnit<T>(unit: T, id?: string): string {
-    const _id = id ? id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`;
-    this.units[_id] = {
-      _id,
-      unit
-    };
-    return id;
+  public createUnit<T>(UnitConstructor: any, config?: any): void {
+    const _id = config.id ? config.id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`;
+    this.units[_id] = new UnitConstructor(config);
+    return _id;
   }
 
   public deleteUnit(id: string): void {
@@ -103,15 +100,16 @@ class Engine {
     delete this.eventListener[eventName][index];
   }
 
-  public paintGame() {
-
+  public paint() {
+    const { units, ctx } = this;
+    for (let key in units) {
+      if (!units.hasOwnProperty(key)) continue;
+      console.log(units[key])
+      units[key].paint && units[key].paint(ctx);
+    }
   }
 
-  public initialGame() {
-
-  }
-
-  public startGame() {
+  static animation() {
 
   }
 }
