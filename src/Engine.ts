@@ -1,20 +1,21 @@
-import { ResourceInterface, UnitsInterface } from './types';
+import { IResource, IUnits } from './types';
+import Unit from './Unit';
 
-interface eventInterface<E> {
-  (e: E): void
+interface ITouchEvent {
+  (e: TouchEvent): void
 }
 
-interface eventListenerInterface {
-  touchStart: eventInterface<TouchEvent>[];
-  touchEnd: eventInterface<TouchEvent>[];
+interface IEventListener {
+  touchStart: ITouchEvent[];
+  touchEnd: ITouchEvent[];
 }
 
 class Engine {
   public devicePixelRatio: number = 1;
   public canvas: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
-  public units: UnitsInterface = {};
-  public eventListener: eventListenerInterface = {
+  public units: IUnits = {};
+  public eventListener: IEventListener = {
     touchStart: [],
     touchEnd: []
   };
@@ -42,7 +43,7 @@ class Engine {
     });
   }
 
-  public createUnit(UnitConstructor: any, config?: any): string {
+  public createUnit(UnitConstructor: typeof Unit, config?: any): string {
     const _id = config.id ? config.id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`;
     this.units[_id] = new UnitConstructor(config);
     return _id;
@@ -53,14 +54,14 @@ class Engine {
   }
 
   static async loadResource(
-    resources: Array<ResourceInterface>,
+    resources: Array<IResource>,
     callback?: {
       (progress: number): void
     }
-  ): Promise<Array<ResourceInterface>> {
-    let _resources: Array<ResourceInterface> = [];
+  ): Promise<Array<IResource>> {
+    let _resources: Array<IResource> = [];
     for (let i = 0; i < resources.length; i++) {
-      const res: ResourceInterface = await new Promise(resolve => {
+      const res: IResource = await new Promise(resolve => {
         const img: HTMLImageElement = new Image();
         img.src = resources[i].src;
         img.onload = function () {

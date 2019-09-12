@@ -1,14 +1,12 @@
 import Unit from './Unit';
 
-export declare namespace DBall {
-  export interface IConfig {
-    id?: string;
-    left?: number;
-    top?: number;
-    radius?: number;
-    color?: string;
-    zIndex?: number;
-  }
+interface IConfig {
+  id?: string;
+  left?: number;
+  top?: number;
+  radius?: number;
+  color?: string;
+  zIndex?: number;
 }
 
 export default class Ball extends Unit {
@@ -17,9 +15,8 @@ export default class Ball extends Unit {
   radius: number = 20;
   color: string = '#d2fdff';
 
-  constructor(config?: DBall.IConfig) {
-    super();
-    config && Object.assign(this, config);
+  constructor(config?: IConfig) {
+    super(config);
   }
 
   paint(ctx: CanvasRenderingContext2D) {
