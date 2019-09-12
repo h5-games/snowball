@@ -42,7 +42,7 @@ class Engine {
     });
   }
 
-  public createUnit<T>(UnitConstructor: any, config?: any): void {
+  public createUnit(UnitConstructor: any, config?: any): string {
     const _id = config.id ? config.id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`;
     this.units[_id] = new UnitConstructor(config);
     return _id;
@@ -104,7 +104,6 @@ class Engine {
     const { units, ctx } = this;
     for (let key in units) {
       if (!units.hasOwnProperty(key)) continue;
-      console.log(units[key])
       units[key].paint && units[key].paint(ctx);
     }
   }

@@ -1,25 +1,28 @@
 import Unit from './Unit';
 
-export interface BallInterface {
-  left: number;
-  top: number;
-  radius: number;
-  color: string;
-  paint: (ctx: CanvasRenderingContext2D) => void;
+export declare namespace DBall {
+  export interface IConfig {
+    id?: string;
+    left?: number;
+    top?: number;
+    radius?: number;
+    color?: string;
+    zIndex?: number;
+  }
 }
 
-export default class Ball extends Unit<BallInterface> {
-  left: 0;
-  top: 0;
-  radius: 0;
-  color: '#d2fdff';
+export default class Ball extends Unit {
+  left: number = 0;
+  top: number = 0;
+  radius: number = 20;
+  color: string = '#d2fdff';
 
-  constructor(config?: BallInterface) {
+  constructor(config?: DBall.IConfig) {
     super();
     config && Object.assign(this, config);
   }
 
-  paint(ctx) {
+  paint(ctx: CanvasRenderingContext2D) {
     const { color, left, top, radius } = this;
     ctx.beginPath();
     ctx.fillStyle = color;

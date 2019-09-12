@@ -1,5 +1,5 @@
-class Unit<T> {
-  id: number | string = '';
+class Unit {
+  id: string = '';
   zIndex: number = 0;
 }
 
