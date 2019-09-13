@@ -1,7 +1,7 @@
 class Unit {
   id: string = '';
   zIndex: number = 0;
-  constructor(config: any) {
+  constructor(config?: any) {
     config && Object.assign(this, config);
   }
 }

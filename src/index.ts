@@ -1,20 +1,22 @@
 import Engine from './Engine';
 import Ball from './Ball';
 
-const game = new Engine(document.body);
-game.createUnit(Ball, {
-  id: 'ball'
-});
-
-async function getResources() {
-  const resources = await Engine.loadResource([
-    {
-      id: 1,
-      src: '/static/images/terr.png'
-    }
-  ]);
+const game = {
+  resources: [],
+  async initial() {
+    const engine = new Engine(document.body);
+    engine.createUnit(Ball, {
+      id: 'ball'
+    });
+    engine.addEventListener('touchStart', console.log)
+    this.resources = await Engine.loadResource([
+      {
+        id: 'terr',
+        src: '/static/images/terr.png'
+      }
+    ]);
+    engine.paint();
+  }
 }
 
-getResources();
-
-game.paint();
+game.initial();
