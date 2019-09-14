@@ -1,5 +1,9 @@
-import { IResource, IUnits } from './types';
-import Unit from './Unit';
+import { IResource } from './types';
+
+interface IUnits {
+  [id: string]: any;
+  length: number;
+}
 
 interface ITouchEvent {
   (e: TouchEvent): void
@@ -10,27 +14,44 @@ interface IEventListener {
   touchEnd: ITouchEvent[];
 }
 
-class Engine {
-  public devicePixelRatio: number = 1;
+interface IUnitConstructor<T, U> {
+  new(config?: U): T
+}
+
+export interface IEngine {
+  container: HTMLElement;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  eventListener: IEventListener;
+  animationTimer: number;
+  createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T;
+  deleteUnit(id: string): void;
+  addEventListener(eventName: 'touchStart' | 'touchEnd', event: Function): void;
+  removeEventListener(eventName: 'touchStart' | 'touchEnd', event: Function): void;
+  paint(): void;
+}
+
+class Engine implements IEngine {
   public canvas: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
-  public units: IUnits = {};
+  private units: IUnits = {
+    length: 0
+  };
   public eventListener: IEventListener = {
     touchStart: [],
     touchEnd: []
   };
+  public animationTimer = null;
 
   constructor(public container: HTMLElement) {
-    const devicePixelRatio: number = window.devicePixelRatio || 1;
     const { offsetWidth, offsetHeight } = container;
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     canvas.style.width = `${offsetWidth}px`;
     canvas.style.height = `${offsetHeight}px`;
-    canvas.width = offsetWidth * devicePixelRatio;
-    canvas.height = offsetHeight * devicePixelRatio;
+    canvas.width = Engine.getActualPixel(offsetWidth);
+    canvas.height = Engine.getActualPixel(offsetHeight);
     container.appendChild(canvas);
 
-    this.devicePixelRatio = devicePixelRatio;
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
@@ -43,10 +64,15 @@ class Engine {
     });
   }
 
-  public createUnit(UnitConstructor: typeof Unit, config?: any): string {
-    const _id = config.id ? config.id : `_${Math.floor(Math.random() * 1000000000 + 899909999)}`;
-    this.units[_id] = new UnitConstructor(config);
-    return _id;
+  public createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T {
+    const id = this.units.length + 1;
+    const unit = new UnitConstructor({
+      ...config,
+      id
+    });
+    this.units[id] = unit;
+    this.units.length = id;
+    return unit;
   }
 
   public deleteUnit(id: string): void {
@@ -86,16 +112,16 @@ class Engine {
     return _resources;
   }
 
-  addEventListener(
+  public addEventListener(
     eventName: 'touchStart' | 'touchEnd',
-    event
+    event: ITouchEvent
   ) {
     this.eventListener[eventName].push(event);
   }
 
-  removeEventListener(
+  public removeEventListener(
     eventName: 'touchStart' | 'touchEnd',
-    event
+    event: ITouchEvent
   ) {
     const index = this.eventListener[eventName].findIndex(item => item === event);
     delete this.eventListener[eventName][index];
@@ -109,8 +135,18 @@ class Engine {
     }
   }
 
-  static animation() {
+  static getActualPixel(px) {
+    const devicePixelRatio: number = window.devicePixelRatio || 1;
+    return px * devicePixelRatio;
+  }
 
+  static animation(engine: IEngine) {
+    engine.paint();
+    engine.animationTimer = window.requestAnimationFrame(Engine.animation.bind(this, engine));
+  }
+
+  static stopAnimation(engine: IEngine) {
+    window.cancelAnimationFrame(engine.animationTimer);
   }
 }
 

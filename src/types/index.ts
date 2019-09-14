@@ -4,7 +4,3 @@ export interface IResource {
   status?: string;
   resource?: HTMLImageElement;
 }
-
-export interface IUnits {
-  [_id: string]: any
-}

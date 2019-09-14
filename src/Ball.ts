@@ -1,7 +1,6 @@
 import Unit from './Unit';
 
-interface IConfig {
-  id?: string;
+export interface IBallConfig {
   left?: number;
   top?: number;
   radius?: number;
@@ -9,14 +8,15 @@ interface IConfig {
   zIndex?: number;
 }
 
-export default class Ball extends Unit {
+export default class extends Unit {
   left: number = 0;
   top: number = 0;
-  radius: number = 20;
+  radius: number = 0;
   color: string = '#d2fdff';
 
-  constructor(config?: IConfig) {
-    super(config);
+  constructor(config?: IBallConfig) {
+    super();
+    config && Object.assign(this, config);
   }
 
   paint(ctx: CanvasRenderingContext2D) {

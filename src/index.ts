@@ -1,22 +1,37 @@
-import Engine from './Engine';
-import Ball from './Ball';
+import Engine, { IEngine } from './Engine';
+import { IResource } from './types';
+import Ball, { IBallConfig } from './Ball';
 
-const game = {
+interface IGame {
+  resources: IResource[];
+  engine: IEngine;
+  initial(): void;
+}
+
+const game: IGame = {
   resources: [],
+  engine: null,
   async initial() {
-    const engine = new Engine(document.body);
-    engine.createUnit(Ball, {
-      id: 'ball'
-    });
-    engine.addEventListener('touchStart', console.log)
     this.resources = await Engine.loadResource([
       {
         id: 'terr',
         src: '/static/images/terr.png'
       }
     ]);
-    engine.paint();
+    const el = document.body;
+    const engine = new Engine(el);
+    this.engine = engine;
+
+    engine.createUnit<Ball, IBallConfig>(Ball, {
+      radius: Engine.getActualPixel(el.offsetWidth / 40),
+      left: Engine.getActualPixel(el.offsetWidth / 2),
+      top: Engine.getActualPixel(el.offsetHeight / 5)
+    });
+    Engine.animation(engine);
+
+    engine.addEventListener('touchStart', console.log)
   }
 }
 
 game.initial();
+
