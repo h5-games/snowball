@@ -9,17 +9,17 @@ export interface IBallConfig {
 }
 
 export default class extends Unit {
-  left: number = 0;
-  top: number = 0;
-  radius: number = 0;
-  color: string = '#d2fdff';
+  public left: number = 0;
+  public top: number = 0;
+  public radius: number = 0;
+  public color: string = '#d2fdff';
 
   constructor(config?: IBallConfig) {
     super();
     config && Object.assign(this, config);
   }
 
-  paint(ctx: CanvasRenderingContext2D) {
+  public paint(ctx: CanvasRenderingContext2D) {
     const { color, left, top, radius } = this;
     ctx.beginPath();
     ctx.fillStyle = color;
