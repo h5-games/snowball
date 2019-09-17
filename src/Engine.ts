@@ -1,5 +1,3 @@
-import { IResource } from './types';
-
 interface IUnits {
   [id: string]: any;
   length: number;
@@ -18,6 +16,15 @@ interface IUnitConstructor<T, U> {
   new(config?: U): T
 }
 
+type TEventName = 'touchStart' | 'touchEnd';
+
+export interface IResources {
+  [resourceName: string]: {
+    src: string;
+    status?: string;
+  }
+}
+
 export interface IEngine {
   container: HTMLElement;
   canvas: HTMLCanvasElement;
@@ -26,8 +33,8 @@ export interface IEngine {
   animationTimer: number;
   createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T;
   deleteUnit(id: string): void;
-  addEventListener(eventName: 'touchStart' | 'touchEnd', event: Function): void;
-  removeEventListener(eventName: 'touchStart' | 'touchEnd', event: Function): void;
+  addEventListener(eventName: TEventName, event: Function): void;
+  removeEventListener(eventName: TEventName, event: Function): void;
   paint(): void;
 }
 
@@ -80,47 +87,43 @@ class Engine implements IEngine {
   }
 
   static async loadResource(
-    resources: Array<IResource>,
+    resources: IResources,
     callback?: {
       (progress: number): void
     }
-  ): Promise<Array<IResource>> {
-    let _resources: Array<IResource> = [];
-    for (let i = 0; i < resources.length; i++) {
-      const res: IResource = await new Promise(resolve => {
+  ): Promise<IResources> {
+    let _resources: IResources = {};
+    const length: number = Object.keys(resources).length;
+    for (let key in resources) {
+      if (!resources.hasOwnProperty(key)) continue;
+      const _length = Object.keys(_resources).length;
+      _resources[key] = await new Promise(resolve => {
         const img: HTMLImageElement = new Image();
-        img.src = resources[i].src;
-        img.onload = function () {
-          callback && callback((i + 1) / resources.length);
+        const progress = (_length + 1) / length;
+        img.src = resources[key].src;
+        const _callback = (status: string) => () => {
+          callback && callback(progress);
           resolve({
-            ...resources[i],
-            resource: img,
-            status: 'resolve'
+            ...resources[key],
+            status
           });
         };
-        img.onerror = function () {
-          callback && callback((i + 1) / resources.length);
-          resolve({
-            ...resources[i],
-            resource: img,
-            status: 'reject'
-          });
-        };
+        img.onload = _callback('resolve');
+        img.onerror = _callback('reject');
       });
-      _resources.push(res);
     }
     return _resources;
   }
 
   public addEventListener(
-    eventName: 'touchStart' | 'touchEnd',
+    eventName: TEventName,
     event: ITouchEvent
   ) {
     this.eventListener[eventName].push(event);
   }
 
   public removeEventListener(
-    eventName: 'touchStart' | 'touchEnd',
+    eventName: TEventName,
     event: ITouchEvent
   ) {
     const index = this.eventListener[eventName].findIndex(item => item === event);
@@ -147,6 +150,14 @@ class Engine implements IEngine {
 
   static stopAnimation(engine: IEngine) {
     window.cancelAnimationFrame(engine.animationTimer);
+  }
+
+  static randomPosition(min: number, max: number) {
+    if (min > 0) {
+      return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    return Math.floor(Math.random() * (max - min) + min);
   }
 }
 
