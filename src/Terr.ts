@@ -16,7 +16,17 @@ export interface ITerrConfig {
   src?: string;
 }
 
-export default class extends Unit {
+export interface ITerr {
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+  trunk: ITrunk;
+  src: string;
+  paint(ctx: CanvasRenderingContext2D): void;
+}
+
+export default class extends Unit implements ITerr {
   public width: number = 0;
   public height: number = 0;
   public left: number = 0;

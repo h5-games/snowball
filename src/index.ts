@@ -1,17 +1,20 @@
 import Engine, { IEngine, IResources } from './Engine';
-import Ball, { IBallConfig } from './Ball';
+import Ball, { IBall, IBallConfig } from './Ball';
 import Terr, { ITerrConfig } from './Terr';
 import { terrConfig } from './config';
 
 interface IGame {
   resources: IResources;
   engine: IEngine;
+  ball: IBall;
   initial(): void;
+  startGame(e: TouchEvent): void;
 }
 
 const game: IGame = {
   resources: {},
   engine: null,
+  ball: null,
   async initial() {
     const resources = await Engine.loadResource({
       terrResource: {
@@ -21,15 +24,16 @@ const game: IGame = {
     const { terrResource } = resources;
     const el = document.body;
     const engine = new Engine(el);
-    this.engine = engine;
-    this.resources = resources;
+    game.engine = engine;
+    game.resources = resources;
     const _offsetHeight = Engine.getActualPixel(el.offsetHeight);
     const _offsetWidth = Engine.getActualPixel(el.offsetWidth);
 
-    engine.createUnit<Ball, IBallConfig>(Ball, {
+    game.ball = engine.createUnit<Ball, IBallConfig>(Ball, {
       radius: _offsetWidth / 35,
       left: _offsetWidth / 2,
-      top: _offsetHeight / 5
+      top: _offsetHeight / 5,
+      speed: Engine.getActualPixel(1)
     });
 
     new Array(terrConfig.initialTerrNum)
@@ -58,7 +62,15 @@ const game: IGame = {
 
     Engine.animation(engine);
 
-    engine.addEventListener('touchStart', console.log)
+    engine.addEventListener('touchStart', game.startGame)
+  },
+
+  startGame() {
+    const { engine, ball } = game;
+
+    ball.animation();
+    engine.removeEventListener('touchStart', game.startGame);
+    game.startGame = null;
   }
 };
 

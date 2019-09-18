@@ -131,7 +131,8 @@ class Engine implements IEngine {
   }
 
   public paint() {
-    const { units, ctx } = this;
+    const { units, ctx, canvas } = this;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let key in units) {
       if (!units.hasOwnProperty(key)) continue;
       units[key].paint && units[key].paint(ctx);
@@ -153,10 +154,7 @@ class Engine implements IEngine {
   }
 
   static randomPosition(min: number, max: number) {
-    if (min > 0) {
-      return Math.floor(Math.random() * (max - min) + min);
-    }
-
+    if (min > 0) return Math.floor(Math.random() * (max - min) + min);
     return Math.floor(Math.random() * (max - min) + min);
   }
 }

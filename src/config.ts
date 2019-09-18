@@ -1,5 +1,5 @@
 export const terrConfig = {
-  initialTerrNum: 30,
+  initialTerrNum: 20,
   terrSrc: '/static/images/terr.png',
   sizes: [
     {
