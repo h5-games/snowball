@@ -18,8 +18,6 @@ yarn build
 * 抽出所有 config 配置文件 保证 engine 干净 在 constructor 中 合并 config
 * 给元素加过渡动画
 * 游戏增加 X 轴画布变化 规范 ball Y 轴移动速度
-
-
 * 封装 Unit 类 抽出动画和绘制方法 传入参数 Engine 实例
 * Engine 提供校验元素碰撞接口
 * 每次动画完毕 传入所有元素进校验 函数

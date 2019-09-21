@@ -1,3 +1,5 @@
+import Camera, { ICameraConfig, ICamera } from './Camera';
+
 interface IUnits {
   [id: string]: any;
   length: number;
@@ -31,19 +33,23 @@ export interface IEngine {
   ctx: CanvasRenderingContext2D;
   eventListener: IEventListener;
   animationTimer: number;
-  createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T;
-  deleteUnit(id: string): void;
   addEventListener(eventName: TEventName, event: Function): void;
   removeEventListener(eventName: TEventName, event: Function): void;
+  createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T;
+  deleteUnit(id: string): void;
+  createCamera(config: ICameraConfig): ICamera;
   paint(): void;
 }
 
 class Engine implements IEngine {
-  public canvas: HTMLCanvasElement;
-  public ctx: CanvasRenderingContext2D;
   private units: IUnits = {
     length: 0
   };
+  private cameras: ICamera[] = [];
+
+  public canvas: HTMLCanvasElement;
+  public ctx: CanvasRenderingContext2D;
+
   public eventListener: IEventListener = {
     touchStart: [],
     touchEnd: []
@@ -71,6 +77,21 @@ class Engine implements IEngine {
     });
   }
 
+  public addEventListener(
+    eventName: TEventName,
+    event: ITouchEvent
+  ) {
+    this.eventListener[eventName].push(event);
+  }
+
+  public removeEventListener(
+    eventName: TEventName,
+    event: ITouchEvent
+  ) {
+    const index = this.eventListener[eventName].findIndex(item => item === event);
+    delete this.eventListener[eventName][index];
+  }
+
   public createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T {
     const id = this.units.length + 1;
     const unit = new UnitConstructor({
@@ -84,6 +105,40 @@ class Engine implements IEngine {
 
   public deleteUnit(id: string): void {
     delete this.units[id];
+  }
+
+  public createCamera(config?: ICameraConfig): ICamera {
+    const camera = new Camera(config);
+    this.cameras.push(camera);
+    return camera;
+  }
+
+  public paint() {
+    const { units, ctx, canvas } = this;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let key in units) {
+      if (!units.hasOwnProperty(key)) continue;
+      units[key].paint && units[key].paint(ctx);
+    }
+  }
+
+  static getActualPixel(px) {
+    const devicePixelRatio: number = window.devicePixelRatio || 1;
+    return px * devicePixelRatio;
+  }
+
+  static animation(engine: IEngine) {
+    engine.paint();
+    engine.animationTimer = window.requestAnimationFrame(Engine.animation.bind(this, engine));
+  }
+
+  static stopAnimation(engine: IEngine) {
+    window.cancelAnimationFrame(engine.animationTimer);
+  }
+
+  static randomPosition(min: number, max: number) {
+    if (min > 0) return Math.floor(Math.random() * (max - min) + min);
+    return Math.floor(Math.random() * (max - min) + min);
   }
 
   static async loadResource(
@@ -113,49 +168,6 @@ class Engine implements IEngine {
       });
     }
     return _resources;
-  }
-
-  public addEventListener(
-    eventName: TEventName,
-    event: ITouchEvent
-  ) {
-    this.eventListener[eventName].push(event);
-  }
-
-  public removeEventListener(
-    eventName: TEventName,
-    event: ITouchEvent
-  ) {
-    const index = this.eventListener[eventName].findIndex(item => item === event);
-    delete this.eventListener[eventName][index];
-  }
-
-  public paint() {
-    const { units, ctx, canvas } = this;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let key in units) {
-      if (!units.hasOwnProperty(key)) continue;
-      units[key].paint && units[key].paint(ctx);
-    }
-  }
-
-  static getActualPixel(px) {
-    const devicePixelRatio: number = window.devicePixelRatio || 1;
-    return px * devicePixelRatio;
-  }
-
-  static animation(engine: IEngine) {
-    engine.paint();
-    engine.animationTimer = window.requestAnimationFrame(Engine.animation.bind(this, engine));
-  }
-
-  static stopAnimation(engine: IEngine) {
-    window.cancelAnimationFrame(engine.animationTimer);
-  }
-
-  static randomPosition(min: number, max: number) {
-    if (min > 0) return Math.floor(Math.random() * (max - min) + min);
-    return Math.floor(Math.random() * (max - min) + min);
   }
 }
 

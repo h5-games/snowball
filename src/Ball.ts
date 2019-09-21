@@ -52,11 +52,11 @@ export default class extends Unit implements IBall {
   public animation() {
     const { direction, degree, speed, rotateSpeed, maxDegree, minDegree } = this;
 
-    const _degree = degree - rotateSpeed * direction;
-    this.degree = _degree > maxDegree ? maxDegree : _degree < minDegree ? minDegree : _degree;
+    // const _degree = degree - rotateSpeed * direction;
+    // this.degree = _degree > maxDegree ? maxDegree : _degree < minDegree ? minDegree : _degree;
 
     this.top += speed;
-    this.left += (Math.tan(this.degree * Math.PI/180) * speed);
+    // this.left += (Math.tan(this.degree * Math.PI/180) * speed);
     this.animationTimer = window.requestAnimationFrame(this.animation.bind(this))
   }
 
