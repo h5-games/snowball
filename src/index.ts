@@ -1,6 +1,7 @@
 import Engine, { IEngine, IResources } from './Engine';
 import Ball, { IBall, IBallConfig } from './Ball';
 import Terr, { ITerrConfig } from './Terr';
+import Util from './Util';
 import { terrConfig } from './config';
 
 interface IGame {
@@ -41,8 +42,8 @@ const game: IGame = {
       .map(() => {
         const size = terrConfig.sizes[Math.floor(Math.random() * terrConfig.sizes.length)];
         const { trunk } = size;
-        const left = Engine.randomPosition(0 - _offsetWidth, _offsetWidth + _offsetWidth);
-        const top = Engine.randomPosition(_offsetHeight / 3, _offsetHeight);
+        const left = Util.randomPosition(0 - _offsetWidth, _offsetWidth + _offsetWidth);
+        const top = Util.randomPosition(_offsetHeight / 3, _offsetHeight);
         const width = Engine.getActualPixel(size.width);
         const height = Engine.getActualPixel(size.height);
 
