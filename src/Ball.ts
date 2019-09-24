@@ -1,6 +1,7 @@
 import Unit from './Unit';
 
 export interface IBallConfig {
+  visible?: boolean;
   zIndex?: number;
   left?: number;
   top?: number;

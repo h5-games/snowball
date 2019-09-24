@@ -63,6 +63,10 @@ const game: IGame = {
 
     Engine.animation(engine);
 
+    const camera = engine.createCamera({
+      width: _offsetWidth,
+      height: _offsetHeight
+    });
     engine.addEventListener('touchStart', game.startGame)
   },
 

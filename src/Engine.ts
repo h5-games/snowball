@@ -31,6 +31,8 @@ export interface IEngine {
   container: HTMLElement;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
+  units: IUnits;
+  cameras: ICamera[];
   eventListener: IEventListener;
   animationTimer: number;
   addEventListener(eventName: TEventName, event: Function): void;
@@ -38,17 +40,15 @@ export interface IEngine {
   createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T;
   deleteUnit(id: string): void;
   createCamera(config: ICameraConfig): ICamera;
-  paint(): void;
 }
 
 class Engine implements IEngine {
-  private units: IUnits = {
-    length: 0
-  };
-  private cameras: ICamera[] = [];
-
   public canvas: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
+  public units: IUnits = {
+    length: 0
+  };
+  public cameras: ICamera[] = [];
 
   public eventListener: IEventListener = {
     touchStart: [],
@@ -109,17 +109,10 @@ class Engine implements IEngine {
 
   public createCamera(config?: ICameraConfig): ICamera {
     const camera = new Camera(config);
+    camera.paint(this);
+    console.log(camera);
     this.cameras.push(camera);
     return camera;
-  }
-
-  public paint() {
-    const { units, ctx, canvas } = this;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let key in units) {
-      if (!units.hasOwnProperty(key)) continue;
-      units[key].paint && units[key].paint(ctx);
-    }
   }
 
   static getActualPixel(px) {
@@ -128,8 +121,11 @@ class Engine implements IEngine {
   }
 
   static animation(engine: IEngine) {
-    engine.paint();
     engine.animationTimer = window.requestAnimationFrame(Engine.animation.bind(this, engine));
+    for (let camera of engine.cameras) {
+      camera.paint(engine);
+    }
+    return null;
   }
 
   static stopAnimation(engine: IEngine) {

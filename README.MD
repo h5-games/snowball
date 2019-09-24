@@ -1,5 +1,5 @@
 ## Canvas H5 小游戏，操纵雪球向下滚动，躲避树木
-> 练习TypeScript用的
+> 用来练习TypeScript的
 
 ```
 # 安装依赖

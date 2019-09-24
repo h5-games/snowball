@@ -8,6 +8,8 @@ interface ITrunk {
 }
 
 export interface ITerrConfig {
+  visible?: boolean;
+  zIndex?: number;
   width?: number;
   height?: number;
   left?: number;
