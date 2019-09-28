@@ -1,4 +1,8 @@
-import Unit from './Unit';
+import Unit, { IUnitOffset } from './Unit';
+
+interface IanimationCallback {
+  (): void
+}
 
 export interface IBallConfig {
   visible?: boolean;
@@ -27,9 +31,9 @@ export interface IBall {
   maxDegree: number;
   minDegree: number;
   animationTimer: number;
-  animation(): void;
+  animation(callback?: IanimationCallback): void;
   stopAnimation(): void;
-  paint(ctx: CanvasRenderingContext2D): void;
+  paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset): void;
 }
 
 export default class extends Unit implements IBall {
@@ -50,7 +54,7 @@ export default class extends Unit implements IBall {
     config && Object.assign(this, config);
   }
 
-  public animation() {
+  public animation(callback?: IanimationCallback) {
     const { direction, degree, speed, rotateSpeed, maxDegree, minDegree } = this;
 
     // const _degree = degree - rotateSpeed * direction;
@@ -58,18 +62,19 @@ export default class extends Unit implements IBall {
 
     this.top += speed;
     // this.left += (Math.tan(this.degree * Math.PI/180) * speed);
-    this.animationTimer = window.requestAnimationFrame(this.animation.bind(this))
+    callback && callback();
+    this.animationTimer = window.requestAnimationFrame(this.animation.bind(this, callback))
   }
 
   public stopAnimation() {
     window.cancelAnimationFrame(this.animationTimer);
   }
 
-  public paint(ctx: CanvasRenderingContext2D) {
-    const { color, left, top, radius } = this;
+  public paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset) {
+    const { color, radius } = this;
     ctx.beginPath();
     ctx.fillStyle = color;
-    ctx.arc(left, top, radius, 0, 2 * Math.PI);
+    ctx.arc(offset.left, offset.top, radius, 0, 2 * Math.PI);
     ctx.fill();
   }
 }

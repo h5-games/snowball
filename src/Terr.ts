@@ -1,4 +1,4 @@
-import Unit from './Unit';
+import Unit, { IUnitOffset } from './Unit';
 
 interface ITrunk {
   width: number;
@@ -25,7 +25,7 @@ export interface ITerr {
   top: number;
   trunk: ITrunk;
   src: string;
-  paint(ctx: CanvasRenderingContext2D): void;
+  paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset): void;
 }
 
 export default class extends Unit implements ITerr {
@@ -46,12 +46,12 @@ export default class extends Unit implements ITerr {
     config && Object.assign(this, config);
   }
 
-  public paint(ctx: CanvasRenderingContext2D) {
-    const { width, height, left, top, trunk, src } = this;
+  public paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset) {
+    const { width, height, trunk, src } = this;
     const img = new Image();
     img.src = src;
     ctx.beginPath();
-    ctx.drawImage(img, left, top, width, height);
+    ctx.drawImage(img, offset.left, offset.top, width, height);
     // ctx.fillStyle = 'red';
     // ctx.rect(trunk.left, trunk.top, trunk.width, trunk.height);
     // ctx.fill();

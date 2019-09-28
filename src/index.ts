@@ -2,12 +2,14 @@ import Engine, { IEngine, IResources } from './Engine';
 import Ball, { IBall, IBallConfig } from './Ball';
 import Terr, { ITerrConfig } from './Terr';
 import Util from './Util';
+import { ICamera } from './Camera';
 import { terrConfig } from './config';
 
 interface IGame {
   resources: IResources;
   engine: IEngine;
   ball: IBall;
+  camera: ICamera;
   initial(): void;
   startGame(e: TouchEvent): void;
 }
@@ -16,6 +18,7 @@ const game: IGame = {
   resources: {},
   engine: null,
   ball: null,
+  camera: null,
   async initial() {
     const resources = await Engine.loadResource({
       terrResource: {
@@ -63,21 +66,27 @@ const game: IGame = {
 
     Engine.animation(engine);
 
-    const camera = engine.createCamera({
-      width: _offsetWidth,
-      height: _offsetHeight
+    this.camera = engine.createCamera({
+      width: el.offsetWidth,
+      height: el.offsetHeight
     });
-    engine.addEventListener('touchStart', game.startGame)
+    engine.addEventListener('touchStart', game.startGame);
   },
 
   startGame() {
-    const { engine, ball } = game;
+    const { engine, ball, camera } = game;
 
-    ball.animation();
+    ball.animation(() => {
+      camera.update({
+        offsetTop: camera.offsetTop - ball.speed
+      })
+    });
     engine.removeEventListener('touchStart', game.startGame);
     game.startGame = null;
   }
 };
 
 game.initial();
+
+(<any>window).game = game;
 

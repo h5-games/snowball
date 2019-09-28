@@ -29,8 +29,6 @@ export interface IResources {
 
 export interface IEngine {
   container: HTMLElement;
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
   units: IUnits;
   cameras: ICamera[];
   eventListener: IEventListener;
@@ -43,8 +41,6 @@ export interface IEngine {
 }
 
 class Engine implements IEngine {
-  public canvas: HTMLCanvasElement;
-  public ctx: CanvasRenderingContext2D;
   public units: IUnits = {
     length: 0
   };
@@ -57,22 +53,13 @@ class Engine implements IEngine {
   public animationTimer = null;
 
   constructor(public container: HTMLElement) {
-    const { offsetWidth, offsetHeight } = container;
-    const canvas: HTMLCanvasElement = document.createElement('canvas');
-    canvas.style.width = `${offsetWidth}px`;
-    canvas.style.height = `${offsetHeight}px`;
-    canvas.width = Engine.getActualPixel(offsetWidth);
-    canvas.height = Engine.getActualPixel(offsetHeight);
-    container.appendChild(canvas);
+    container.style.position = 'relative';
 
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
-
-    canvas.addEventListener('touchstart', e => {
+    container.addEventListener('touchstart', e => {
       this.eventListener['touchStart'].forEach(event => event(e));
     });
 
-    canvas.addEventListener('touchend', e => {
+    container.addEventListener('touchend', e => {
       this.eventListener['touchEnd'].forEach(event => event(e));
     });
   }
@@ -108,9 +95,8 @@ class Engine implements IEngine {
   }
 
   public createCamera(config?: ICameraConfig): ICamera {
-    const camera = new Camera(config);
+    const camera = new Camera(this.container, config);
     camera.paint(this);
-    console.log(camera);
     this.cameras.push(camera);
     return camera;
   }
