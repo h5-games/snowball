@@ -18,7 +18,8 @@ export interface ICamera {
   height: number;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  update(config: ICameraConfig, isReload?: boolean): ICamera;
+  timer: number;
+  update(config: ICameraConfig, engine: IEngine): ICamera;
   paint(engine: IEngine): void;
 }
 
@@ -31,32 +32,43 @@ export default class {
   public height: number = 0;
   public canvas: HTMLCanvasElement = null;
   public ctx: CanvasRenderingContext2D = null;
+  public timer: number = null;
 
-  constructor(container: HTMLElement, config?: ICameraConfig) {
+  constructor(container: HTMLElement, engine: IEngine, config?: ICameraConfig) {
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     canvas.style.position = 'absolute';
     container.appendChild(canvas);
 
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    config && this.update(config, true);
+    if (config) {
+      this.update(config, engine);
+    } else {
+      this.animation(engine);
+    }
   }
 
-  public update(config: ICameraConfig, isReload?: boolean) {
+  public animation(engine: IEngine) {
+    this.timer = window.requestAnimationFrame(this.animation.bind(this, engine));
+    for (let camera of engine.cameras) {
+      camera.paint(engine);
+    }
+  }
+
+  public update(config: ICameraConfig, engine: IEngine) {
     Object.assign(this, config);
 
     const { width, height, left, top, canvas } = this;
 
     canvas.style.left = `${left}px`;
     canvas.style.top = `${top}px`;
-    if (isReload) {
-      // 如果有需要更改 canvas 的宽高 则需要传 isReload
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      canvas.width = Engine.getActualPixel(width);
-      canvas.height = Engine.getActualPixel(height);
-    }
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = Engine.getActualPixel(width);
+    canvas.height = Engine.getActualPixel(height);
 
+    window.cancelAnimationFrame(this.timer);
+    this.animation(engine);
     return this;
   }
 

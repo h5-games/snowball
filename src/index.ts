@@ -36,8 +36,8 @@ const game: IGame = {
     game.ball = engine.createUnit<Ball, IBallConfig>(Ball, {
       radius: _offsetWidth / 35,
       left: _offsetWidth / 2,
-      top: _offsetHeight / 5,
-      speed: Engine.getActualPixel(1)
+      top: _offsetHeight / 3,
+      speed: Engine.getActualPixel(10)
     });
 
     new Array(terrConfig.initialTerrNum)
@@ -46,7 +46,7 @@ const game: IGame = {
         const size = terrConfig.sizes[Math.floor(Math.random() * terrConfig.sizes.length)];
         const { trunk } = size;
         const left = Util.randomPosition(0 - _offsetWidth, _offsetWidth + _offsetWidth);
-        const top = Util.randomPosition(_offsetHeight / 3, _offsetHeight);
+        const top = Util.randomPosition(_offsetHeight / 2, _offsetHeight);
         const width = Engine.getActualPixel(size.width);
         const height = Engine.getActualPixel(size.height);
 
@@ -64,8 +64,6 @@ const game: IGame = {
       .sort((x, y) => (x.top + x.height) - (y.top + y.height))
       .forEach(config => engine.createUnit<Terr, ITerrConfig>(Terr, config));
 
-    Engine.animation(engine);
-
     this.camera = engine.createCamera({
       width: el.offsetWidth,
       height: el.offsetHeight
@@ -77,9 +75,7 @@ const game: IGame = {
     const { engine, ball, camera } = game;
 
     ball.animation(() => {
-      camera.update({
-        offsetTop: camera.offsetTop - ball.speed
-      })
+      camera.offsetTop -= ball.speed;
     });
     engine.removeEventListener('touchStart', game.startGame);
     game.startGame = null;

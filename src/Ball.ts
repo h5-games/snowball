@@ -10,7 +10,6 @@ export interface IBallConfig {
   left?: number;
   top?: number;
   radius?: number;
-  color?: string;
   speed?: number;
   direction?: number;
   rotateSpeed?: number;
@@ -23,7 +22,6 @@ export interface IBall {
   left: number;
   top: number;
   radius: number;
-  color: string;
   speed: number;
   direction: number;
   rotateSpeed: number;
@@ -40,7 +38,6 @@ export default class extends Unit implements IBall {
   public left: number = 0;
   public top: number = 0;
   public radius: number = 0;
-  public color: string = '#d2fdff';
   public speed: number = 0;
   public direction: number = 1;
   public rotateSpeed: number = 1;
@@ -55,25 +52,26 @@ export default class extends Unit implements IBall {
   }
 
   public animation(callback?: IanimationCallback) {
+    window.clearInterval(this.animationTimer);
+    this.animationTimer = setInterval(() => {
     const { direction, degree, speed, rotateSpeed, maxDegree, minDegree } = this;
+      // const _degree = degree - rotateSpeed * direction;
+      // this.degree = _degree > maxDegree ? maxDegree : _degree < minDegree ? minDegree : _degree;
 
-    // const _degree = degree - rotateSpeed * direction;
-    // this.degree = _degree > maxDegree ? maxDegree : _degree < minDegree ? minDegree : _degree;
-
-    this.top += speed;
-    // this.left += (Math.tan(this.degree * Math.PI/180) * speed);
-    callback && callback();
-    this.animationTimer = window.requestAnimationFrame(this.animation.bind(this, callback))
+      this.top += speed;
+      // this.left += (Math.tan(this.degree * Math.PI/180) * speed);
+      callback && callback();
+    }, 100)
   }
 
   public stopAnimation() {
-    window.cancelAnimationFrame(this.animationTimer);
+    window.clearInterval(this.animationTimer);
   }
 
   public paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset) {
-    const { color, radius } = this;
+    const { radius } = this;
     ctx.beginPath();
-    ctx.fillStyle = color;
+    ctx.fillStyle = '#d2fdff';
     ctx.arc(offset.left, offset.top, radius, 0, 2 * Math.PI);
     ctx.fill();
   }

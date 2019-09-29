@@ -32,7 +32,6 @@ export interface IEngine {
   units: IUnits;
   cameras: ICamera[];
   eventListener: IEventListener;
-  animationTimer: number;
   addEventListener(eventName: TEventName, event: Function): void;
   removeEventListener(eventName: TEventName, event: Function): void;
   createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T;
@@ -50,7 +49,6 @@ class Engine implements IEngine {
     touchStart: [],
     touchEnd: []
   };
-  public animationTimer = null;
 
   constructor(public container: HTMLElement) {
     container.style.position = 'relative';
@@ -95,7 +93,7 @@ class Engine implements IEngine {
   }
 
   public createCamera(config?: ICameraConfig): ICamera {
-    const camera = new Camera(this.container, config);
+    const camera = new Camera(this.container, this, config);
     camera.paint(this);
     this.cameras.push(camera);
     return camera;
@@ -104,18 +102,6 @@ class Engine implements IEngine {
   static getActualPixel(px) {
     const devicePixelRatio: number = window.devicePixelRatio || 1;
     return px * devicePixelRatio;
-  }
-
-  static animation(engine: IEngine) {
-    engine.animationTimer = window.requestAnimationFrame(Engine.animation.bind(this, engine));
-    for (let camera of engine.cameras) {
-      camera.paint(engine);
-    }
-    return null;
-  }
-
-  static stopAnimation(engine: IEngine) {
-    window.cancelAnimationFrame(engine.animationTimer);
   }
 
   static async loadResource(
