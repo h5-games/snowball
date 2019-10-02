@@ -1,4 +1,4 @@
-import Unit, { IUnitOffset } from './Unit';
+import Unit, { IUnit, IUnitOffset } from './Unit';
 
 interface ITrunk {
   width: number;
@@ -18,7 +18,7 @@ export interface ITerrConfig {
   src?: string;
 }
 
-export interface ITerr {
+export interface ITerr extends IUnit {
   width: number;
   height: number;
   left: number;

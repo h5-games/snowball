@@ -1,4 +1,4 @@
-import Unit, { IUnitOffset } from './Unit';
+import Unit, { IUnit, IUnitOffset } from './Unit';
 
 interface IanimationCallback {
   (): void
@@ -18,23 +18,7 @@ export interface IBallConfig {
   minDegree?: number;
 }
 
-export interface IBall {
-  left: number;
-  top: number;
-  radius: number;
-  speed: number;
-  direction: number;
-  rotateSpeed: number;
-  degree: number;
-  maxDegree: number;
-  minDegree: number;
-  animationTimer: number;
-  animation(callback?: IanimationCallback): void;
-  stopAnimation(): void;
-  paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset): void;
-}
-
-export default class extends Unit implements IBall {
+export default class extends Unit {
   public left: number = 0;
   public top: number = 0;
   public radius: number = 0;
@@ -61,7 +45,7 @@ export default class extends Unit implements IBall {
       this.top += speed;
       // this.left += (Math.tan(this.degree * Math.PI/180) * speed);
       callback && callback();
-    }, 100)
+    }, 20)
   }
 
   public stopAnimation() {
