@@ -1,5 +1,4 @@
 export const terrConfig = {
-  initialTerrNum: 20,
   terrSrc: '/static/images/terr.png',
   sizes: [
     {
@@ -24,3 +23,10 @@ export const terrConfig = {
     }
   ]
 };
+
+export const levelConfig = [
+  {
+    terrNum: 10,
+    ballSpeed: 2
+  }
+]

@@ -3,7 +3,13 @@ export interface IUnitOffset {
   left: number;
 }
 
-class Unit {
+export interface IUnit {
+  id: string;
+  zIndex: number;
+  visible: boolean;
+}
+
+class Unit implements IUnit {
   id: string = '';
   zIndex: number = 0;
   visible: boolean = true;
