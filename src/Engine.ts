@@ -93,7 +93,7 @@ class Engine implements IEngine {
   }
 
   public createCamera(config?: ICameraConfig): ICamera {
-    const camera = new Camera(this.container, this, config);
+    const camera = new Camera(this, config);
     camera.paint(this);
     this.cameras.push(camera);
     return camera;

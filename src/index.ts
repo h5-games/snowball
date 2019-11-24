@@ -37,7 +37,7 @@ const game: IGame = {
       radius: _offsetWidth / 35,
       left: _offsetWidth / 2,
       top: _offsetHeight / 3,
-      speed: Engine.getActualPixel(10)
+      speed: Engine.getActualPixel(5)
     });
 
     new Array(terrConfig.initialTerrNum)
