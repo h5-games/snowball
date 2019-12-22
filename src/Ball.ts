@@ -1,6 +1,6 @@
-import Unit, { IUnit, IUnitOffset } from './Unit';
+import Unit, { IUnitOffset } from './Unit';
 
-interface IanimationCallback {
+interface IAnimationCallback {
   (): void
 }
 
@@ -18,7 +18,7 @@ export interface IBallConfig {
   minDegree?: number;
 }
 
-export default class extends Unit {
+class Ball extends Unit {
   public left: number = 0;
   public top: number = 0;
   public radius: number = 0;
@@ -35,7 +35,7 @@ export default class extends Unit {
     config && Object.assign(this, config);
   }
 
-  public animation(callback?: IanimationCallback) {
+  public animation(callback?: IAnimationCallback) {
     window.clearInterval(this.animationTimer);
     this.animationTimer = setInterval(() => {
     const { direction, degree, speed, rotateSpeed, maxDegree, minDegree } = this;
@@ -60,3 +60,5 @@ export default class extends Unit {
     ctx.fill();
   }
 }
+
+export default Ball;

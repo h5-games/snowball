@@ -1,4 +1,4 @@
-import Engine, { IEngine } from './Engine';
+import Engine  from './Engine';
 
 export interface ICameraConfig {
   offsetLeft?: number;
@@ -19,8 +19,8 @@ export interface ICamera {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   timer: number;
-  updateConfig(config: ICameraConfig, engine: IEngine): ICamera;
-  paint(engine: IEngine): void;
+  updateConfig(config: ICameraConfig, engine: Engine): ICamera;
+  paint(engine: Engine): void;
 }
 
 class Camera implements ICamera {
@@ -34,7 +34,7 @@ class Camera implements ICamera {
   public ctx: CanvasRenderingContext2D = null;
   public timer: number = null;
 
-  constructor(engine: IEngine, config?: ICameraConfig) {
+  constructor(engine: Engine, config?: ICameraConfig) {
     const { container } = engine;
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     canvas.style.position = 'absolute';
@@ -49,12 +49,12 @@ class Camera implements ICamera {
     }
   }
 
-  public animation(engine: IEngine) {
+  public animation(engine: Engine) {
     this.paint(engine);
     this.timer = window.requestAnimationFrame(this.animation.bind(this, engine));
   }
 
-  public updateConfig(config: ICameraConfig, engine: IEngine) {
+  public updateConfig(config: ICameraConfig, engine: Engine) {
     Object.assign(this, config);
 
     const { width, height, left, top, canvas } = this;
@@ -71,7 +71,7 @@ class Camera implements ICamera {
     return this;
   }
 
-  public paint({ units }: IEngine) {
+  public paint({ units }: Engine) {
     const { ctx, canvas, offsetLeft, offsetTop } = this;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let key in units) {

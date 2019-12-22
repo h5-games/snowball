@@ -29,4 +29,4 @@ export const levelConfig = [
     terrNum: 10,
     ballSpeed: 2
   }
-]
+];

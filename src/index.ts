@@ -1,7 +1,7 @@
-import Engine, { IEngine, IResources } from './Engine';
+import Engine, { IResources } from './Engine';
 import Ball, { IBallConfig } from './Ball';
 import Terr, { ITerrConfig } from './Terr';
-import Util from './Util';
+import * as utils from './utils';
 import { ICamera } from './Camera';
 import { terrConfig, levelConfig } from './config';
 
@@ -19,7 +19,7 @@ interface IGetPosition {
 interface IGame {
   $el: HTMLElement,
   resources: IResources;
-  engine: IEngine;
+  engine: Engine;
   level: number;
   ball: Ball;
   terrs: {
@@ -66,7 +66,7 @@ const game: IGame = {
       right: _offsetWidth - size.width,
       top: _offsetHeight / 2,
       bottom: _offsetHeight + _offsetHeight / 2
-    }))
+    }));
 
     game.camera = engine.createCamera({
       width: el.offsetWidth,
@@ -117,8 +117,8 @@ const game: IGame = {
         const height = Engine.getActualPixel(size.height);
         const position = getPosition({ width, height });
 
-        const left = Util.randomPosition(position.left, position.right);
-        const top = Util.randomPosition(position.top, position.bottom);
+        const left = utils.randomPosition(position.left, position.right);
+        const top = utils.randomPosition(position.top, position.bottom);
 
         return {
           left, top, width, height,

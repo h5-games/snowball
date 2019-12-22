@@ -1,8 +1,8 @@
 import Camera, { ICameraConfig, ICamera } from './Camera';
+import Scene from './Scene';
 
 interface IUnits {
-  [id: string]: any;
-  length: number;
+  [type: string]: any;
 }
 
 interface ITouchEvent {
@@ -27,22 +27,8 @@ export interface IResources {
   }
 }
 
-export interface IEngine {
-  container: HTMLElement;
-  units: IUnits;
-  cameras: ICamera[];
-  eventListener: IEventListener;
-  addEventListener(eventName: TEventName, event: Function): void;
-  removeEventListener(eventName: TEventName, event: Function): void;
-  createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T;
-  deleteUnit(id: string): void;
-  createCamera(config: ICameraConfig): ICamera;
-}
-
-class Engine implements IEngine {
-  public units: IUnits = {
-    length: 0
-  };
+class Engine {
+  public units: IUnits = new Set();
   public cameras: ICamera[] = [];
 
   public eventListener: IEventListener = {
@@ -98,6 +84,8 @@ class Engine implements IEngine {
     this.cameras.push(camera);
     return camera;
   }
+
+  static Scene = Scene;
 
   static getActualPixel(px) {
     const devicePixelRatio: number = window.devicePixelRatio || 1;

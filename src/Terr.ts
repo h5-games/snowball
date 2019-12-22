@@ -1,4 +1,4 @@
-import Unit, { IUnit, IUnitOffset } from './Unit';
+import Unit, { IUnitOffset } from './Unit';
 
 interface ITrunk {
   width: number;
@@ -18,17 +18,7 @@ export interface ITerrConfig {
   src?: string;
 }
 
-export interface ITerr extends IUnit {
-  width: number;
-  height: number;
-  left: number;
-  top: number;
-  trunk: ITrunk;
-  src: string;
-  paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset): void;
-}
-
-export default class extends Unit implements ITerr {
+class Terr extends Unit {
   public width: number = 0;
   public height: number = 0;
   public left: number = 0;
@@ -57,3 +47,5 @@ export default class extends Unit implements ITerr {
     // ctx.fill();
   }
 }
+
+export default Terr;
