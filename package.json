@@ -1,28 +1,25 @@
 {
   "name": "ball",
-  "version": "1.0.0",
   "repository": "git@github.com:yijic/ball.git",
   "author": "Jcae",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "start": "webpack-dev-server --open --mode=development",
-    "build": "webpack --mode=production --progress"
-  },
-  "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.5",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-0": "^6.24.1",
-    "copy-webpack-plugin": "^5.0.2",
-    "html-webpack-plugin": "^3.2.0",
-    "ts-loader": "^5.3.0",
-    "webpack": "^4.16.4",
-    "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "^3.1.11"
+    "build": "webpack --mode=production --progress",
+    "prettier": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,scss,css}'"
   },
   "dependencies": {
-    "babel-polyfill": "^6.26.0",
-    "typescript": "^3.1.6"
+    "typescript": "^3.9.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "babel-loader": "^8.1.0",
+    "copy-webpack-plugin": "^6.0.3",
+    "html-webpack-plugin": "^4.3.0",
+    "prettier": "^2.0.5",
+    "ts-loader": "^8.0.2",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   }
 }

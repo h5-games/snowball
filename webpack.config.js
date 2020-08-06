@@ -3,16 +3,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  mode: 'production',
-
   resolve: {
     extensions: ['.js', '.ts']
   },
 
-  entry: [
-    'babel-polyfill',
-    './src'
-  ],
+  entry: './src',
 
   output: {
     path: path.resolve(__dirname, 'build'),
@@ -22,34 +17,30 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        use: 'babel-loader'
-      },
-      {
         test: /\.ts$/,
-        use: [
-          'babel-loader',
-          'ts-loader'
-        ]
+        use: ['babel-loader', 'ts-loader']
       }
     ]
   },
 
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve('', 'src/index.html')
+      template: path.resolve(__dirname, 'public/index.html')
     }),
-    new CopyWebpackPlugin([
-      { 
-        from: 'static',
-        context: path.resolve('')
-      }
-    ])
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'public'
+        }
+      ]
+    })
   ],
 
   devServer: {
     inline: true,
     progress: true,
+    contentBase: './public',
+    hot: true,
     overlay: {
       warnings: true,
       errors: true

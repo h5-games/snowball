@@ -1,4 +1,4 @@
-import Engine  from './Engine';
+import Engine from './Engine';
 
 export interface ICameraConfig {
   offsetLeft?: number;
@@ -51,7 +51,9 @@ class Camera implements ICamera {
 
   public animation(engine: Engine) {
     this.paint(engine);
-    this.timer = window.requestAnimationFrame(this.animation.bind(this, engine));
+    this.timer = window.requestAnimationFrame(
+      this.animation.bind(this, engine)
+    );
   }
 
   public updateConfig(config: ICameraConfig, engine: Engine) {
@@ -77,10 +79,11 @@ class Camera implements ICamera {
     for (let key in units) {
       if (!units.hasOwnProperty(key) || key === 'length') continue;
       const unit = units[key];
-      unit.paint && unit.paint(ctx, {
-        left: unit.left - offsetLeft,
-        top: unit.top + offsetTop
-      });
+      unit.paint &&
+        unit.paint(ctx, {
+          left: unit.left - offsetLeft,
+          top: unit.top + offsetTop
+        });
     }
   }
 }

@@ -21,10 +21,15 @@ export default class Ball implements BallInterface {
     if (isTouch) {
       const _direction = direction ? 1 : -1;
       const _degree = degree - computedPixe(1) * _direction;
-      this.degree = _degree > maxDegree ? maxDegree : _degree < minDegree ? minDegree : _degree; 
+      this.degree =
+        _degree > maxDegree
+          ? maxDegree
+          : _degree < minDegree
+          ? minDegree
+          : _degree;
     }
 
     this.top += space;
-    this.left += (Math.tan(this.degree * Math.PI/180) * space);
+    this.left += Math.tan((this.degree * Math.PI) / 180) * space;
   }
 }

@@ -59,16 +59,16 @@ const engine: engineInterface = {
   async loadResource(resources, callback) {
     const resourceKeys = Object.keys(resources);
     let _resources = {};
-    for (let i = 0; i < resourceKeys.length; i ++) {
+    for (let i = 0; i < resourceKeys.length; i++) {
       const key = resourceKeys[i];
-      _resources[key] = await new Promise((resolve) => {
+      _resources[key] = await new Promise(resolve => {
         const img: HTMLImageElement = new Image();
         img.src = resources[key];
         img.onload = function () {
           callback((i + 1) / resourceKeys.length);
           resolve(img);
-        }
-      })
+        };
+      });
     }
     return _resources;
   },
@@ -98,7 +98,7 @@ const engine: engineInterface = {
       e.preventDefault();
       if (!engine.startStatus) {
         engine.gameStart();
-        return
+        return;
       }
       engine.isTouch = true;
       engine.ball.direction = !engine.ball.direction;
@@ -107,7 +107,7 @@ const engine: engineInterface = {
     canvas.addEventListener('touchend', e => {
       e.preventDefault();
       engine.isTouch = false;
-    })
+    });
   },
 
   /**
@@ -150,7 +150,7 @@ const engine: engineInterface = {
         console.log(newTerr);
 
         terrList[newTerr.id] = newTerr;
-        return
+        return;
       }
       engine.paintTerr(terr);
     });
@@ -195,8 +195,8 @@ const engine: engineInterface = {
       if (index < 0) return;
 
       const { left, top, degree } = ballTailList[index];
-      const radius = ballRadius - (ballRadius * (index + 1) / tailListsLength);
-      const radian = degree * Math.PI / 180;
+      const radius = ballRadius - (ballRadius * (index + 1)) / tailListsLength;
+      const radian = (degree * Math.PI) / 180;
       const cos = Math.cos(radian) * radius * step;
       const sin = Math.sin(radian) * radius * step;
       context.lineTo(left - cos, top + sin - canvasOffsetTop);
@@ -204,7 +204,7 @@ const engine: engineInterface = {
       if (index === tailListsLength - 1) step = -1;
       index += step;
       paint();
-    };
+    }
     paint();
 
     context.fillStyle = '#EEE';
@@ -222,7 +222,12 @@ const engine: engineInterface = {
     Img.src = config.resources.terrImagePath;
     context.drawImage(Img, left, top - canvasOffsetTop, width, height);
     context.fillStyle = '#333';
-    context.rect(trunk.left, trunk.top - canvasOffsetTop, trunk.width, trunk.height);
+    context.rect(
+      trunk.left,
+      trunk.top - canvasOffsetTop,
+      trunk.width,
+      trunk.height
+    );
     context.fill();
   }
 };

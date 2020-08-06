@@ -12,7 +12,7 @@ export default class Terr implements TerrInterface {
     height: 0,
     left: 0,
     top: 0
-  }
+  };
   constructor(engine: engineInterface) {
     console.log(engine);
   }

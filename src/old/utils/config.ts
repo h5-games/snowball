@@ -1,11 +1,11 @@
 interface configInterface {
-  terrSizes: number[]
+  terrSizes: number[];
 
-  ballRadius: number
+  ballRadius: number;
 
   init: {
-    (canvas: any): void
-  }
+    (canvas: any): void;
+  };
 }
 
 const config: configInterface = {
@@ -14,9 +14,9 @@ const config: configInterface = {
   ballRadius: 0,
 
   init({ width }) {
-    config.terrSizes = [width * 0.08, width * 0.1]
-    config.ballRadius = width * 0.022
+    config.terrSizes = [width * 0.08, width * 0.1];
+    config.ballRadius = width * 0.022;
   }
-}
+};
 
 export default config;

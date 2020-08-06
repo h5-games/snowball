@@ -1,7 +1,7 @@
 /// <reference path="../index.d.ts"/>
 
 interface computedPixeInterface {
-  (pixe: number): number
+  (pixe: number): number;
 }
 
 /**
@@ -10,11 +10,14 @@ interface computedPixeInterface {
  * @returns {number} 计算后的像素
  */
 export const computedPixe: computedPixeInterface = function (pixe) {
-  return pixe * (window.devicePixelRatio || 1)
-}
+  return pixe * (window.devicePixelRatio || 1);
+};
 
 interface sortTerrInterface {
-  (terrList: { [key: string]: TerrInterface}, callback: CallableFunction): void
+  (
+    terrList: { [key: string]: TerrInterface },
+    callback: CallableFunction
+  ): void;
 }
 
 /**
@@ -23,8 +26,7 @@ interface sortTerrInterface {
  * @param callback {function} 排序完成后每个树的回调
  */
 export const sortTerr: sortTerrInterface = function (terrList, callback) {
-  Object
-    .values(terrList)
-    .sort((x, y) => (x.top + x.height) - (y.top + y.height))
+  Object.values(terrList)
+    .sort((x, y) => x.top + x.height - (y.top + y.height))
     .forEach(terr => callback(terr));
-}
+};

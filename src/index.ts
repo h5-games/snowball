@@ -13,17 +13,17 @@ interface ICreateTerrPosition {
 }
 
 interface IGetPosition {
-  (size): ICreateTerrPosition
+  (size): ICreateTerrPosition;
 }
 
 interface IGame {
-  $el: HTMLElement,
+  $el: HTMLElement;
   resources: IResources;
   engine: Engine;
   level: number;
   ball: Ball;
   terrs: {
-    [propName: string]: Terr
+    [propName: string]: Terr;
   };
   camera: ICamera;
   initial(): void;
@@ -90,13 +90,13 @@ const game: IGame = {
           engine.deleteUnit(id);
         }
       }
-      const top = ball.top + (_offsetHeight * (2 / 3))
+      const top = ball.top + _offsetHeight * (2 / 3);
       game.createTerr(size => ({
         left: 0,
         right: _offsetWidth - size.width,
         top,
         bottom: _offsetHeight + top
-      }))
+      }));
     });
     engine.removeEventListener('touchStart', game.startGame);
     game.startGame = null;
@@ -111,7 +111,8 @@ const game: IGame = {
     new Array(level.terrNum - Object.keys(terrs).length)
       .fill(null)
       .map(() => {
-        const size = terrConfig.sizes[Math.floor(Math.random() * terrConfig.sizes.length)];
+        const size =
+          terrConfig.sizes[Math.floor(Math.random() * terrConfig.sizes.length)];
         const { trunk } = size;
         const width = Engine.getActualPixel(size.width);
         const height = Engine.getActualPixel(size.height);
@@ -121,7 +122,10 @@ const game: IGame = {
         const top = utils.randomPosition(position.top, position.bottom);
 
         return {
-          left, top, width, height,
+          left,
+          top,
+          width,
+          height,
           trunk: {
             width: Engine.getActualPixel(trunk.width),
             height: Engine.getActualPixel(trunk.height),
@@ -129,9 +133,9 @@ const game: IGame = {
             top: top + Engine.getActualPixel(trunk.top)
           },
           src: terrResource.src
-        }
+        };
       })
-      .sort((x, y) => (x.top + x.height) - (y.top + y.height))
+      .sort((x, y) => x.top + x.height - (y.top + y.height))
       .forEach(config => {
         const terr = engine.createUnit<Terr, ITerrConfig>(Terr, config);
         terrs[terr.id] = terr;
@@ -142,4 +146,3 @@ const game: IGame = {
 game.initial();
 
 (<any>window).game = game;
-

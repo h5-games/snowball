@@ -5,9 +5,7 @@ interface IEntity {
 class Scene {
   public entityMap: IEntity = {};
 
-  constructor() {
-
-  }
+  constructor() {}
 }
 
 export default Scene;

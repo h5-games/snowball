@@ -6,7 +6,7 @@ interface IUnits {
 }
 
 interface ITouchEvent {
-  (e: TouchEvent): void
+  (e: TouchEvent): void;
 }
 
 interface IEventListener {
@@ -15,7 +15,7 @@ interface IEventListener {
 }
 
 interface IUnitConstructor<T, U> {
-  new(config?: U): T
+  new (config?: U): T;
 }
 
 type TEventName = 'touchStart' | 'touchEnd';
@@ -24,7 +24,7 @@ export interface IResources {
   [resourceName: string]: {
     src: string;
     status?: string;
-  }
+  };
 }
 
 class Engine {
@@ -48,22 +48,21 @@ class Engine {
     });
   }
 
-  public addEventListener(
-    eventName: TEventName,
-    event: ITouchEvent
-  ) {
+  public addEventListener(eventName: TEventName, event: ITouchEvent) {
     this.eventListener[eventName].push(event);
   }
 
-  public removeEventListener(
-    eventName: TEventName,
-    event: ITouchEvent
-  ) {
-    const index = this.eventListener[eventName].findIndex(item => item === event);
+  public removeEventListener(eventName: TEventName, event: ITouchEvent) {
+    const index = this.eventListener[eventName].findIndex(
+      item => item === event
+    );
     delete this.eventListener[eventName][index];
   }
 
-  public createUnit<T, U>(UnitConstructor: IUnitConstructor<T, U>, config?: U): T {
+  public createUnit<T, U>(
+    UnitConstructor: IUnitConstructor<T, U>,
+    config?: U
+  ): T {
     const id = this.units.length + 1;
     const unit = new UnitConstructor({
       ...config,
@@ -95,7 +94,7 @@ class Engine {
   static async loadResource(
     resources: IResources,
     callback?: {
-      (progress: number): void
+      (progress: number): void;
     }
   ): Promise<IResources> {
     let _resources: IResources = {};

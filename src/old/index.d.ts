@@ -1,113 +1,113 @@
 interface resourcesInterface {
-  terrImagePath?: string
+  terrImagePath?: string;
 }
 
 interface resourcesElementInterface {
-  terrImagePath?: HTMLImageElement
+  terrImagePath?: HTMLImageElement;
 }
 
 interface engineConfig {
-  resources: resourcesInterface
-  initialSpace?: number
-  ballInitialTop?: number
-  ballTailMaxLength?: number
+  resources: resourcesInterface;
+  initialSpace?: number;
+  ballInitialTop?: number;
+  ballTailMaxLength?: number;
 }
 
 interface engineInterface {
-  config: engineConfig
-  space: number
-  terrNum: number
-  canvasOffsetTop?: number
-  canvas: HTMLCanvasElement
-  context: CanvasRenderingContext2D
-  startStatus: boolean
-  gameTimer: number
-  ball: BallInterface
-  ballTailList: ballTailInterface[]
+  config: engineConfig;
+  space: number;
+  terrNum: number;
+  canvasOffsetTop?: number;
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  startStatus: boolean;
+  gameTimer: number;
+  ball: BallInterface;
+  ballTailList: ballTailInterface[];
   terrList: {
-    [key: string]: TerrInterface
-  },
-  isTouch: boolean
+    [key: string]: TerrInterface;
+  };
+  isTouch: boolean;
 
   initEngine: {
-    (el: HTMLElement, config?: engineConfig): void
-  }
+    (el: HTMLElement, config?: engineConfig): void;
+  };
   loadResource: {
     (
-      resources: resourcesInterface, 
+      resources: resourcesInterface,
       callback?: {
-        (progress: number): void
+        (progress: number): void;
       }
-    ): Promise<resourcesElementInterface>
-  }
+    ): Promise<resourcesElementInterface>;
+  };
   initGame: {
-    (): void
-  }
+    (): void;
+  };
   gameStart: {
-    (): void
-  }
+    (): void;
+  };
   transform: {
-    (): void
-  }
+    (): void;
+  };
   clearCanvas: {
-    (): void
-  }
+    (): void;
+  };
   paintBall: {
-    (ball: BallInterface): void
-  }
+    (ball: BallInterface): void;
+  };
   paintBallTail: {
-    (ballTailList: ballTailInterface[]): void
-  }
+    (ballTailList: ballTailInterface[]): void;
+  };
   paintTerr: {
-    (terr: TerrInterface): void
-  }
+    (terr: TerrInterface): void;
+  };
 }
 
 interface BallConfigInterface {
-  left?: number
-  top?: number
-  direction?: boolean
-  radius?: number
-  color?: string
-  space?: number
+  left?: number;
+  top?: number;
+  direction?: boolean;
+  radius?: number;
+  color?: string;
+  space?: number;
 }
 
 interface BallInterface {
-  left: number
-  top: number
-  direction: boolean
-  radius: number
-  color: string
-  degree: number
-  maxDegree: number
-  minDegree: number
+  left: number;
+  top: number;
+  direction: boolean;
+  radius: number;
+  color: string;
+  degree: number;
+  maxDegree: number;
+  minDegree: number;
   move: {
-    (engine: engineInterface): void
-  }
+    (engine: engineInterface): void;
+  };
 }
 
 interface ballTailInterface {
-  left: number
-  top: number
-  degree: number
+  left: number;
+  top: number;
+  degree: number;
 }
 
 interface TerrConfigInterface {
-  size: number
-  left: number
-  top: number
+  size: number;
+  left: number;
+  top: number;
 }
 
 interface TerrInterface {
-  id: string
-  width: number
-  height: number
-  left: number
-  top: number
+  id: string;
+  width: number;
+  height: number;
+  left: number;
+  top: number;
   trunk: {
-    width: number
-    height: number
-    left: number
-    top: number
-  }
+    width: number;
+    height: number;
+    left: number;
+    top: number;
+  };
 }
