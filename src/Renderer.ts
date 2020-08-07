@@ -20,7 +20,7 @@ class Renderer {
     Object.assign(this, {
       width,
       height
-    })
+    });
   }
 
   render(scene: Scene, camera: Camera) {

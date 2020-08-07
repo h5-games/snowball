@@ -11,7 +11,6 @@ class Entity {
 
   constructor(element) {
     this.id = getRandomId();
-
   }
 }
 

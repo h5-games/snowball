@@ -14,4 +14,3 @@ window.addEventListener('resize', () => {
 const scene = new Scene();
 const tree = new Entity();
 scene.add(tree);
-

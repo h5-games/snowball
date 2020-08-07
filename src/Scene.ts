@@ -2,7 +2,7 @@ import Entity from './Entity';
 
 type EntityMap = {
   [type: string]: Entity;
-}
+};
 
 class Scene {
   entityMap: EntityMap = {};
