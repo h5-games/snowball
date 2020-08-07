@@ -1,35 +1,71 @@
-/// <reference path="index.d.ts"/>
-import { computedPixe } from './utils';
+import Unit, { IUnitOffset } from './Unit';
 
-export default class Ball implements BallInterface {
-  left = 0;
-  top = 0;
-  direction = true;
-  radius = 0;
-  color = '#d2fdff';
-  degree = 0;
-  maxDegree = 50;
-  minDegree = -50;
+interface IAnimationCallback {
+  (): void;
+}
 
-  constructor(config: engineInterface) {
-    console.log(config);
+export interface IBallConfig {
+  visible?: boolean;
+  zIndex?: number;
+  left?: number;
+  top?: number;
+  radius?: number;
+  speed?: number;
+  direction?: number;
+  rotateSpeed?: number;
+  degree?: number;
+  maxDegree?: number;
+  minDegree?: number;
+}
+
+class Ball extends Unit {
+  public left: number = 0;
+  public top: number = 0;
+  public radius: number = 0;
+  public speed: number = 0;
+  public direction: number = 1;
+  public rotateSpeed: number = 1;
+  public degree: number = 0;
+  public maxDegree: number = 50;
+  public minDegree: number = -50;
+  public animationTimer = null;
+
+  constructor(config?: IBallConfig) {
+    super();
+    config && Object.assign(this, config);
   }
 
-  move({ isTouch, space }) {
-    const { direction, degree, maxDegree, minDegree } = this;
+  public animation(callback?: IAnimationCallback) {
+    window.clearInterval(this.animationTimer);
+    this.animationTimer = setInterval(() => {
+      const {
+        direction,
+        degree,
+        speed,
+        rotateSpeed,
+        maxDegree,
+        minDegree
+      } = this;
+      // const _degree = degree - rotateSpeed * direction;
+      // this.degree = _degree > maxDegree ? maxDegree : _degree < minDegree ? minDegree : _degree;
 
-    if (isTouch) {
-      const _direction = direction ? 1 : -1;
-      const _degree = degree - computedPixe(1) * _direction;
-      this.degree =
-        _degree > maxDegree
-          ? maxDegree
-          : _degree < minDegree
-          ? minDegree
-          : _degree;
-    }
+      this.top += speed;
+      // this.left += (Math.tan(this.degree * Math.PI/180) * speed);
+      callback && callback();
+    }, 20);
+  }
 
-    this.top += space;
-    this.left += Math.tan((this.degree * Math.PI) / 180) * space;
+  public stopAnimation() {
+    window.clearInterval(this.animationTimer);
+  }
+
+  public paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset) {
+    const { radius } = this;
+    ctx.beginPath();
+    ctx.fillStyle = '#d2fdff';
+    ctx.arc(offset.left, offset.top, radius, 0, 2 * Math.PI);
+    ctx.fill();
   }
 }
+
+export default Ball;

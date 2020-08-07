@@ -1,11 +1,15 @@
-interface IEntity {
-  [type: string]: any;
+import Entity from './Entity';
+
+type EntityMap = {
+  [type: string]: Entity;
 }
 
 class Scene {
-  public entityMap: IEntity = {};
+  entityMap: EntityMap = {};
 
-  constructor() {}
+  add(entity: Entity) {
+    this.entityMap[entity.id] = entity;
+  }
 }
 
 export default Scene;

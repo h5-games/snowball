@@ -1,19 +1,51 @@
-/// <reference path="index.d.ts"/>
-import config from './utils/config';
+import Unit, { IUnitOffset } from './Unit';
 
-export default class Terr implements TerrInterface {
-  id = '';
-  width = 0;
-  height = 0;
-  left = 0;
-  top = 0;
-  trunk = {
+interface ITrunk {
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+}
+
+export interface ITerrConfig {
+  visible?: boolean;
+  zIndex?: number;
+  width?: number;
+  height?: number;
+  left?: number;
+  top?: number;
+  trunk?: ITrunk;
+  src?: string;
+}
+
+class Terr extends Unit {
+  public width: number = 0;
+  public height: number = 0;
+  public left: number = 0;
+  public top: number = 0;
+  public trunk: ITrunk = {
     width: 0,
     height: 0,
     left: 0,
     top: 0
   };
-  constructor(engine: engineInterface) {
-    console.log(engine);
+  public src: string = null;
+
+  constructor(config?: ITerrConfig) {
+    super();
+    config && Object.assign(this, config);
+  }
+
+  public paint(ctx: CanvasRenderingContext2D, offset: IUnitOffset) {
+    const { width, height, trunk, src } = this;
+    const img = new Image();
+    img.src = src;
+    ctx.beginPath();
+    ctx.drawImage(img, offset.left, offset.top, width, height);
+    // ctx.fillStyle = 'red';
+    // ctx.rect(trunk.left, trunk.top, trunk.width, trunk.height);
+    // ctx.fill();
   }
 }
+
+export default Terr;

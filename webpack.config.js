@@ -39,7 +39,8 @@ module.exports = {
   devServer: {
     inline: true,
     progress: true,
-    contentBase: './public',
+    historyApiFallback: true,
+    contentBase: path.resolve(__dirname, './public'),
     hot: true,
     overlay: {
       warnings: true,
