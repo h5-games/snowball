@@ -1,16 +1,33 @@
 import { getRandomId } from './utils';
 
-type EntityType = 'still' | 'movable';
+type EntityType = 'text' | 'image' | 'atomic';
 
-class Entity {
+export interface EntityData {
+  [key: string]: any;
+}
+
+export interface EntityRender {
+  (ctx: CanvasRenderingContext2D): void;
+}
+
+interface EntityInterface {
   id?: string;
+  zIndex?: number;
+  render: EntityRender;
+}
 
-  type?: EntityType = 'movable';
+class Entity implements EntityInterface {
+  id?: string;
 
   zIndex?: number = 0;
 
-  constructor(element) {
+  constructor(public type: EntityType, public data: EntityData) {
     this.id = getRandomId();
+  }
+
+  render(ctx: CanvasRenderingContext2D) {
+    const { data } = this;
+    console.log(ctx, data);
   }
 }
 

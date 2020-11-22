@@ -1,10 +1,19 @@
-import Renderer from './Renderer';
+import Renderer, { EntityRenderMap } from './Renderer';
 import Scene from './Scene';
 import Entity from './Entity';
 
+const entityRenderMap: EntityRenderMap = new Map();
+
+entityRenderMap.set('atomic', function (ctx) {
+  console.log(ctx, this);
+})
+
 const { offsetWidth, offsetHeight } = document.body;
-const renderer = new Renderer(offsetWidth, offsetHeight);
-document.body.appendChild(renderer.domElement);
+
+const renderer = new Renderer(offsetWidth, offsetHeight, {
+  entityRenderMap
+});
+document.body.appendChild(renderer.dom);
 
 window.addEventListener('resize', () => {
   const { offsetWidth, offsetHeight } = document.body;
@@ -12,5 +21,7 @@ window.addEventListener('resize', () => {
 });
 
 const scene = new Scene();
-const tree = new Entity();
+const tree = new Entity('image', {
+  url: '/images/terr.png'
+});
 scene.add(tree);

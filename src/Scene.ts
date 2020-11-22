@@ -1,14 +1,12 @@
 import Entity from './Entity';
 
-type EntityMap = {
-  [type: string]: Entity;
-};
+type EntityMap = Map<string, Entity>
 
 class Scene {
-  entityMap: EntityMap = {};
+  entityMap: EntityMap = new Map();
 
   add(entity: Entity) {
-    this.entityMap[entity.id] = entity;
+    this.entityMap.set(entity.id, entity);
   }
 }
 
