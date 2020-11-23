@@ -1,6 +1,6 @@
 import Entity from './Entity';
 
-type EntityMap = Map<string, Entity>
+type EntityMap = Map<string, Entity>;
 
 class Scene {
   entityMap: EntityMap = new Map();

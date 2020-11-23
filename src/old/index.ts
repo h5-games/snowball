@@ -82,7 +82,7 @@ const game: IGame = {
 
     ball.animation(() => {
       camera.offsetTop -= ball.speed;
-      for (let id in terrs) {
+      for (const id in terrs) {
         if (!terrs.hasOwnProperty(id)) continue;
         const terr = terrs[id];
         if (terr.top + terr.height + camera.offsetTop < 0) {

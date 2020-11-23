@@ -1,17 +1,17 @@
-type TerrSize = {
+interface TerrSize {
   width: number;
   height: number;
-};
+}
 
-type TerrPosition = {
+interface TerrPosition {
   top: number;
   left: number;
-};
+}
 
-type TerrConfig = {
+interface TerrConfig {
   size?: Partial<TerrSize>;
   position?: Partial<TerrPosition>;
-};
+}
 
 class Terr {
   size: TerrSize = {

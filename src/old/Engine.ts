@@ -97,9 +97,9 @@ class Engine {
       (progress: number): void;
     }
   ): Promise<IResources> {
-    let _resources: IResources = {};
+    const _resources: IResources = {};
     const length: number = Object.keys(resources).length;
-    for (let key in resources) {
+    for (const key in resources) {
       if (!resources.hasOwnProperty(key)) continue;
       const _length = Object.keys(_resources).length;
       _resources[key] = await new Promise(resolve => {

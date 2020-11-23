@@ -5,7 +5,7 @@ import { EntityRender } from './Entity';
 export type EntityRenderMap = Map<string, EntityRender>;
 
 interface RendererProps {
-  entityRenderMap: EntityRenderMap
+  entityRenderMap: EntityRenderMap;
 }
 
 const entityRenderMap = new Map();
@@ -19,16 +19,17 @@ class Renderer {
 
   constructor(width, height, props: RendererProps) {
     const dom = document.createElement('canvas');
+    Object.assign(this, {
+      dom,
+      ctx: dom.getContext('2d')
+    });
     if (width && height) {
       this.setSize(width, height);
     }
-    Object.assign(this, {
-      dom, ctx: dom.getContext('2d')
-    });
     if (props.entityRenderMap) {
       props.entityRenderMap.forEach((render, key) => {
         this.entityRenderMap.set(key, render);
-      })
+      });
     }
   }
 
@@ -43,10 +44,15 @@ class Renderer {
   }
 
   render(scene: Scene, camera: Camera) {
-    const { ctx } = this;
+    const { ctx, entityRenderMap } = this;
     scene.entityMap.forEach(entity => {
-      entity.render.call(entity, ctx);
-    })
+      const render = entityRenderMap.get(entity.type);
+      if (render) {
+        render.call(entity, ctx);
+      } else {
+        entity.render(ctx);
+      }
+    });
   }
 }
 

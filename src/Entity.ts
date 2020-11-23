@@ -13,6 +13,7 @@ export interface EntityRender {
 interface EntityInterface {
   id?: string;
   zIndex?: number;
+  type: EntityType;
   render: EntityRender;
 }
 

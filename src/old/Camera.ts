@@ -76,7 +76,7 @@ class Camera implements ICamera {
   public paint({ units }: Engine) {
     const { ctx, canvas, offsetLeft, offsetTop } = this;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let key in units) {
+    for (const key in units) {
       if (!units.hasOwnProperty(key) || key === 'length') continue;
       const unit = units[key];
       unit.paint &&
