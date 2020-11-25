@@ -22,7 +22,7 @@ window.addEventListener('resize', () => {
 });
 
 const scene = new Scene();
-const tree = new Entity('image', {
+const tree = new Entity('image', [10, 10, 10, 20], {
   url: '/images/terr.png'
 });
 scene.add(tree);

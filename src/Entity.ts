@@ -1,6 +1,15 @@
 import { getRandomId } from './utils';
 
-type EntityType = 'text' | 'image' | 'atomic';
+type Keys<T> = { [P in keyof T]: P }[keyof T];
+
+type DefaultEntityType = 'image';
+
+type Args = any[];
+
+export type EntityType =
+  | DefaultEntityType
+  | 'atomic'
+  | Keys<CanvasRenderingContext2D>;
 
 export interface EntityData {
   [key: string]: any;
@@ -11,18 +20,21 @@ export interface EntityRender {
 }
 
 interface EntityInterface {
-  id?: string;
-  zIndex?: number;
+  id: string;
   type: EntityType;
+  args: Args;
+  data?: EntityData;
   render: EntityRender;
 }
 
 class Entity implements EntityInterface {
-  id?: string;
+  id: string;
 
-  zIndex?: number = 0;
-
-  constructor(public type: EntityType, public data: EntityData) {
+  constructor(
+    public type: EntityType,
+    public args: Args,
+    public data?: EntityData
+  ) {
     this.id = getRandomId();
   }
 

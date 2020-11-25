@@ -1,21 +1,26 @@
 import Scene from './Scene';
 import Camera from './Camera';
-import { EntityRender } from './Entity';
+import { EntityRender, EntityType } from './Entity';
 
-export type EntityRenderMap = Map<string, EntityRender>;
+export type EntityRenderMap = Map<EntityType, EntityRender>;
 
 interface RendererProps {
   entityRenderMap: EntityRenderMap;
 }
 
-const entityRenderMap = new Map();
+const entityRenderMap: EntityRenderMap = new Map();
+
+entityRenderMap.set('image', function (ctx) {
+  const { args, data } = this;
+  console.log('render image', args, data);
+});
 
 class Renderer {
   dom: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   width: number;
   height: number;
-  entityRenderMap = entityRenderMap;
+  entityRenderMap: EntityRenderMap = entityRenderMap;
 
   constructor(width, height, props: RendererProps) {
     const dom = document.createElement('canvas');
