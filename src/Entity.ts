@@ -16,7 +16,7 @@ export interface EntityData {
 }
 
 export interface EntityRender {
-  (ctx: CanvasRenderingContext2D): void;
+  (this: EntityInterface, ctx: CanvasRenderingContext2D): void;
 }
 
 interface EntityInterface {

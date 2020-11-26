@@ -12,7 +12,12 @@ const entityRenderMap: EntityRenderMap = new Map();
 
 entityRenderMap.set('image', function (ctx) {
   const { args, data } = this;
-  console.log('render image', args, data);
+  const image = new Image();
+  image.src = data.url;
+  const [dx, dy, dw, dh] = args;
+
+  ctx.beginPath();
+  ctx.drawImage(image, dx, dy, dw, dh);
 });
 
 class Renderer {

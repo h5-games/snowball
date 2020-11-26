@@ -1,5 +1,5 @@
 import Renderer, { EntityRenderMap } from './Renderer';
-import Scene from './Scene';
+import Engine from './Engine';
 import Entity from './Entity';
 import Camera from './Camera';
 
@@ -21,12 +21,17 @@ window.addEventListener('resize', () => {
   renderer.setSize(offsetWidth, offsetHeight);
 });
 
-const scene = new Scene();
-const tree = new Entity('image', [10, 10, 10, 20], {
-  url: '/images/terr.png'
-});
-scene.add(tree);
+(async function () {
+  const { treeUrl } = await Engine.loadResource({
+    treeUrl: '/images/terr.png'
+  });
 
-const camera = new Camera();
+  const scene = new Engine.Scene();
+  const tree = new Entity('image', [10, 10, 10, 20], {
+    url: '/images/terr.png'
+  });
+  scene.add(tree);
+  const camera = new Camera();
 
-renderer.render(scene, camera);
+  renderer.render(scene, camera);
+})();
