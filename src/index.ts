@@ -2,6 +2,7 @@ import Renderer, { EntityRenderMap } from './Renderer';
 import Engine from './Engine';
 import Entity from './Entity';
 import Camera from './Camera';
+import { getActualPixel } from './utils';
 
 const entityRenderMap: EntityRenderMap = new Map();
 
@@ -22,14 +23,21 @@ window.addEventListener('resize', () => {
 });
 
 (async function () {
-  const { treeUrl } = await Engine.loadResource({
-    treeUrl: '/images/terr.png'
-  });
+  const [treeResource] = await Engine.loadResource(['/images/terr.png']);
 
   const scene = new Engine.Scene();
-  const tree = new Entity('image', [10, 10, 10, 20], {
-    url: '/images/terr.png'
-  });
+  const tree = new Entity(
+    'image',
+    [
+      getActualPixel(0),
+      getActualPixel(0),
+      getActualPixel(284),
+      getActualPixel(561)
+    ],
+    {
+      resource: treeResource
+    }
+  );
   scene.add(tree);
   const camera = new Camera();
 

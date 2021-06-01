@@ -1,6 +1,7 @@
 import Scene from './Scene';
 import Camera from './Camera';
 import { EntityRender, EntityType } from './Entity';
+import { getActualPixel } from './utils';
 
 export type EntityRenderMap = Map<EntityType, EntityRender>;
 
@@ -8,17 +9,22 @@ interface RendererProps {
   entityRenderMap: EntityRenderMap;
 }
 
-const entityRenderMap: EntityRenderMap = new Map();
+const entityRenderMap: EntityRenderMap = new Map([
+  [
+    'image',
+    function (ctx) {
+      const { args, data } = this;
+      const image = new Image();
+      image.src = data.resource;
+      const [dx, dy, dw, dh] = args;
 
-entityRenderMap.set('image', function (ctx) {
-  const { args, data } = this;
-  const image = new Image();
-  image.src = data.url;
-  const [dx, dy, dw, dh] = args;
-
-  ctx.beginPath();
-  ctx.drawImage(image, dx, dy, dw, dh);
-});
+      image.onload = () => {
+        ctx.beginPath();
+        ctx.drawImage(image, dx, dy, dw, dh);
+      };
+    }
+  ]
+]);
 
 class Renderer {
   dom: HTMLCanvasElement;
@@ -47,6 +53,8 @@ class Renderer {
     const { dom } = this;
     dom.style.width = width + 'px';
     dom.style.height = height + 'px';
+    dom.width = getActualPixel(width);
+    dom.height = getActualPixel(height);
     Object.assign(this, {
       width,
       height

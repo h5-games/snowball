@@ -24,6 +24,7 @@ interface EntityInterface {
   type: EntityType;
   args: Args;
   data?: EntityData;
+  element?: Element;
   render: EntityRender;
 }
 

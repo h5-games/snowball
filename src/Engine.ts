@@ -10,16 +10,7 @@ interface IEventListener {
 }
 type TEventName = 'touchStart' | 'touchEnd';
 
-interface EntryResources {
-  [resourceName: string]: string;
-}
-
-interface OutputResources {
-  [resourceName: string]: {
-    src: string;
-    status: string;
-  };
-}
+type Resources = string[];
 
 class Engine {
   public eventListener: IEventListener = {
@@ -52,38 +43,32 @@ class Engine {
 
   static Scene = Scene;
 
-  static getActualPixel(px) {
-    const devicePixelRatio: number = window.devicePixelRatio || 1;
-    return px * devicePixelRatio;
-  }
-
   static async loadResource(
-    resources: EntryResources,
+    resources: Resources,
     callback?: {
       (progress: number): void;
     }
-  ): Promise<OutputResources> {
-    const _resources: OutputResources = {};
-    const length: number = Object.keys(resources).length;
-    for (const key in resources) {
-      if (!resources.hasOwnProperty(key)) continue;
-      const _length = Object.keys(_resources).length;
-      _resources[key] = await new Promise(resolve => {
-        const img: HTMLImageElement = new Image();
-        const progress = (_length + 1) / length;
-        img.src = resources[key];
-        const _callback = (status: string) => () => {
-          callback && callback(progress);
-          resolve({
-            src: resources[key],
-            status
-          });
-        };
-        img.onload = _callback('resolve');
-        img.onerror = _callback('reject');
-      });
-    }
-    return _resources;
+  ): Promise<Resources> {
+    return await new Promise<Resources>((resolve, reject) => {
+      const total: number = Object.keys(resources).length;
+      const _resources: Resources = [];
+      const load = async src => {
+        try {
+          const res = await fetch(src);
+          const blob = await res.blob();
+          _resources.push(window.URL.createObjectURL(blob));
+          const { length } = _resources;
+          if (length === total) {
+            resolve(_resources);
+          } else {
+            callback && callback(Math.floor((length / total) * 10000) / 100);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      };
+      resources.forEach(load);
+    });
   }
 }
 
