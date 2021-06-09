@@ -2,45 +2,26 @@ import { getRandomId } from './utils';
 
 type Keys<T> = { [P in keyof T]: P }[keyof T];
 
-type DefaultEntityType = 'image';
-
-type Args = any[];
-
-export type EntityType =
-  | DefaultEntityType
-  | 'atomic'
-  | Keys<CanvasRenderingContext2D>;
+export type EntityType = Keys<CanvasRenderingContext2D> | string;
 
 export interface EntityData {
   [key: string]: any;
 }
 
 export interface EntityRender {
-  (this: EntityInterface, ctx: CanvasRenderingContext2D): void;
+  (this: Entity, ctx: CanvasRenderingContext2D): void;
 }
 
-interface EntityInterface {
-  id: string;
-  type: EntityType;
-  args: Args;
-  data?: EntityData;
-  element?: Element;
-  render: EntityRender;
-}
-
-class Entity implements EntityInterface {
+class Entity<T = EntityData> {
   id: string;
 
-  constructor(
-    public type: EntityType,
-    public args: Args,
-    public data?: EntityData
-  ) {
+  constructor(public type: EntityType, public data?: T) {
     this.id = getRandomId();
   }
 
   render(ctx: CanvasRenderingContext2D) {
     const { data } = this;
+    // 针对 canvas 默认的一些做渲染封装
     console.log(ctx, data);
   }
 }

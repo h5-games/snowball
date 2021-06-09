@@ -1,30 +1,11 @@
 import Scene from './Scene';
 import Camera from './Camera';
-import { EntityRender, EntityType } from './Entity';
 import { getActualPixel } from './utils';
-
-export type EntityRenderMap = Map<EntityType, EntityRender>;
+import { entityRenderMap, EntityRenderMap } from './utils/entityRenderMap';
 
 interface RendererProps {
   entityRenderMap: EntityRenderMap;
 }
-
-const entityRenderMap: EntityRenderMap = new Map([
-  [
-    'image',
-    function (ctx) {
-      const { args, data } = this;
-      const image = new Image();
-      image.src = data.resource;
-      const [dx, dy, dw, dh] = args;
-
-      image.onload = () => {
-        ctx.beginPath();
-        ctx.drawImage(image, dx, dy, dw, dh);
-      };
-    }
-  ]
-]);
 
 class Renderer {
   dom: HTMLCanvasElement;
@@ -63,7 +44,9 @@ class Renderer {
 
   render(scene: Scene, camera: Camera) {
     const { ctx, entityRenderMap } = this;
+    // 绘制每一个 entity
     scene.entityMap.forEach(entity => {
+      console.log(entity.id);
       const render = entityRenderMap.get(entity.type);
       if (render) {
         render.call(entity, ctx);
@@ -71,7 +54,14 @@ class Renderer {
         entity.render(ctx);
       }
     });
+    ctx.beginPath();
+
+    // 绘制照相机区域
+    const { left, top, width, height } = camera;
+    ctx.rect(left, top, width, height);
+    ctx.clip();
   }
 }
 
+export * from './utils/entityRenderMap';
 export default Renderer;

@@ -9,3 +9,8 @@ export const getActualPixel = px => {
   const devicePixelRatio: number = window.devicePixelRatio || 1;
   return px * devicePixelRatio;
 };
+
+export function randomRange(min: number, max: number) {
+  if (min > 0) return Math.floor(Math.random() * (max - min) + min);
+  return Math.floor(Math.random() * (max - min) + min);
+}

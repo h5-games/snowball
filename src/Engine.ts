@@ -10,7 +10,7 @@ interface IEventListener {
 }
 type TEventName = 'touchStart' | 'touchEnd';
 
-type Resources = string[];
+type ResourcesUrl = string[];
 
 class Engine {
   public eventListener: IEventListener = {
@@ -44,14 +44,14 @@ class Engine {
   static Scene = Scene;
 
   static async loadResource(
-    resources: Resources,
+    resources: ResourcesUrl,
     callback?: {
       (progress: number): void;
     }
-  ): Promise<Resources> {
-    return await new Promise<Resources>((resolve, reject) => {
+  ): Promise<ResourcesUrl> {
+    return await new Promise<ResourcesUrl>((resolve, reject) => {
       const total: number = Object.keys(resources).length;
-      const _resources: Resources = [];
+      const _resources: ResourcesUrl = [];
       const load = async src => {
         try {
           const res = await fetch(src);
