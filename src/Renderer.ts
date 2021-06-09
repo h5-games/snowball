@@ -37,29 +37,36 @@ class Renderer {
     dom.width = getActualPixel(width);
     dom.height = getActualPixel(height);
     Object.assign(this, {
-      width,
-      height
+      width: dom.width,
+      height: dom.height
     });
   }
 
   render(scene: Scene, camera: Camera) {
-    const { ctx, entityRenderMap } = this;
-    // 绘制每一个 entity
-    scene.entityMap.forEach(entity => {
-      console.log(entity.id);
-      const render = entityRenderMap.get(entity.type);
-      if (render) {
-        render.call(entity, ctx);
-      } else {
-        entity.render(ctx);
-      }
-    });
-    ctx.beginPath();
-
-    // 绘制照相机区域
     const { left, top, width, height } = camera;
-    ctx.rect(left, top, width, height);
-    ctx.clip();
+
+    const { ctx, entityRenderMap } = this;
+    ctx.clearRect(0, 0, width, top + height);
+
+    {
+      // 绘制照相机区域
+      ctx.beginPath();
+      ctx.rect(left, top, width, height);
+      ctx.translate(left, getActualPixel(-1));
+      ctx.clip();
+    }
+
+    {
+      // 绘制每一个 entity
+      scene.entityMap.forEach(entity => {
+        const render = entityRenderMap.get(entity.type);
+        if (render) {
+          render.call(entity, ctx);
+        } else {
+          entity.render(ctx);
+        }
+      });
+    }
   }
 }
 

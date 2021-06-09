@@ -1,8 +1,9 @@
+import { getActualPixel, randomRange } from './utils';
 import Renderer, { EntityRenderMap } from './Renderer';
 import Engine from './Engine';
 import Entity from './Entity';
 import Camera from './Camera';
-import { getActualPixel, randomRange } from './utils';
+import Animation from './Animation';
 
 interface TreeData {
   left: number;
@@ -70,5 +71,9 @@ interface TreeData {
     height: actualHeight
   });
 
-  renderer.render(scene, camera);
+  const animation = new Animation(timestamp => {
+    camera.top += getActualPixel(1);
+    renderer.render(scene, camera);
+  });
+  animation.start();
 })();
