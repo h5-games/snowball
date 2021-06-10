@@ -5,8 +5,9 @@ type EntityMap = Map<string, Entity>;
 class Scene {
   entityMap: EntityMap = new Map();
 
-  add(entity: Entity) {
+  add<T>(entity: Entity<T>) {
     this.entityMap.set(entity.id, entity);
+    return entity;
   }
 
   remove(id: string) {

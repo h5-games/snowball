@@ -19,6 +19,11 @@ class Entity<T = EntityData> {
     this.id = getRandomId();
   }
 
+  public setData(data: Partial<T>) {
+    Object.assign(this.data, data);
+    return this;
+  }
+
   render(ctx: CanvasRenderingContext2D) {
     const { data } = this;
     // 针对 canvas 默认的一些做渲染封装

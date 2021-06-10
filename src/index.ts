@@ -14,7 +14,14 @@ interface TreeData {
   resource: HTMLImageElement;
 }
 
-class Snowball {
+interface SnowBallData {
+  left: number;
+  top: number;
+  radius: number;
+  speed: number;
+}
+
+class SnowballGame {
   scene: Scene;
   camera: Camera;
   renderer: Renderer;
@@ -30,6 +37,14 @@ class Snowball {
 
       ctx.beginPath();
       ctx.drawImage(resource, left, top, width, height);
+    });
+    entityRenderMap.set('snowball', function (ctx) {
+      const { radius, left, top } = this.data;
+
+      ctx.beginPath();
+      ctx.fillStyle = '#d2fdff';
+      ctx.arc(left, top, radius, 0, 2 * Math.PI);
+      ctx.fill();
     });
 
     const { offsetWidth, offsetHeight } = el;
@@ -70,7 +85,7 @@ class Snowball {
   }
 
   treeResource: HTMLImageElement;
-  async loadResource(): Promise<Snowball> {
+  async loadResource(): Promise<SnowballGame> {
     const [treeResourceUrl] = await Engine.loadResource(['/images/terr.png']);
     this.treeResource = await new Promise<HTMLImageElement>(resolve => {
       const img = new Image();
@@ -90,7 +105,20 @@ class Snowball {
    * @param maxX
    * @param maxY
    */
-  createTree(num, { minX, minY, maxX, maxY }) {
+  createTree(
+    num: number,
+    {
+      minX,
+      minY,
+      maxX,
+      maxY
+    }: {
+      minX: number;
+      minY: number;
+      maxX: number;
+      maxY: number;
+    }
+  ) {
     const { treeResource, scene } = this;
     return new Array(num)
       .fill(null)
@@ -111,24 +139,40 @@ class Snowball {
       });
   }
 
-  animationFrame() {
-    const { camera, scene, renderer } = this;
+  snowball: Entity<SnowBallData>;
+  createSnowBall(data: SnowBallData) {
+    const { scene } = this;
+    this.snowball = scene.add<SnowBallData>(new Entity('snowball', data));
+  }
+
+  animationFrame(timestamp: number) {
+    const { camera, scene, renderer, snowball, actualHeight } = this;
     const { offsetTop } = camera;
 
-    scene.entityMap.forEach(entity => {
-      if (entity.type === 'tree') {
-        const { top, height } = (entity as Entity<TreeData>).data;
-        if (top + height < offsetTop) {
-          scene.remove(entity.id);
-        }
-      }
-    });
+    {
+      const { speed, top } = snowball.data;
+      snowball.setData({
+        top: top + getActualPixel(1)
+      });
+    }
 
-    const offset = getActualPixel(1);
-    camera.update({
-      offsetTop: offsetTop + offset
-    });
-    renderer.translate(0, -offset);
+    if (snowball.data.top > actualHeight / 2) {
+      scene.entityMap.forEach(entity => {
+        if (entity.type === 'tree') {
+          const { top, height } = (entity as Entity<TreeData>).data;
+          if (top + height < offsetTop) {
+            scene.remove(entity.id);
+          }
+        }
+      });
+
+      const offset = getActualPixel(1);
+      camera.update({
+        offsetTop: offsetTop + offset
+      });
+      renderer.translate(0, -offset);
+    }
+
     this.render();
   }
 
@@ -146,18 +190,27 @@ class Snowball {
 }
 
 (async function () {
-  const snowball = new Snowball(document.body);
-  await snowball.loadResource();
+  const snowballGame = new SnowballGame(document.body);
+  await snowballGame.loadResource();
   {
-    // 初始创建🌲
-    const { actualWidth, actualHeight } = snowball;
+    const { actualWidth, actualHeight } = snowballGame;
     const minTop = actualHeight / 2;
-    snowball.createTree(10, {
+
+    // 创建雪球
+    snowballGame.createSnowBall({
+      radius: 24,
+      left: actualWidth / 2,
+      top: minTop / 3,
+      speed: 50
+    });
+
+    // 初始创建🌲
+    snowballGame.createTree(10, {
       minX: 0,
       maxX: actualWidth,
       minY: minTop,
       maxY: minTop + actualHeight
     });
   }
-  snowball.render();
+  snowballGame.render();
 })();
