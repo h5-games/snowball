@@ -1,5 +1,3 @@
-import Scene from './Scene';
-
 interface ITouchEvent {
   (e: TouchEvent): void;
 }
@@ -40,8 +38,6 @@ class Engine {
     );
     delete this.eventListener[eventName][index];
   }
-
-  static Scene = Scene;
 
   static async loadResource(
     resources: ResourcesUrl,

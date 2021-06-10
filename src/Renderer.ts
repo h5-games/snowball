@@ -42,17 +42,37 @@ class Renderer {
     });
   }
 
-  render(scene: Scene, camera: Camera) {
-    const { left, top, width, height } = camera;
+  translateX: number = 0;
+  translateY: number = 0;
+  translate(x, y) {
+    const { ctx } = this;
+    this.translateX += x;
+    this.translateY += y;
+    ctx.translate(x, y);
+  }
 
-    const { ctx, entityRenderMap } = this;
-    ctx.clearRect(0, 0, width, top + height);
+  render(scene: Scene, camera: Camera) {
+    const {
+      ctx,
+      entityRenderMap,
+      width,
+      height,
+      translateX,
+      translateY
+    } = this;
+
+    {
+      // 清除 canvas 视口区域的内容
+      const renderX = 0 - translateX;
+      const renderY = 0 - translateY;
+      ctx.clearRect(renderX, renderY, renderX + width, renderY + height);
+    }
 
     {
       // 绘制照相机区域
+      const { left, top, offsetLeft, offsetTop, width, height } = camera;
       ctx.beginPath();
-      ctx.rect(left, top, width, height);
-      ctx.translate(left, getActualPixel(-1));
+      ctx.rect(left + offsetLeft, top + offsetTop, width, height);
       ctx.clip();
     }
 

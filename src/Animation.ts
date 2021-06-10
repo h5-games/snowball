@@ -3,12 +3,13 @@ interface Callback {
 }
 
 export default class {
-  timer: number;
-
   constructor(public callback: Callback) {}
 
+  timer: number;
+  status: 'animation' | 'stationary' = 'stationary';
   startTime: number | undefined;
   start(timeout?: number) {
+    this.status = 'animation';
     this.timer = window.requestAnimationFrame(timestamp => {
       const { startTime } = this;
       if (startTime === undefined) {
@@ -27,6 +28,7 @@ export default class {
   }
 
   stop() {
+    this.status = 'stationary';
     this.startTime = undefined;
     window.cancelAnimationFrame(this.timer);
   }
