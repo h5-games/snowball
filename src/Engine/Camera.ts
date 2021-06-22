@@ -7,7 +7,7 @@ interface CameraConfig {
   offsetLeft: number;
 }
 
-class Camera implements CameraConfig {
+export class Camera implements CameraConfig {
   left: number = 0;
   top: number = 0;
   width: number = 0;
@@ -24,5 +24,3 @@ class Camera implements CameraConfig {
     return this;
   }
 }
-
-export default Camera;

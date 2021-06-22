@@ -1,4 +1,4 @@
-import { getRandomId } from './utils';
+import { utils } from '.';
 
 type Keys<T> = { [P in keyof T]: P }[keyof T];
 
@@ -12,11 +12,11 @@ export interface EntityRender {
   (this: Entity, ctx: CanvasRenderingContext2D): void;
 }
 
-class Entity<T = EntityData> {
+export class Entity<T = EntityData> {
   id: string;
 
   constructor(public type: EntityType, public data?: T) {
-    this.id = getRandomId();
+    this.id = utils.getRandomId();
   }
 
   public setData(data: Partial<T>) {
@@ -30,5 +30,3 @@ class Entity<T = EntityData> {
     console.log(ctx, data);
   }
 }
-
-export default Entity;

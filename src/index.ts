@@ -1,10 +1,16 @@
-import { getActualPixel, randomRange } from './utils';
-import Renderer, { EntityRenderMap } from './Renderer';
-import Engine from './Engine';
-import Entity from './Entity';
-import Scene from './Scene';
-import Camera from './Camera';
-import Animation from './Animation';
+import { randomRange } from './utils';
+import {
+  Engine,
+  Entity,
+  Scene,
+  Renderer,
+  Camera,
+  Animation,
+  EntityRenderMap,
+  utils
+} from './Engine';
+
+const { getActualPixel } = utils;
 
 interface TreeData {
   left: number;
@@ -12,6 +18,8 @@ interface TreeData {
   width: number;
   height: number;
   resource: HTMLImageElement;
+  interval: number;
+  distance: number;
 }
 
 interface SnowBallData {
@@ -130,7 +138,9 @@ class SnowballGame {
           top: randomRange(minY, maxY - height),
           width: width,
           height: height,
-          resource: treeResource
+          resource: treeResource,
+          interval: 20,
+          distance: 0
         });
       })
       .sort((x, y) => x.data.top + x.data.height - (y.data.top + y.data.height))
@@ -146,17 +156,22 @@ class SnowballGame {
   }
 
   animationFrame(timestamp: number) {
-    const { camera, scene, renderer, snowball, actualHeight } = this;
+    const { camera, scene, renderer, snowball, actualHeight, animation } = this;
     const { offsetTop } = camera;
+
+    const { startTime } = animation;
+    const elapsedTime = timestamp - startTime;
+
+    const endPosition = actualHeight / 2;
 
     {
       const { speed, top } = snowball.data;
       snowball.setData({
-        top: top + getActualPixel(1)
+        top: top + getActualPixel(0.1)
       });
     }
 
-    if (snowball.data.top > actualHeight / 2) {
+    if (snowball.data.top > endPosition) {
       scene.entityMap.forEach(entity => {
         if (entity.type === 'tree') {
           const { top, height } = (entity as Entity<TreeData>).data;

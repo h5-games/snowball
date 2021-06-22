@@ -2,7 +2,7 @@ interface Callback {
   (timestamp: number): boolean | unknown;
 }
 
-export default class {
+export class Animation {
   constructor(public callback: Callback) {}
 
   timer: number;

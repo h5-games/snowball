@@ -1,4 +1,4 @@
-import { EntityRender, EntityType } from '../Entity';
+import { EntityRender, EntityType } from './Entity';
 
 export type EntityRenderMap = Map<EntityType, EntityRender>;
 

@@ -1,8 +1,8 @@
-import Entity from './Entity';
+import { Entity } from '.';
 
 type EntityMap = Map<string, Entity>;
 
-class Scene {
+export class Scene {
   entityMap: EntityMap = new Map();
 
   add<T>(entity: Entity<T>) {
@@ -14,5 +14,3 @@ class Scene {
     this.entityMap.delete(id);
   }
 }
-
-export default Scene;

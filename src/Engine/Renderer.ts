@@ -1,13 +1,13 @@
-import Scene from './Scene';
-import Camera from './Camera';
-import { getActualPixel } from './utils';
-import { entityRenderMap, EntityRenderMap } from './utils/entityRenderMap';
+import { Scene, Camera, utils } from '.';
+import { entityRenderMap, EntityRenderMap } from '.';
+
+const { getActualPixel } = utils;
 
 interface RendererProps {
   entityRenderMap: EntityRenderMap;
 }
 
-class Renderer {
+export class Renderer {
   dom: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   width: number;
@@ -89,6 +89,3 @@ class Renderer {
     }
   }
 }
-
-export * from './utils/entityRenderMap';
-export default Renderer;

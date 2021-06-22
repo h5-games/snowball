@@ -10,7 +10,7 @@ type TEventName = 'touchStart' | 'touchEnd';
 
 type ResourcesUrl = string[];
 
-class Engine {
+export class Engine {
   public eventListener: IEventListener = {
     touchStart: [],
     touchEnd: []
@@ -67,5 +67,3 @@ class Engine {
     });
   }
 }
-
-export default Engine;
