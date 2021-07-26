@@ -26,7 +26,8 @@ interface SnowBallData {
   left: number;
   top: number;
   radius: number;
-  speed: number;
+  angle: number;
+  distance: number;
 }
 
 class SnowballGame {
@@ -155,45 +156,53 @@ class SnowballGame {
     this.snowball = scene.add<SnowBallData>(new Entity('snowball', data));
   }
 
+  elapsedTime = 0;
   animationFrame(timestamp: number) {
     const { camera, scene, renderer, snowball, actualHeight, animation } = this;
-    const { offsetTop } = camera;
 
     const { startTime } = animation;
-    const elapsedTime = timestamp - startTime;
+    this.elapsedTime = timestamp - startTime;
 
     const endPosition = actualHeight / 2;
+    const { distance, top } = snowball.data;
 
     {
-      const { speed, top } = snowball.data;
       snowball.setData({
-        top: top + getActualPixel(0.1)
+        top: top + distance
       });
     }
 
-    if (snowball.data.top > endPosition) {
+    const { translateY } = renderer;
+
+    {
       scene.entityMap.forEach(entity => {
         if (entity.type === 'tree') {
           const { top, height } = (entity as Entity<TreeData>).data;
-          if (top + height < offsetTop) {
+          if (top + height < -translateY) {
+            // 超出场景移除
             scene.remove(entity.id);
           }
         }
       });
+    }
 
-      const offset = getActualPixel(1);
+    if (snowball.data.top > endPosition) {
+      const { top: cameraTop } = camera;
       camera.update({
-        offsetTop: offsetTop + offset
+        top: cameraTop + distance
       });
-      renderer.translate(0, -offset);
+      renderer.translate(0, -distance);
     }
 
     this.render();
   }
 
   startGame() {
-    const { animation } = this;
+    const { animation, snowball } = this;
     if (animation.status === 'stationary') {
+      snowball.setData({
+        distance: getActualPixel(1)
+      });
       animation.start();
     }
   }
@@ -216,7 +225,8 @@ class SnowballGame {
       radius: 24,
       left: actualWidth / 2,
       top: minTop / 3,
-      speed: 50
+      angle: 0,
+      distance: 0
     });
 
     // 初始创建🌲

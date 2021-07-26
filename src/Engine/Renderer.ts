@@ -1,6 +1,4 @@
-import { Scene, Camera, utils } from '.';
-import { entityRenderMap, EntityRenderMap } from '.';
-
+import { Scene, Camera, utils, entityRenderMap, EntityRenderMap } from '.';
 const { getActualPixel } = utils;
 
 interface RendererProps {
