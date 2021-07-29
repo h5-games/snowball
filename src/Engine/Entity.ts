@@ -4,29 +4,45 @@ type Keys<T> = { [P in keyof T]: P }[keyof T];
 
 export type EntityType = Keys<CanvasRenderingContext2D> | string;
 
-export interface EntityData {
-  [key: string]: any;
-}
-
 export interface EntityRender {
   (this: Entity, ctx: CanvasRenderingContext2D): void;
 }
 
-export class Entity<T = EntityData> {
-  id: string;
+export type TEntity<T extends object = {}> = Entity<T> & T;
 
-  constructor(public type: EntityType, public data?: T) {
-    this.id = utils.getRandomId();
+export class Entity<P extends object = {}> {
+  /**
+   * @description 通过此方法创建 Entity 返回的实例相当于继承了 Entity 的实例
+   * @param type {CanvasRenderingContext2D}
+   * @param data {object} 普通对象或者某类的实例
+   */
+  static create<T extends object = {}>(type: EntityType, data: T) {
+    const instance = new Entity(type, data) as TEntity<T>;
+    const prototype = Object.getPrototypeOf(data);
+
+    if (prototype !== Object.prototype) {
+      // 传入的是某个类的实例 将其原型方法自动合并
+      Object.setPrototypeOf(instance, {
+        ...Object.getPrototypeOf(instance),
+        ...prototype
+      });
+    }
+    return instance;
   }
 
-  public setData(data: Partial<T>) {
-    Object.assign(this.data, data);
+  id: string;
+
+  constructor(public type: EntityType, entity: P) {
+    this.id = utils.getRandomId();
+    Object.assign(this, entity);
+  }
+
+  public merge(data: Partial<P>) {
+    Object.assign(this, data);
     return this;
   }
 
-  render(ctx: CanvasRenderingContext2D) {
-    const { data } = this;
-    // 针对 canvas 默认的一些做渲染封装
-    console.log(ctx, data);
+  public render(ctx: CanvasRenderingContext2D) {
+    console.log(ctx, this);
   }
 }

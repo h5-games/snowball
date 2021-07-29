@@ -12,7 +12,7 @@ export class Renderer {
   height: number;
   entityRenderMap: EntityRenderMap = entityRenderMap;
 
-  constructor(width, height, props: RendererProps) {
+  constructor(width, height, props?: RendererProps) {
     const dom = document.createElement('canvas');
     Object.assign(this, {
       dom,
@@ -21,7 +21,7 @@ export class Renderer {
     if (width && height) {
       this.setSize(width, height);
     }
-    if (props.entityRenderMap) {
+    if (props && props.entityRenderMap) {
       props.entityRenderMap.forEach((render, key) => {
         this.entityRenderMap.set(key, render);
       });
