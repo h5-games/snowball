@@ -49,3 +49,37 @@ export const clearObserverSet = <T extends object, K extends keyof T>(
   const value = target[key];
   Object.defineProperty(target, key, { value, writable: true });
 };
+
+type ResourcesUrl = string[];
+/**
+ * @description 加载资源
+ * @param resources
+ * @param callback
+ */
+export const loadResource = async (
+  resources: ResourcesUrl,
+  callback?: {
+    (progress: number): void;
+  }
+): Promise<ResourcesUrl> => {
+  return await new Promise<ResourcesUrl>((resolve, reject) => {
+    const total: number = Object.keys(resources).length;
+    const _resources: ResourcesUrl = [];
+    const load = async src => {
+      try {
+        const res = await fetch(src);
+        const blob = await res.blob();
+        _resources.push(window.URL.createObjectURL(blob));
+        const { length } = _resources;
+        if (length === total) {
+          resolve(_resources);
+        } else {
+          callback && callback(Math.floor((length / total) * 10000) / 100);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    };
+    resources.forEach(load);
+  });
+};

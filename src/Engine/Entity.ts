@@ -31,18 +31,19 @@ export class Entity<P extends object = {}> {
   }
 
   id: string;
+  visible: boolean = true;
 
   constructor(public type: EntityType, entity: P) {
     this.id = utils.getRandomId();
     Object.assign(this, entity);
   }
 
-  public merge(data: Partial<P>) {
+  merge(data: Partial<P>) {
     Object.assign(this, data);
     return this;
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  render(ctx: CanvasRenderingContext2D) {
     console.log(ctx, this);
   }
 }

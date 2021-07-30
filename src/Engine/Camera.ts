@@ -27,14 +27,14 @@ export class Camera {
     }
   }
 
-  public update(config: CameraConfig): Camera {
+  update(config: CameraConfig): Camera {
     Object.assign(this, config);
     return this;
   }
 
   renderer: Renderer;
 
-  public traceRenderer(renderer: Renderer): Camera {
+  traceRenderer(renderer: Renderer): Camera {
     const { translateY, translateX, width, height } = renderer;
     Object.assign(this, {
       top: -translateY,
@@ -61,7 +61,7 @@ export class Camera {
     return this;
   }
 
-  public clearTraceRenderer() {
+  clearTraceRenderer() {
     const keys: (keyof Renderer)[] = [
       'translateY',
       'translateX',

@@ -1,6 +1,4 @@
-import { randomRange } from './utils';
 import {
-  Engine,
   Entity,
   TEntity,
   Scene,
@@ -10,53 +8,52 @@ import {
   utils
 } from './Engine';
 import SnowBall from './SnowBall';
-import Tree from './Tree';
+import Tree, { constructorTree } from './Tree';
 
 const { getActualPixel } = utils;
 
 class SnowballGame {
-  engine: Engine;
   scene: Scene;
   camera: Camera;
   renderer: Renderer;
   animation: Animation;
 
-  actualWidth: number = 0;
-  actualHeight: number = 0;
+  uiRenderer: Scene;
+  uiCamera: Camera;
+  uiScene: Renderer;
 
-  constructor(el) {
-    const { offsetWidth, offsetHeight } = el;
+  constructor(public $el: HTMLElement) {
+    const { offsetWidth, offsetHeight } = $el;
 
-    const renderer = new Renderer(offsetWidth, offsetHeight);
-    const { width: actualWidth, height: actualHeight } = renderer;
-
-    window.addEventListener('resize', () => {
-      const { offsetWidth, offsetHeight } = el;
-      renderer.setSize(offsetWidth, offsetHeight);
-    });
-
-    el.appendChild(renderer.dom);
-
+    // 游戏
+    const renderer = new Renderer();
+    renderer.setSize(offsetWidth, offsetHeight);
+    $el.appendChild(renderer.dom);
     const camera = new Camera(renderer); // 创建照相机 自动跟随渲染区域
-    const engine = new Engine(renderer.dom);
-
     const scene = new Scene();
     const animation = new Animation(this.animationFrame.bind(this));
 
+    // 交互界面
+    const uiRenderer = new Renderer({ style: { position: 'absolute' } });
+    uiRenderer.setSize(offsetWidth, offsetHeight);
+    $el.appendChild(uiRenderer.dom);
+    const uiCamera = new Camera();
+    const uiScene = new Scene();
+
     Object.assign(this, {
-      engine,
       renderer,
       scene,
       camera,
       animation,
-      actualWidth,
-      actualHeight
+      uiRenderer,
+      uiCamera,
+      uiScene
     });
   }
 
   treeResource: HTMLImageElement;
   async loadResource(): Promise<SnowballGame> {
-    const [treeResourceUrl] = await Engine.loadResource(['/images/terr.png']);
+    const [treeResourceUrl] = await utils.loadResource(['/images/terr.png']);
     this.treeResource = await new Promise<HTMLImageElement>(resolve => {
       const img = new Image();
       img.src = treeResourceUrl;
@@ -67,64 +64,10 @@ class SnowballGame {
     return this;
   }
 
-  /**
-   * @description 创建🌲
-   * @param num 创建数量
-   * @param minX
-   * @param minY
-   * @param maxX
-   * @param maxY
-   */
-  createTree(
-    num: number,
-    {
-      minX,
-      minY,
-      maxX,
-      maxY
-    }: {
-      minX: number;
-      minY: number;
-      maxX: number;
-      maxY: number;
-    }
-  ) {
-    const { treeResource, scene } = this;
-    return new Array(num)
-      .fill(null)
-      .map(() => {
-        const width = getActualPixel(40);
-        const height = width * 2;
-        return Entity.create<Tree>(
-          'tree',
-          new Tree({
-            left: randomRange(minX, maxX - width),
-            top: randomRange(minY, maxY - height),
-            width: width,
-            height: height,
-            resource: treeResource,
-            interval: 20
-          })
-        );
-      })
-      .sort((x, y) => x.top + x.height - (y.top + y.height))
-      .forEach(tree => {
-        scene.add(tree);
-      });
-  }
-
-  snowball: TEntity<SnowBall>;
-  createSnowBall(data: SnowBall) {
-    const { scene } = this;
-    return (this.snowball = scene.add(
-      Entity.create<SnowBall>('snowball', data)
-    ));
-  }
-
   elapsedTime = 0;
   animationFrame(timestamp: number) {
-    const { scene, renderer, snowball, actualHeight, animation } = this;
-    const { translateY } = renderer;
+    const { scene, renderer, snowball, animation } = this;
+    const { translateY, height: rendererHeight } = renderer;
 
     {
       const { startTime } = animation;
@@ -132,7 +75,7 @@ class SnowballGame {
     }
 
     {
-      const endPosition = actualHeight / 2;
+      const endPosition = rendererHeight / 2;
       let { distance } = snowball;
       const { top } = snowball;
       const offsetTop = top + translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
@@ -173,31 +116,36 @@ class SnowballGame {
     }
   }
 
+  snowball: TEntity<SnowBall>;
   ready() {
-    const { engine, startGame, actualWidth, actualHeight } = this;
-    const minTop = actualHeight / 2;
+    const { startGame, renderer, scene, treeResource } = this;
+    const { width: rendererWidth, height: rendererHeight } = renderer;
+    const minTop = rendererHeight / 2;
 
     // 创建雪球
-    this.createSnowBall(
-      new SnowBall({
-        radius: 24,
-        left: actualWidth / 2,
-        top: minTop / 3
-      })
+    this.snowball = scene.add(
+      Entity.create<SnowBall>(
+        'snowball',
+        new SnowBall({
+          radius: 24,
+          left: rendererWidth / 2,
+          top: minTop / 3
+        })
+      )
     );
 
     // 初始创建🌲
-    this.createTree(10, {
+    constructorTree(10, {
       minX: 0,
-      maxX: actualWidth,
+      maxX: rendererWidth,
       minY: minTop,
-      maxY: minTop + actualHeight
+      maxY: minTop + rendererHeight,
+      resource: treeResource
+    }).forEach(tree => {
+      scene.add(tree);
     });
 
-    engine.addEventListener('touchStart', startGame.bind(this));
-
     this.render();
-    return this;
   }
 
   render() {

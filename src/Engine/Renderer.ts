@@ -2,7 +2,8 @@ import { Scene, Camera, utils, entityRenderMap, EntityRenderMap } from '.';
 const { getActualPixel } = utils;
 
 interface RendererProps {
-  entityRenderMap: EntityRenderMap;
+  entityRenderMap?: EntityRenderMap;
+  style?: Partial<CSSStyleDeclaration>;
 }
 
 export class Renderer {
@@ -12,20 +13,27 @@ export class Renderer {
   height: number;
   entityRenderMap: EntityRenderMap = entityRenderMap;
 
-  constructor(width, height, props?: RendererProps) {
-    const dom = document.createElement('canvas');
+  constructor(props?: RendererProps) {
+    const dom = document.createElement<'canvas'>('canvas');
+
+    if (props) {
+      const { entityRenderMap, style } = props;
+      if (entityRenderMap) {
+        entityRenderMap.forEach((render, key) => {
+          this.entityRenderMap.set(key, render);
+        });
+      }
+      if (style) {
+        for (const key in style) {
+          dom.style[key] = style[key];
+        }
+      }
+    }
+
     Object.assign(this, {
       dom,
       ctx: dom.getContext('2d')
     });
-    if (width && height) {
-      this.setSize(width, height);
-    }
-    if (props && props.entityRenderMap) {
-      props.entityRenderMap.forEach((render, key) => {
-        this.entityRenderMap.set(key, render);
-      });
-    }
   }
 
   setSize(width: number, height: number) {
@@ -77,6 +85,7 @@ export class Renderer {
     {
       // 绘制每一个 entity
       scene.entityMap.forEach(entity => {
+        if (!entity.visible) return;
         const render = entityRenderMap.get(entity.type);
         if (render) {
           render.call(entity, ctx);
