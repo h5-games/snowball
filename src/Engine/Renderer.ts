@@ -14,7 +14,7 @@ export class Renderer {
   entityRenderMap: EntityRenderMap = entityRenderMap;
 
   constructor(props?: RendererProps) {
-    const dom = document.createElement<'canvas'>('canvas');
+    const dom = document.createElement('canvas');
 
     if (props) {
       const { entityRenderMap, style } = props;

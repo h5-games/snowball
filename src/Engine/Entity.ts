@@ -16,24 +16,28 @@ export class Entity<P extends object = {}> {
    * @param type {CanvasRenderingContext2D}
    * @param data {object} 普通对象或者某类的实例
    */
-  static create<T extends object = {}>(type: EntityType, data: T) {
+  static create<T extends object = {}>(type: EntityType, data?: T) {
     const instance = new Entity(type, data) as TEntity<T>;
-    const prototype = Object.getPrototypeOf(data);
 
-    if (prototype !== Object.prototype) {
-      // 传入的是某个类的实例 将其原型方法自动合并
-      Object.setPrototypeOf(instance, {
-        ...Object.getPrototypeOf(instance),
-        ...prototype
-      });
+    if (data) {
+      const prototype = Object.getPrototypeOf(data);
+
+      if (prototype !== Object.prototype) {
+        // 传入的是某个类的实例 将其原型方法自动合并
+        Object.setPrototypeOf(instance, {
+          ...Object.getPrototypeOf(instance),
+          ...prototype
+        });
+      }
     }
+
     return instance;
   }
 
   id: string;
   visible: boolean = true;
 
-  constructor(public type: EntityType, entity: P) {
+  constructor(public type: EntityType, entity?: P) {
     this.id = utils.getRandomId();
     Object.assign(this, entity);
   }

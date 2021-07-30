@@ -5,22 +5,23 @@ import {
   Renderer,
   Camera,
   Animation,
-  utils
+  utils,
+  EntityRenderMap
 } from './Engine';
 import SnowBall from './SnowBall';
-import Tree, { constructorTree } from './Tree';
+import Tree, { createTree } from './Tree';
 
 const { getActualPixel } = utils;
 
 class SnowballGame {
-  scene: Scene;
-  camera: Camera;
   renderer: Renderer;
+  camera: Camera;
+  scene: Scene;
   animation: Animation;
 
-  uiRenderer: Scene;
+  uiRenderer: Renderer;
   uiCamera: Camera;
-  uiScene: Renderer;
+  uiScene: Scene;
 
   constructor(public $el: HTMLElement) {
     const { offsetWidth, offsetHeight } = $el;
@@ -34,10 +35,26 @@ class SnowballGame {
     const animation = new Animation(this.animationFrame.bind(this));
 
     // 交互界面
-    const uiRenderer = new Renderer({ style: { position: 'absolute' } });
+    const entityRenderMap: EntityRenderMap = new Map();
+    entityRenderMap.set('mask', ctx => {
+      const { width, height } = this.uiRenderer;
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.font = getActualPixel(16) + 'px sans';
+      ctx.fillText('点击屏幕开始游戏', width / 2, height / 2);
+    });
+
+    const uiRenderer = new Renderer({
+      style: { position: 'absolute', left: '0px', top: '0px', zIndex: '1' },
+      entityRenderMap
+    });
     uiRenderer.setSize(offsetWidth, offsetHeight);
     $el.appendChild(uiRenderer.dom);
-    const uiCamera = new Camera();
+    const uiCamera = new Camera(uiRenderer);
     const uiScene = new Scene();
 
     Object.assign(this, {
@@ -82,6 +99,7 @@ class SnowballGame {
 
       if (offsetTop > endPosition) {
         // 小球滚动到 canvas 一半的时候画布偏移的速度与小球向下位移的速度保持一致
+        // todo 游戏主要逻辑
 
         renderer.translate(0, -distance);
       } else {
@@ -118,7 +136,7 @@ class SnowballGame {
 
   snowball: TEntity<SnowBall>;
   ready() {
-    const { startGame, renderer, scene, treeResource } = this;
+    const { renderer, scene, treeResource, uiScene } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
     const minTop = rendererHeight / 2;
 
@@ -135,7 +153,7 @@ class SnowballGame {
     );
 
     // 初始创建🌲
-    constructorTree(10, {
+    createTree(10, {
       minX: 0,
       maxX: rendererWidth,
       minY: minTop,
@@ -145,12 +163,15 @@ class SnowballGame {
       scene.add(tree);
     });
 
+    uiScene.add(Entity.create('mask'));
+
     this.render();
   }
 
   render() {
-    const { camera, scene, renderer } = this;
+    const { camera, scene, renderer, uiRenderer, uiScene, uiCamera } = this;
     renderer.render(scene, camera);
+    uiRenderer.render(uiScene, uiCamera);
   }
 }
 

@@ -2,6 +2,8 @@ import { Entity } from './Engine';
 import { randomRange } from './utils';
 import { utils } from './Engine';
 
+const { getActualPixel } = utils;
+
 interface TreeConfig {
   minX: number;
   minY: number;
@@ -11,7 +13,7 @@ interface TreeConfig {
 }
 
 /**
- * @description 创建🌲
+ * @description 批量创建🌲
  * @param num 创建数量
  * @param minX
  * @param minY
@@ -19,14 +21,14 @@ interface TreeConfig {
  * @param maxY
  * @param resource {HTMLImageElement}
  */
-export const constructorTree = (
+export const createTree = (
   num: number,
   { minX, minY, maxX, maxY, resource }: TreeConfig
 ) => {
   return new Array(num)
     .fill(null)
     .map(() => {
-      const width = utils.getActualPixel(40);
+      const width = getActualPixel(40);
       const height = width * 2;
       return Entity.create<Tree>(
         'tree',
