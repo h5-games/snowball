@@ -5,11 +5,11 @@ import {
   Renderer,
   Camera,
   Animation,
-  utils,
-  EntityRenderMap
+  utils
 } from './Engine';
 import SnowBall from './SnowBall';
 import Tree, { createTree } from './Tree';
+import { StartMask, UIEntityRenderMap } from './entityRenderMap';
 
 const { getActualPixel } = utils;
 
@@ -35,22 +35,9 @@ class SnowballGame {
     const animation = new Animation(this.animationFrame.bind(this));
 
     // 交互界面
-    const entityRenderMap: EntityRenderMap = new Map();
-    entityRenderMap.set('mask', ctx => {
-      const { width, height } = this.uiRenderer;
-
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, width, height);
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'center';
-      ctx.font = getActualPixel(16) + 'px sans';
-      ctx.fillText('点击屏幕开始游戏', width / 2, height / 2);
-    });
-
     const uiRenderer = new Renderer({
       style: { position: 'absolute', left: '0px', top: '0px', zIndex: '1' },
-      entityRenderMap
+      entityRenderMap: UIEntityRenderMap
     });
     uiRenderer.setSize(offsetWidth, offsetHeight);
     $el.appendChild(uiRenderer.dom);
@@ -163,7 +150,12 @@ class SnowballGame {
       scene.add(tree);
     });
 
-    uiScene.add(Entity.create('mask'));
+    uiScene.add(
+      Entity.create<StartMask>('start-mask', {
+        width: rendererWidth,
+        height: rendererHeight
+      })
+    );
 
     this.render();
   }

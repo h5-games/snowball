@@ -39,7 +39,6 @@ export default class SnowBall {
       // 绘制小球尾巴
       const tailListsLength = tailList.length;
       if (tailListsLength) {
-        ctx.beginPath();
         let index = 0;
         let step = 1;
         const paint = () => {

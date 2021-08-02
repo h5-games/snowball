@@ -60,7 +60,6 @@ export default class Tree {
   render(ctx: CanvasRenderingContext2D) {
     const { resource, left, top, width, height } = this;
 
-    ctx.beginPath();
     ctx.drawImage(resource, left, top, width, height);
   }
 }

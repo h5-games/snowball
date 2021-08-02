@@ -86,9 +86,10 @@ export class Renderer {
       // 绘制每一个 entity
       scene.entityMap.forEach(entity => {
         if (!entity.visible) return;
+        ctx.beginPath();
         const render = entityRenderMap.get(entity.type);
         if (render) {
-          render.call(entity, ctx);
+          render.call(entity, ctx, entity);
         } else {
           entity.render(ctx);
         }

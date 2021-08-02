@@ -5,7 +5,7 @@ type Keys<T> = { [P in keyof T]: P }[keyof T];
 export type EntityType = Keys<CanvasRenderingContext2D> | string;
 
 export interface EntityRender {
-  (this: Entity, ctx: CanvasRenderingContext2D): void;
+  (this: Entity, ctx: CanvasRenderingContext2D, entity: TEntity): void;
 }
 
 export type TEntity<T extends object = {}> = Entity<T> & T;
