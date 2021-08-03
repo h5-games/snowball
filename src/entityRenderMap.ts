@@ -10,6 +10,7 @@ export interface StartMask {
   height: number;
 }
 
+// 开始游戏遮罩
 UIEntityRenderMap.set('start-mask', (ctx, options: TEntity<StartMask>) => {
   const { width, height } = options;
 
@@ -17,14 +18,16 @@ UIEntityRenderMap.set('start-mask', (ctx, options: TEntity<StartMask>) => {
 
   const top = height / 2.5;
   const center = width / 2;
-  paints.paintText(ctx, ['点击屏幕开始游戏', center, top], {
+  paints.paintText(ctx, '点击屏幕开始游戏', center, top, {
     fillStyle: '#fff',
     px: 28
   });
 
   paints.paintText(
     ctx,
-    ['（长按屏幕进行转向）', center, top + getActualPixel(36)],
+    '（长按屏幕进行转向）',
+    center,
+    top + getActualPixel(36),
     {
       fillStyle: '#fff'
     }

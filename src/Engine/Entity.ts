@@ -1,4 +1,4 @@
-import { utils } from '.';
+import { Renderer, utils } from '.';
 
 type Keys<T> = { [P in keyof T]: P }[keyof T];
 

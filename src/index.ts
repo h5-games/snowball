@@ -123,7 +123,7 @@ class SnowballGame {
 
   snowball: TEntity<SnowBall>;
   ready() {
-    const { renderer, scene, treeResource, uiScene } = this;
+    const { renderer, scene, treeResource, uiScene, uiRenderer } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
     const minTop = rendererHeight / 2;
 
@@ -150,12 +150,23 @@ class SnowballGame {
       scene.add(tree);
     });
 
-    uiScene.add(
-      Entity.create<StartMask>('start-mask', {
-        width: rendererWidth,
-        height: rendererHeight
-      })
-    );
+    const startMaskEntity = Entity.create<StartMask>('start-mask', {
+      width: rendererWidth,
+      height: rendererHeight
+    });
+
+    uiScene.add(startMaskEntity);
+
+    uiRenderer.dom.addEventListener('click', e => {
+      const rect = uiRenderer.dom.getBoundingClientRect();
+
+      console.log(
+        uiRenderer.ctx.isPointInPath(
+          e.clientX - rect.left,
+          e.clientY - rect.top
+        )
+      );
+    });
 
     this.render();
   }
