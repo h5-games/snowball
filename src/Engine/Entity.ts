@@ -1,4 +1,4 @@
-import { Renderer, utils } from '.';
+import { utils } from '.';
 
 type Keys<T> = { [P in keyof T]: P }[keyof T];
 
@@ -35,7 +35,6 @@ export class Entity<P extends object = {}> {
   }
 
   id: string;
-  visible: boolean = true;
 
   constructor(public type: EntityType, entity?: P) {
     this.id = utils.getRandomId();
@@ -45,6 +44,11 @@ export class Entity<P extends object = {}> {
   merge(data: Partial<P>) {
     Object.assign(this, data);
     return this;
+  }
+
+  visible: boolean = true;
+  setVisible(visible: boolean) {
+    this.visible = visible;
   }
 
   render(ctx: CanvasRenderingContext2D) {

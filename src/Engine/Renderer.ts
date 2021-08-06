@@ -15,6 +15,10 @@ export class Renderer {
 
   constructor(props?: RendererProps) {
     const dom = document.createElement('canvas');
+    Object.assign(this, {
+      dom,
+      ctx: dom.getContext('2d')
+    });
 
     if (props) {
       const { entityRenderMap, style } = props;
@@ -24,16 +28,19 @@ export class Renderer {
         });
       }
       if (style) {
-        for (const key in style) {
-          dom.style[key] = style[key];
-        }
+        this.setStyle(style);
       }
     }
+  }
 
-    Object.assign(this, {
-      dom,
-      ctx: dom.getContext('2d')
-    });
+  setStyle(style: Partial<CSSStyleDeclaration>) {
+    for (const key in style) {
+      this.dom.style[key] = style[key];
+    }
+  }
+
+  setVisible(visible) {
+    this.setStyle({ visibility: visible ? 'visible' : 'hidden' });
   }
 
   setSize(width: number, height: number) {

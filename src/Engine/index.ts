@@ -4,4 +4,5 @@ export * from './Camera';
 export * from './Entity';
 export * from './Renderer';
 export * from './Scene';
+export * from './TMEvent';
 export * from './entityRenderMap';

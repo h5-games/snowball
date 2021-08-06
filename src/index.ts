@@ -5,7 +5,8 @@ import {
   Renderer,
   Camera,
   Animation,
-  utils
+  utils,
+  TMEvent
 } from './Engine';
 import SnowBall from './SnowBall';
 import Tree, { createTree } from './Tree';
@@ -18,10 +19,12 @@ class SnowballGame {
   camera: Camera;
   scene: Scene;
   animation: Animation;
+  gameEvent: TMEvent;
 
   uiRenderer: Renderer;
   uiCamera: Camera;
   uiScene: Scene;
+  uiEvent: TMEvent;
 
   constructor(public $el: HTMLElement) {
     const { offsetWidth, offsetHeight } = $el;
@@ -33,6 +36,7 @@ class SnowballGame {
     const camera = new Camera(renderer); // 创建照相机 自动跟随渲染区域
     const scene = new Scene();
     const animation = new Animation(this.animationFrame.bind(this));
+    const gameEvent = new TMEvent(renderer.dom);
 
     // 交互界面
     const uiRenderer = new Renderer({
@@ -43,15 +47,19 @@ class SnowballGame {
     $el.appendChild(uiRenderer.dom);
     const uiCamera = new Camera(uiRenderer);
     const uiScene = new Scene();
+    const uiEvent = new TMEvent(uiRenderer.dom);
 
     Object.assign(this, {
       renderer,
       scene,
       camera,
       animation,
+      gameEvent,
+
       uiRenderer,
       uiCamera,
-      uiScene
+      uiScene,
+      uiEvent
     });
   }
 
@@ -123,7 +131,15 @@ class SnowballGame {
 
   snowball: TEntity<SnowBall>;
   ready() {
-    const { renderer, scene, treeResource, uiScene, uiRenderer } = this;
+    const {
+      renderer,
+      scene,
+      treeResource,
+      uiScene,
+      uiEvent,
+      uiRenderer,
+      gameEvent
+    } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
     const minTop = rendererHeight / 2;
 
@@ -150,23 +166,24 @@ class SnowballGame {
       scene.add(tree);
     });
 
-    const startMaskEntity = Entity.create<StartMask>('start-mask', {
-      width: rendererWidth,
-      height: rendererHeight
+    gameEvent.add('touchStart', () => {
+      console.log('touch');
     });
 
-    uiScene.add(startMaskEntity);
+    {
+      // 开始游戏遮罩
+      const startMaskEntity = Entity.create<StartMask>('start-mask', {
+        width: rendererWidth,
+        height: rendererHeight
+      });
 
-    uiRenderer.dom.addEventListener('click', e => {
-      const rect = uiRenderer.dom.getBoundingClientRect();
+      uiScene.add(startMaskEntity);
 
-      console.log(
-        uiRenderer.ctx.isPointInPath(
-          e.clientX - rect.left,
-          e.clientY - rect.top
-        )
-      );
-    });
+      uiEvent.add('tap', () => {
+        this.startGame();
+        uiRenderer.setVisible(false);
+      });
+    }
 
     this.render();
   }
