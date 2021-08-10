@@ -4,7 +4,7 @@ import { utils } from './Engine';
 
 const { getActualPixel } = utils;
 
-interface TreeConfig {
+interface CreateTreeConfig {
   minX: number;
   minY: number;
   maxX: number;
@@ -23,42 +23,45 @@ interface TreeConfig {
  */
 export const createTree = (
   num: number,
-  { minX, minY, maxX, maxY, resource }: TreeConfig
+  { minX, minY, maxX, maxY, resource }: CreateTreeConfig
 ) => {
   return new Array(num)
     .fill(null)
     .map(() => {
       const width = getActualPixel(40);
       const height = width * 2;
-      return Entity.create<Tree>(
-        'tree',
-        new Tree({
-          left: randomRange(minX, maxX - width),
-          top: randomRange(minY, maxY - height),
-          width,
-          height,
-          resource,
-          interval: 20
-        })
-      );
+      return new Tree({
+        left: randomRange(minX, maxX - width),
+        top: randomRange(minY, maxY - height),
+        width,
+        height,
+        resource,
+        interval: 20
+      });
     })
-    .sort((x, y) => x.top + x.height - (y.top + y.height));
+    .sort(
+      (x, y) =>
+        x.config.top + x.config.height - (y.config.top + y.config.height)
+    );
 };
 
-export default class Tree {
+interface TreeConfig {
   left: number;
   top: number;
   width: number;
   height: number;
   resource: HTMLImageElement;
   interval: number;
+}
 
-  constructor(config: Partial<Tree>) {
-    Object.assign(this, config);
+export default class Tree extends Entity<TreeConfig> {
+  constructor(config: Partial<TreeConfig>) {
+    super('tree');
+    this.mergeConfig(config);
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    const { resource, left, top, width, height } = this;
+    const { resource, left, top, width, height } = this.config;
 
     ctx.drawImage(resource, left, top, width, height);
   }
