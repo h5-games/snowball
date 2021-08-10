@@ -5,7 +5,7 @@ const UIEntityRenderMap = new Map(entityRenderMap);
 
 const { getActualPixel } = utils;
 
-export interface StartMask {
+interface StartMask {
   width: number;
   height: number;
 }

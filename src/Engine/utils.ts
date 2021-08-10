@@ -6,7 +6,7 @@ export const getRandomId = (): string => {
 };
 
 /**
- * @deprecated 获取屏幕实际像素比 有部分屏幕是 2K 的实际像素就要 * 2
+ * @description 获取屏幕实际像素比 有部分屏幕是 2K 的实际像素就要 * 2
  * @param px
  */
 export const getActualPixel = (px: number) => {

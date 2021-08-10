@@ -69,6 +69,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
 
     this.mergeConfig({ left, top, degree });
 
+    // 记录小球移动的位置以及角度
     tailList.unshift({
       left,
       top,

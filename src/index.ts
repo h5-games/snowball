@@ -9,7 +9,7 @@ import {
 } from './Engine';
 import SnowBall from './SnowBall';
 import Tree, { createTree } from './Tree';
-import { StartMask, UIEntityRenderMap } from './entityRenderMap';
+import { UIEntityRenderMap } from './entityRenderMap';
 
 const { getActualPixel } = utils;
 
@@ -77,7 +77,7 @@ class SnowballGame {
 
   elapsedTime = 0;
   animationFrame(timestamp: number) {
-    const { scene, renderer, snowball, animation } = this;
+    const { scene, renderer, snowball, animation, treeList } = this;
     const { translateY, height: rendererHeight } = renderer;
 
     {
@@ -92,12 +92,11 @@ class SnowballGame {
       const offsetTop = top + translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
 
       if (offsetTop > endPosition) {
-        // 小球滚动到 canvas 一半的时候画布偏移的速度与小球向下位移的速度保持一致
-        // todo 游戏主要逻辑
+        // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
 
         renderer.translate(0, -distance);
       } else {
-        // 小球未滚动到 canvas 一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
+        // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
         distance = getActualPixel(ratio * 3);
         renderer.translate(0, -(ratio * distance));
@@ -108,13 +107,13 @@ class SnowballGame {
     }
 
     {
-      scene.entityMap.forEach(entity => {
-        if (entity.type === 'tree') {
-          const { top, height } = (entity as Tree).config;
-          if (top + height < -translateY) {
-            // 超出场景移除
-            scene.remove(entity.id);
-          }
+      const removeIndex = []; // 被删除的树木
+      treeList.forEach((tree, index) => {
+        const { top, height } = tree.config;
+        if (top + height < -translateY) {
+          // 树木超出场景移除
+          scene.remove(tree.id);
+          removeIndex.push(index);
         }
       });
     }
@@ -130,6 +129,7 @@ class SnowballGame {
   }
 
   snowball: SnowBall;
+  treeList: Tree[];
   ready() {
     const {
       renderer,
@@ -152,13 +152,14 @@ class SnowballGame {
     this.snowball = scene.add(snowball);
 
     // 初始创建🌲
-    createTree(10, {
+    this.treeList = createTree(10, {
       minX: 0,
       maxX: rendererWidth,
       minY: minTop,
       maxY: minTop + rendererHeight,
       resource: treeResource
-    }).forEach(tree => {
+    });
+    this.treeList.forEach(tree => {
       scene.add(tree);
     });
 
