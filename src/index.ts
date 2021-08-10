@@ -1,6 +1,5 @@
 import {
   Entity,
-  TEntity,
   Scene,
   Renderer,
   Camera,
@@ -88,8 +87,8 @@ class SnowballGame {
 
     {
       const endPosition = rendererHeight / 2;
-      let { distance } = snowball;
-      const { top } = snowball;
+      let { distance } = snowball.config;
+      const { top } = snowball.config;
       const offsetTop = top + translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
 
       if (offsetTop > endPosition) {
@@ -104,13 +103,14 @@ class SnowballGame {
         renderer.translate(0, -(ratio * distance));
       }
 
-      snowball.move(distance);
+      snowball.mergeConfig({ distance });
+      snowball.move();
     }
 
     {
       scene.entityMap.forEach(entity => {
         if (entity.type === 'tree') {
-          const { top, height } = entity as TEntity<Tree>;
+          const { top, height } = (entity as Tree).config;
           if (top + height < -translateY) {
             // 超出场景移除
             scene.remove(entity.id);
@@ -129,7 +129,7 @@ class SnowballGame {
     }
   }
 
-  snowball: TEntity<SnowBall>;
+  snowball: SnowBall;
   ready() {
     const {
       renderer,
@@ -144,16 +144,12 @@ class SnowballGame {
     const minTop = rendererHeight / 2;
 
     // 创建雪球
-    this.snowball = scene.add(
-      Entity.create<SnowBall>(
-        'snowball',
-        new SnowBall({
-          radius: 24,
-          left: rendererWidth / 2,
-          top: minTop / 3
-        })
-      )
-    );
+    const snowball = new SnowBall({
+      radius: 24,
+      left: rendererWidth / 2,
+      top: minTop / 3
+    });
+    this.snowball = scene.add(snowball);
 
     // 初始创建🌲
     createTree(10, {
@@ -167,12 +163,18 @@ class SnowballGame {
     });
 
     gameEvent.add('touchStart', () => {
-      console.log('touch');
+      let { direction } = snowball.config;
+      direction = -direction; // 按下转向
+      snowball.mergeConfig({ turnTo: true, direction });
+    });
+
+    gameEvent.add('touchEnd', () => {
+      snowball.mergeConfig({ turnTo: false });
     });
 
     {
       // 开始游戏遮罩
-      const startMaskEntity = Entity.create<StartMask>('start-mask', {
+      const startMaskEntity = new Entity('start-mask', {
         width: rendererWidth,
         height: rendererHeight
       });

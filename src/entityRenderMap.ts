@@ -1,4 +1,4 @@
-import { entityRenderMap, TEntity, utils } from './Engine';
+import { Entity, entityRenderMap, utils } from './Engine';
 import paints from './utils/paints';
 
 const UIEntityRenderMap = new Map(entityRenderMap);
@@ -11,8 +11,8 @@ export interface StartMask {
 }
 
 // 开始游戏遮罩
-UIEntityRenderMap.set('start-mask', (ctx, options: TEntity<StartMask>) => {
-  const { width, height } = options;
+UIEntityRenderMap.set('start-mask', (ctx, entity: Entity<StartMask>) => {
+  const { width, height } = entity.config;
 
   paints.paintMask(ctx, { width, height });
 

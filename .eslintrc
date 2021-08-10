@@ -48,6 +48,7 @@
     "semi": ["error", "always"],
     "arrow-parens": 0,
     "no-var": "error",
+    "no-nested-ternary": "error",
     "@typescript-eslint/consistent-type-definitions": ["error", "interface"]
   }
 }

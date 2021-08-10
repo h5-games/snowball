@@ -9,13 +9,13 @@ module.exports = {
   ],
 
   output: {
-    filename: 'static/scripts/[name].bundle.js',
+    filename: 'static/scripts/[name].[contenthash].bundle.js',
     path: path.resolve(__dirname, '../dist'),
     publicPath: '/'
   },
 
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
     alias: {
       '@': path.resolve(__dirname, '../src/')
     }
@@ -30,15 +30,9 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.tsx?$/,
         exclude: /node_modules/,
-        loader: 'ts-loader'
-      },
-      {
-        test: /\.ts/,
-        include: /src/,
-        enforce: 'pre',
-        loader: 'eslint-loader'
+        use: ['babel-loader', 'ts-loader']
       },
       {
         type: 'javascript/auto',
@@ -50,7 +44,7 @@ module.exports = {
         loader: 'url-loader',
         options: {
           limit: 1000,
-          name: 'static/images/[name].[hash:8].[ext]'
+          name: 'static/images/[name].[contenthash].[ext]'
         }
       }
     ]

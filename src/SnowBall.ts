@@ -1,30 +1,77 @@
+import { Entity } from './Engine';
+
 interface SnowBallTail {
   left: number;
   top: number;
   degree: number;
 }
 
-export default class SnowBall {
-  left: number = 0;
-  top: number = 0;
-  radius: number = 0;
-  degree: number = 0;
-  distance: number = 0;
+interface SnowBallConfig {
+  left: number;
+  top: number;
+  radius: number;
+  direction: number;
+  turnTo: boolean;
+  degree: number;
+  maxDegree: number;
+  minDegree: number;
+  distance: number;
+  TAIL_MAX_LENGTH: number;
+}
+
+export default class SnowBall extends Entity<SnowBallConfig> {
+  config: SnowBallConfig = {
+    left: 0,
+    top: 0,
+    radius: 0,
+    direction: -1,
+    turnTo: false,
+    degree: 0,
+    maxDegree: 50,
+    minDegree: -50,
+    distance: 0,
+    TAIL_MAX_LENGTH: 50
+  };
   tailList: Array<SnowBallTail> = [];
 
-  TAIL_MAX_LENGTH: number = 50;
-
-  constructor(config: Partial<SnowBall>) {
-    Object.assign(this, config);
+  constructor(config: Partial<SnowBallConfig>) {
+    super('snowball');
+    this.mergeConfig(config);
   }
 
-  move(distance: number) {
-    const { degree, tailList, TAIL_MAX_LENGTH } = this;
-    this.top += distance;
+  move() {
+    const { tailList } = this;
+    const {
+      turnTo,
+      direction,
+      distance,
+      maxDegree,
+      minDegree,
+      TAIL_MAX_LENGTH
+    } = this.config;
+    let { degree, left, top } = this.config;
+
+    // 小球正在转向
+    if (turnTo) {
+      // 递增旋转角度
+      degree = degree + direction;
+      // 限制最大、最小旋转角度
+      if (degree > maxDegree) {
+        degree = maxDegree;
+      } else if (degree < minDegree) {
+        degree = minDegree;
+      }
+    }
+
+    const radian = (degree * Math.PI) / 180;
+    left += Math.sin(radian) * distance;
+    top += Math.cos(radian) * distance;
+
+    this.mergeConfig({ left, top, degree });
 
     tailList.unshift({
-      left: this.left,
-      top: this.top,
+      left,
+      top,
       degree
     });
     if (tailList.length > TAIL_MAX_LENGTH) {
@@ -33,7 +80,8 @@ export default class SnowBall {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    const { radius, left, top, tailList } = this;
+    const { tailList } = this;
+    const { radius, left, top } = this.config;
 
     {
       // 绘制小球尾巴
