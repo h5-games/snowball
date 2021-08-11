@@ -78,7 +78,11 @@ class SnowballGame {
   elapsedTime = 0;
   animationFrame(timestamp: number) {
     const { scene, renderer, snowball, animation, treeList } = this;
-    const { translateY, height: rendererHeight } = renderer;
+    const {
+      translateY,
+      width: rendererWidth,
+      height: rendererHeight
+    } = renderer;
 
     {
       const { startTime } = animation;
@@ -98,7 +102,7 @@ class SnowballGame {
       } else {
         // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
-        distance = getActualPixel(ratio * 3);
+        distance = getActualPixel(ratio * 2);
         renderer.translate(0, -(ratio * distance));
       }
 
@@ -107,15 +111,36 @@ class SnowballGame {
     }
 
     {
-      const removeIndex = []; // 被删除的树木
-      treeList.forEach((tree, index) => {
+      treeList.forEach(tree => {
         const { top, height } = tree.config;
         if (top + height < -translateY) {
-          // 树木超出场景移除
+          // 🌲超出场景移除
           scene.remove(tree.id);
-          removeIndex.push(index);
+          treeList.delete(tree.id);
         }
       });
+
+      const { treeResource } = this;
+      if (treeList.size < 10) {
+        // 将🌲保证在一定范围内
+        const keys = Array.from(treeList.keys());
+        const lastTree = treeList.get(keys[keys.length - 1]);
+        const { config } = lastTree;
+        let minY = config.top + config.height;
+        const viewerTop = -translateY + rendererHeight;
+        if (minY < viewerTop) minY = viewerTop;
+        // 缺多少🌲补多少🌲
+        createTree(10 - treeList.size, {
+          minX: 0,
+          maxX: rendererWidth,
+          minY,
+          maxY: minY + rendererHeight / 10,
+          resource: treeResource
+        }).forEach(tree => {
+          scene.add(tree);
+          this.treeList.set(tree.id, tree);
+        });
+      }
     }
 
     this.render();
@@ -129,7 +154,7 @@ class SnowballGame {
   }
 
   snowball: SnowBall;
-  treeList: Tree[];
+  treeList: Map<string, Tree> = new Map();
   ready() {
     const {
       renderer,
@@ -147,20 +172,20 @@ class SnowballGame {
     const snowball = new SnowBall({
       radius: 24,
       left: rendererWidth / 2,
-      top: minTop / 3
+      top: minTop / 2
     });
     this.snowball = scene.add(snowball);
 
-    // 初始创建🌲
-    this.treeList = createTree(10, {
+    // 初始给前两屏幕总计创建 12 棵🌲
+    createTree(12, {
       minX: 0,
       maxX: rendererWidth,
       minY: minTop,
-      maxY: minTop + rendererHeight,
+      maxY: rendererHeight * 2,
       resource: treeResource
-    });
-    this.treeList.forEach(tree => {
+    }).forEach(tree => {
       scene.add(tree);
+      this.treeList.set(tree.id, tree);
     });
 
     gameEvent.add('touchStart', () => {
