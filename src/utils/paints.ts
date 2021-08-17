@@ -10,6 +10,7 @@ interface PaintTextOption {
   font?: string;
   fillStyle?: string;
   textAlign?: string;
+  textBaseline?: string;
 }
 export interface IPaintText {
   (
@@ -51,12 +52,14 @@ export const paintText: IPaintText = (
     fontFamily = 'Wawati SC',
     font = `${getActualPixel(px)}px ${fontFamily}`,
     fillStyle = '#345',
-    textAlign = 'center'
+    textAlign = 'center',
+    textBaseline = 'middle'
   } = _option || {};
 
   Object.assign(ctx, {
     fillStyle,
     textAlign,
+    textBaseline,
     font
   });
   ctx.fillText(...fillText);

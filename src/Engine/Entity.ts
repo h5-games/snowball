@@ -33,6 +33,7 @@ export class Entity<T extends EntityConfig = {}> {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    console.log(ctx, this);
+    const { type, id } = this;
+    console.warn(`The ${type}-${id} Entity requires a render method!`);
   }
 }

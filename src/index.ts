@@ -9,7 +9,7 @@ import {
 } from './Engine';
 import SnowBall from './SnowBall';
 import Tree, { createTree } from './Tree';
-import { UIEntityRenderMap } from './entityRenderMap';
+import { UIEntityRenderMap, Score } from './entityRenderMap';
 
 const { getActualPixel } = utils;
 
@@ -76,13 +76,11 @@ class SnowballGame {
   }
 
   elapsedTime = 0;
+  maxTreeNum = 10;
   animationFrame(timestamp: number) {
-    const { scene, renderer, snowball, animation, treeList } = this;
-    const {
-      translateY,
-      width: rendererWidth,
-      height: rendererHeight
-    } = renderer;
+    let { maxTreeNum } = this;
+    const { scene, renderer, snowball, animation, treeList, score } = this;
+    const { width: rendererWidth, height: rendererHeight } = renderer;
 
     {
       const { startTime } = animation;
@@ -93,22 +91,30 @@ class SnowballGame {
       const endPosition = rendererHeight / 2;
       let { distance } = snowball.config;
       const { top } = snowball.config;
-      const offsetTop = top + translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
+      const offsetTop = top + renderer.translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
 
-      if (offsetTop > endPosition) {
+      if (Math.ceil(offsetTop) >= endPosition) {
         // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
-
+        maxTreeNum += 1;
+        this.maxTreeNum = maxTreeNum;
         renderer.translate(0, -distance);
       } else {
         // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
-        distance = getActualPixel(ratio * 2);
+        distance = getActualPixel(ratio * 3);
         renderer.translate(0, -(ratio * distance));
       }
 
       snowball.mergeConfig({ distance });
       snowball.move();
     }
+
+    const { translateY } = renderer;
+
+    score.mergeConfig({
+      count: score.config.count + 1,
+      translateY
+    });
 
     {
       treeList.forEach(tree => {
@@ -121,7 +127,7 @@ class SnowballGame {
       });
 
       const { treeResource } = this;
-      if (treeList.size < 10) {
+      if (treeList.size < maxTreeNum) {
         // 将🌲保证在一定范围内
         const keys = Array.from(treeList.keys());
         const lastTree = treeList.get(keys[keys.length - 1]);
@@ -130,7 +136,7 @@ class SnowballGame {
         const viewerTop = -translateY + rendererHeight;
         if (minY < viewerTop) minY = viewerTop;
         // 缺多少🌲补多少🌲
-        createTree(10 - treeList.size, {
+        createTree(maxTreeNum - treeList.size, {
           minX: 0,
           maxX: rendererWidth,
           minY,
@@ -155,6 +161,8 @@ class SnowballGame {
 
   snowball: SnowBall;
   treeList: Map<string, Tree> = new Map();
+  score: Entity<Score>;
+
   ready() {
     const {
       renderer,
@@ -188,15 +196,14 @@ class SnowballGame {
       this.treeList.set(tree.id, tree);
     });
 
-    gameEvent.add('touchStart', () => {
-      let { direction } = snowball.config;
-      direction = -direction; // 按下转向
-      snowball.mergeConfig({ turnTo: true, direction });
+    // 分数显示
+    const score = new Entity('score', {
+      count: 0,
+      translateY: 0
     });
-
-    gameEvent.add('touchEnd', () => {
-      snowball.mergeConfig({ turnTo: false });
-    });
+    score.setVisible(false);
+    scene.add(score);
+    this.score = score;
 
     {
       // 开始游戏遮罩
@@ -208,10 +215,21 @@ class SnowballGame {
       uiScene.add(startMaskEntity);
 
       uiEvent.add('tap', () => {
-        this.startGame();
+        score.setVisible(true);
         uiRenderer.setVisible(false);
+        this.startGame();
       });
     }
+
+    gameEvent.add('touchStart', () => {
+      let { direction } = snowball.config;
+      direction = -direction; // 按下转向
+      snowball.mergeConfig({ turnTo: true, direction });
+    });
+
+    gameEvent.add('touchEnd', () => {
+      snowball.mergeConfig({ turnTo: false });
+    });
 
     this.render();
   }
