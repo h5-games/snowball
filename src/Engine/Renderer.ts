@@ -1,4 +1,5 @@
 import { Scene, Camera, utils, entityRenderMap, EntityRenderMap } from '.';
+
 const { getActualPixel } = utils;
 
 interface RendererProps {
@@ -39,8 +40,16 @@ export class Renderer {
     }
   }
 
+  visible = true;
   setVisible(visible) {
+    this.visible = visible;
     this.setStyle({ visibility: visible ? 'visible' : 'hidden' });
+  }
+
+  penetrate = false;
+  setPenetrate(penetrate) {
+    this.penetrate = penetrate;
+    this.setStyle({ pointerEvents: penetrate ? 'none' : 'auto' });
   }
 
   setSize(width: number, height: number) {

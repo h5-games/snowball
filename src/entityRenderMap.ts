@@ -39,9 +39,10 @@ export interface Score {
   translateY: number;
 }
 
+// 分数
 UIEntityRenderMap.set('score', (ctx, entity: Entity<Score>) => {
   const { count, translateY } = entity.config;
-  paints.paintText(ctx, `得分：${count}`, 20, -translateY + 24, {
+  paints.paintText(ctx, `得分：${count}`, 26, -translateY + 30, {
     fillStyle: '#666',
     px: 20,
     textAlign: 'left',

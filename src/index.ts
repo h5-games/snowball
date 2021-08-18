@@ -79,7 +79,7 @@ class SnowballGame {
   maxTreeNum = 10;
   animationFrame(timestamp: number) {
     let { maxTreeNum } = this;
-    const { scene, renderer, snowball, animation, treeList, score } = this;
+    const { scene, renderer, snowball, animation, treeList } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
 
     {
@@ -110,12 +110,6 @@ class SnowballGame {
     }
 
     const { translateY } = renderer;
-
-    score.mergeConfig({
-      count: score.config.count + 1,
-      translateY
-    });
-
     {
       treeList.forEach(tree => {
         const { top, height } = tree.config;
@@ -152,10 +146,16 @@ class SnowballGame {
     this.render();
   }
 
+  scoreTimer: number = null;
   startGame() {
-    const { animation } = this;
+    const { animation, score } = this;
     if (animation.status === 'stationary') {
       animation.start();
+      this.scoreTimer = window.setInterval(() => {
+        score.mergeConfig({
+          count: score.config.count + 1
+        });
+      }, 500);
     }
   }
 
@@ -196,16 +196,17 @@ class SnowballGame {
       this.treeList.set(tree.id, tree);
     });
 
-    // 分数显示
-    const score = new Entity('score', {
-      count: 0,
-      translateY: 0
-    });
-    score.setVisible(false);
-    scene.add(score);
-    this.score = score;
-
     {
+      // 分数显示
+      const score = new Entity('score', {
+        count: 0,
+        translateY: 0
+      });
+      score.setVisible(false);
+
+      this.score = score;
+      uiScene.add(score);
+
       // 开始游戏遮罩
       const startMaskEntity = new Entity('start-mask', {
         width: rendererWidth,
@@ -216,7 +217,9 @@ class SnowballGame {
 
       uiEvent.add('tap', () => {
         score.setVisible(true);
-        uiRenderer.setVisible(false);
+        startMaskEntity.setVisible(false);
+
+        uiRenderer.setPenetrate(true);
         this.startGame();
       });
     }
