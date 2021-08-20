@@ -32,8 +32,7 @@ export const createTree = (
       top: randomRange(minY - height, maxY),
       width,
       height,
-      resource,
-      interval: 20
+      resource
     });
     trees.push(tree);
   }
@@ -52,12 +51,34 @@ interface TreeConfig {
   width: number;
   height: number;
   resource: HTMLImageElement;
-  interval: number;
+}
+interface TreeBody {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  bottom: number;
 }
 
 export default class Tree extends Entity<TreeConfig> {
-  constructor(config: Partial<TreeConfig>) {
+  body!: TreeBody;
+  constructor(config: TreeConfig) {
     super('tree');
+
+    // 根据图片比例计算树木树干的位置与大小
+    const { left, top, width, height } = config;
+    const _width = width * 0.2;
+    const _height = height * 0.8;
+    const _top = top + height - _height;
+    const _left = left + width * 0.37;
+
+    this.body = {
+      left: _left,
+      top: _top,
+      width: _width,
+      height: _height,
+      bottom: _top + _height
+    };
     this.mergeConfig(config);
   }
 

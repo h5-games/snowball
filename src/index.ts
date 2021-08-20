@@ -9,7 +9,13 @@ import {
 } from './Engine';
 import SnowBall from './SnowBall';
 import Tree, { createTree } from './Tree';
-import { UIEntityRenderMap, Score } from './entityRenderMap';
+import {
+  UIEntityRenderMap,
+  ScoreEntity,
+  TimerEntity,
+  OverMaskEntity
+} from './entityRenderMap';
+import { checkRectCircleCollide } from './utils/collide';
 
 const { getActualPixel } = utils;
 
@@ -76,23 +82,30 @@ class SnowballGame {
   }
 
   maxTreeNum = 10;
-  elapsedTime = 0;
   animationFrame(timestamp: number) {
     let { maxTreeNum } = this;
-    const { scene, renderer, snowball, animation, treeList } = this;
+    const {
+      scene,
+      renderer,
+      snowball,
+      animation,
+      treeList,
+      timerEntity
+    } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
 
     {
       const { startTime } = animation;
-      console.log(timestamp - startTime);
-      this.elapsedTime = timestamp - startTime;
+      timerEntity.mergeConfig({
+        millisecond: timestamp - startTime
+      });
     }
 
     {
       const endPosition = rendererHeight / 2;
       let { distance } = snowball.config;
-      const { top } = snowball.config;
-      const offsetTop = top + renderer.translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
+      const { y: snowballY } = snowball.config;
+      const offsetTop = snowballY + renderer.translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
 
       if (Math.ceil(offsetTop) >= endPosition) {
         // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
@@ -103,7 +116,7 @@ class SnowballGame {
         // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
         distance = getActualPixel(ratio * 3);
-        renderer.translate(0, -(ratio * distance));
+        renderer.translate(0, -(ratio * distance)); // 初始画布向上偏移的速度低于小球向下走的速度，使得小球看起来在向下走
       }
 
       snowball.mergeConfig({ distance });
@@ -112,14 +125,38 @@ class SnowballGame {
 
     const { translateY } = renderer;
     {
-      treeList.forEach(tree => {
-        const { top, height } = tree.config;
-        if (top + height < -translateY) {
-          // 🌲超出场景移除
-          scene.remove(tree.id);
-          treeList.delete(tree.id);
+      for (const [id, tree] of Array.from(treeList)) {
+        {
+          // 小球与🌲底部发生碰撞
+          const { config: snowballConfig } = snowball;
+          const { left, width, height, bottom } = tree.body;
+          let _height = snowballConfig.radius; // 小球半径高度为碰撞区域的高度
+          _height = _height > height ? height : _height; // 最高的碰撞区域高度为树干高度
+          if (
+            checkRectCircleCollide(
+              {
+                left,
+                top: bottom - _height,
+                height: _height,
+                width
+              },
+              snowballConfig
+            )
+          ) {
+            this.gamgeOver();
+            return false;
+          }
         }
-      });
+
+        {
+          const { top, height } = tree.config;
+          // 🌲超出场景移除
+          if (top + height < -translateY) {
+            scene.remove(tree.id);
+            treeList.delete(tree.id);
+          }
+        }
+      }
 
       const { treeResource } = this;
       if (treeList.size < maxTreeNum) {
@@ -149,20 +186,45 @@ class SnowballGame {
 
   scoreTimer: number = 0;
   startGame() {
-    const { animation, score } = this;
+    const { animation, scoreEntity } = this;
     if (animation.status === 'stationary') {
       animation.start();
+      window.clearInterval(this.scoreTimer);
       this.scoreTimer = window.setInterval(() => {
-        score.mergeConfig({
-          count: score.config.count + 1
+        // 每 500 毫秒增加 1 分
+        scoreEntity.mergeConfig({
+          count: scoreEntity.config.count + 1
         });
       }, 500);
     }
   }
 
+  gamgeOver() {
+    const {
+      scoreTimer,
+      overMaskEntity,
+      scoreEntity,
+      timerEntity,
+      uiRenderer
+    } = this;
+
+    window.clearInterval(scoreTimer);
+    uiRenderer.setPenetrate(false);
+    overMaskEntity.setVisible(true);
+    overMaskEntity.mergeConfig({
+      score: scoreEntity.config.count
+    });
+    scoreEntity.setVisible(false);
+    timerEntity.setVisible(false);
+
+    this.render();
+  }
+
   snowball!: SnowBall;
-  treeList: Map<string, Tree> = new Map();
-  score!: Entity<Score>;
+  treeList!: Map<string, Tree>;
+  scoreEntity!: ScoreEntity;
+  timerEntity!: TimerEntity;
+  overMaskEntity!: OverMaskEntity;
 
   ready() {
     const {
@@ -180,12 +242,14 @@ class SnowballGame {
     // 创建雪球
     const snowball = new SnowBall({
       radius: 24,
-      left: rendererWidth / 2,
-      top: minTop / 2
+      x: rendererWidth / 2,
+      y: minTop / 2
     });
     this.snowball = scene.add(snowball);
 
+    this.maxTreeNum = 10;
     // 初始给前两屏幕总计创建 12 棵🌲
+    this.treeList = new Map();
     createTree(12, {
       minX: 0,
       maxX: rendererWidth,
@@ -199,14 +263,22 @@ class SnowballGame {
 
     {
       // 分数显示
-      const score = new Entity('score', {
-        count: 0,
-        translateY: 0
+      const scoreEntity = new Entity('score', {
+        count: 0
       });
-      score.setVisible(false);
+      scoreEntity.setVisible(false);
 
-      this.score = score;
-      uiScene.add(score);
+      this.scoreEntity = scoreEntity;
+      uiScene.add(scoreEntity);
+
+      const timerEntity = new Entity('timer', {
+        millisecond: 0,
+        rendererWidth
+      });
+      timerEntity.setVisible(false);
+
+      this.timerEntity = timerEntity;
+      uiScene.add(timerEntity);
 
       // 开始游戏遮罩
       const startMaskEntity = new Entity('start-mask', {
@@ -217,12 +289,25 @@ class SnowballGame {
       uiScene.add(startMaskEntity);
 
       uiEvent.add('tap', () => {
-        score.setVisible(true);
+        scoreEntity.setVisible(true);
+        timerEntity.setVisible(true);
         startMaskEntity.setVisible(false);
 
         uiRenderer.setPenetrate(true);
         this.startGame();
       });
+    }
+
+    {
+      // 游戏结束遮罩
+      const overMaskEntity = new Entity('over-mask', {
+        width: rendererWidth,
+        height: rendererHeight,
+        score: 0
+      });
+      overMaskEntity.setVisible(false);
+      uiScene.add(overMaskEntity);
+      this.overMaskEntity = overMaskEntity;
     }
 
     gameEvent.add('touchStart', () => {

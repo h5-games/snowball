@@ -1,14 +1,14 @@
 import { Entity } from './Engine';
 
 interface SnowBallTail {
-  left: number;
-  top: number;
+  x: number;
+  y: number;
   degree: number;
 }
 
 interface SnowBallConfig {
-  left: number;
-  top: number;
+  x: number;
+  y: number;
   radius: number;
   direction: number;
   turnTo: boolean;
@@ -21,8 +21,8 @@ interface SnowBallConfig {
 
 export default class SnowBall extends Entity<SnowBallConfig> {
   config: SnowBallConfig = {
-    left: 0,
-    top: 0,
+    x: 0,
+    y: 0,
     radius: 0,
     direction: -1,
     turnTo: false,
@@ -49,7 +49,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
       minDegree,
       TAIL_MAX_LENGTH
     } = this.config;
-    let { degree, left, top } = this.config;
+    let { degree, x, y } = this.config;
 
     // 小球正在转向
     if (turnTo) {
@@ -64,15 +64,15 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     }
 
     const radian = (degree * Math.PI) / 180;
-    left += Math.sin(radian) * distance;
-    top += Math.cos(radian) * distance;
+    x += Math.sin(radian) * distance;
+    y += Math.cos(radian) * distance;
 
-    this.mergeConfig({ left, top, degree });
+    this.mergeConfig({ x, y, degree });
 
     // 记录小球移动的位置以及角度
     tailList.unshift({
-      left,
-      top,
+      x,
+      y,
       degree
     });
     if (tailList.length > TAIL_MAX_LENGTH) {
@@ -82,7 +82,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
 
   render(ctx: CanvasRenderingContext2D) {
     const { tailList } = this;
-    const { radius, left, top } = this.config;
+    const { radius, x, y } = this.config;
 
     {
       // 绘制小球尾巴
@@ -93,12 +93,12 @@ export default class SnowBall extends Entity<SnowBallConfig> {
         const paint = () => {
           if (index < 0) return;
 
-          const { left, top, degree } = tailList[index];
+          const { x, y, degree } = tailList[index];
           const _radius = radius - (radius * (index + 1)) / tailListsLength;
           const radian = (degree * Math.PI) / 180;
           const cos = Math.cos(radian) * _radius * step;
           const sin = Math.sin(radian) * _radius * step;
-          ctx.lineTo(left - cos, top + sin);
+          ctx.lineTo(x - cos, y + sin);
 
           if (index === tailListsLength - 1) step = -1;
           index += step;
@@ -111,10 +111,10 @@ export default class SnowBall extends Entity<SnowBallConfig> {
         const firstTail = tailList[0];
         const lastTail = tailList[tailListsLength - 1];
         const line = ctx.createLinearGradient(
-          firstTail.left,
-          firstTail.top,
-          lastTail.left,
-          lastTail.top
+          firstTail.x,
+          firstTail.y,
+          lastTail.x,
+          lastTail.y
         );
 
         try {
@@ -132,7 +132,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     // 绘制小球
     ctx.beginPath();
     ctx.fillStyle = '#d2fdff';
-    ctx.arc(left, top, radius, 0, 2 * Math.PI);
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.fill();
   }
 }

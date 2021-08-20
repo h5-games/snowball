@@ -18,7 +18,7 @@ export class Entity<T extends EntityConfig = {}> {
   config: T = {} as T;
 
   constructor(public type: EntityType, config?: Partial<T>) {
-    this.id = utils.getRandomId();
+    this.id = type + '-' + utils.getRandomId();
     config && this.mergeConfig(config);
   }
 
@@ -33,7 +33,6 @@ export class Entity<T extends EntityConfig = {}> {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    const { type, id } = this;
-    console.warn(`The ${type}-${id} Entity requires a render method!`);
+    console.warn(`The ${this.id} Entity requires a render method!`);
   }
 }
