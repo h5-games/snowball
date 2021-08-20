@@ -1,9 +1,14 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "es6",
+    "esModuleInterop": true,
     "target": "es5",
-    "lib": ["es2020", "dom"],
-    "sourceMap": true
+    "lib": ["esnext", "dom"],
+    "sourceMap": true,
+    "locale": "zh-CN",
+    "strict": true,
+    "moduleResolution": "Node"
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "include": ["src/**/*", "@types"]
 }

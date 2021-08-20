@@ -5,14 +5,15 @@ interface Callback {
 export class Animation {
   constructor(public callback: Callback) {}
 
-  timer: number;
+  timer: number = 0;
   status: 'animation' | 'stationary' = 'stationary';
-  startTime: number | undefined;
+  startTime: number = 0;
+  prevTime: number = 0;
   start(timeout?: number) {
     this.status = 'animation';
     this.timer = window.requestAnimationFrame(timestamp => {
       const { startTime } = this;
-      if (startTime === undefined) {
+      if (startTime === 0) {
         this.startTime = timestamp;
       }
       if (typeof timeout === 'number' && timestamp - startTime > timeout) {
@@ -23,13 +24,14 @@ export class Animation {
       if (keep === false) {
         return this.stop();
       }
+      this.prevTime = timestamp;
       this.start(timeout);
     });
   }
 
   stop() {
     this.status = 'stationary';
-    this.startTime = undefined;
+    this.startTime = 0;
     window.cancelAnimationFrame(this.timer);
   }
 }

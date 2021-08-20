@@ -65,7 +65,7 @@ export const loadResource = async (
   return await new Promise<ResourcesUrl>((resolve, reject) => {
     const total: number = Object.keys(resources).length;
     const _resources: ResourcesUrl = [];
-    const load = async src => {
+    const load = async (src: string) => {
       try {
         const res = await fetch(src);
         const blob = await res.blob();

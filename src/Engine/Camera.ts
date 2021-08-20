@@ -18,10 +18,11 @@ export class Camera {
   offsetTop: number = 0;
   offsetLeft: number = 0;
 
-  constructor(config?: CameraConfig | Renderer) {
+  constructor(config: CameraConfig | Renderer = {}) {
     if (config instanceof Renderer) {
       // 如果传入的为 Renderer 实例，则相机自动追踪 render 区域
       this.traceRenderer(config);
+      this.observerRenderer = config;
     } else {
       this.update(config);
     }
@@ -32,8 +33,7 @@ export class Camera {
     return this;
   }
 
-  renderer: Renderer;
-
+  observerRenderer: Renderer | undefined;
   traceRenderer(renderer: Renderer): Camera {
     const { translateY, translateX, width, height } = renderer;
     Object.assign(this, {
@@ -62,12 +62,14 @@ export class Camera {
   }
 
   clearTraceRenderer() {
+    const { observerRenderer } = this;
+    if (!observerRenderer) return;
     const keys: (keyof Renderer)[] = [
       'translateY',
       'translateX',
       'width',
       'height'
     ];
-    keys.forEach(key => clearObserverSet(this.renderer, key));
+    keys.forEach(key => clearObserverSet(observerRenderer, key));
   }
 }

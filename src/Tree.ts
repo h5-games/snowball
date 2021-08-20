@@ -1,6 +1,5 @@
-import { Entity } from './Engine';
+import { Entity, utils } from './Engine';
 import { randomRange } from './utils';
-import { utils } from './Engine';
 
 const { getActualPixel } = utils;
 

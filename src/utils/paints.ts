@@ -37,9 +37,9 @@ export const paintText: IPaintText = (
   left,
   top,
   maxWidth,
-  option?
+  option?: PaintTextOption
 ) => {
-  let _option: PaintTextOption;
+  let _option: PaintTextOption | undefined;
   const fillText: TFillText = [text, left, top];
   if (typeof maxWidth === 'number') {
     fillText.push(maxWidth);
@@ -47,6 +47,7 @@ export const paintText: IPaintText = (
   } else if (typeof maxWidth === 'object') {
     _option = maxWidth;
   }
+
   const {
     px = 18,
     fontFamily = 'Wawati SC',
@@ -54,7 +55,7 @@ export const paintText: IPaintText = (
     fillStyle = '#345',
     textAlign = 'center',
     textBaseline = 'middle'
-  } = _option || {};
+  } = (_option || {}) as PaintTextOption;
 
   Object.assign(ctx, {
     fillStyle,

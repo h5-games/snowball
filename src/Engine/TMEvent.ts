@@ -8,14 +8,15 @@ interface ITouchEventOption<T> {
   pointY: number;
   originEvent: T;
 }
-interface ITouchEvent<T = TTMEvent> {
+interface ITouchEvent<T> {
   (e: ITouchEventOption<T>): void;
 }
+type TMJoinEvent = ITouchEvent<TouchEvent> | ITouchEvent<MouseEvent>;
 
 interface IEventListener {
-  touchStart: ITouchEvent[];
-  touchEnd: ITouchEvent[];
-  tap: ITouchEvent[];
+  touchStart: TMJoinEvent[];
+  touchEnd: TMJoinEvent[];
+  tap: TMJoinEvent[];
 }
 
 /**
@@ -45,19 +46,10 @@ export class TMEvent {
         event(eventOption);
       });
 
-      const currentTime = new Date().getTime();
-      if (this.startTime && currentTime - this.startTime < 500) {
-        this.dispatchTapEvent<MouseEvent>('tap', eventOption);
-        this.startTime = null;
-      }
-
-      if (type === 'touchStart') {
-        this.startTime = currentTime;
-      }
+      this.bindTapEvent<MouseEvent>(type, eventOption);
     };
   }
 
-  startTime: number = null;
   dispatchTouchEvent(type: TMEventType) {
     return (e: TouchEvent) => {
       e.preventDefault();
@@ -81,16 +73,20 @@ export class TMEvent {
     };
   }
 
-  bindTapEvent<T extends TTMEvent>(type, eventOption) {
+  tapStartTime: number = 0;
+  bindTapEvent<T extends TTMEvent>(
+    type: TMEventType,
+    eventOption: ITouchEventOption<T>
+  ) {
     const currentTime = new Date().getTime();
-    if (this.startTime && currentTime - this.startTime < 500) {
+    if (this.tapStartTime && currentTime - this.tapStartTime < 500) {
       // 500 毫秒内 表示点击事件
       this.dispatchTapEvent<T>('tap', eventOption);
-      this.startTime = null;
+      this.tapStartTime = 0;
     }
 
     if (type === 'touchStart') {
-      this.startTime = currentTime;
+      this.tapStartTime = currentTime;
     }
   }
 
@@ -113,14 +109,11 @@ export class TMEvent {
   add(eventName: 'touchStart', event: ITouchEvent<TouchEvent>): void;
   add(eventName: 'touchEnd', event: ITouchEvent<TouchEvent>): void;
   add(eventName: 'tap', event: ITouchEvent<TouchEvent>): void;
-  add(
-    eventName: TMEventType,
-    event: ITouchEvent<MouseEvent> | ITouchEvent<TouchEvent>
-  ) {
+  add(eventName: TMEventType, event: TMJoinEvent) {
     this._listeners[eventName].push(event);
   }
 
-  remove(eventName, event) {
+  remove(eventName: TMEventType, event: TMJoinEvent) {
     const index = this._listeners[eventName].findIndex(item => item === event);
     delete this._listeners[eventName][index];
   }

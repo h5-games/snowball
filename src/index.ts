@@ -14,16 +14,16 @@ import { UIEntityRenderMap, Score } from './entityRenderMap';
 const { getActualPixel } = utils;
 
 class SnowballGame {
-  renderer: Renderer;
-  camera: Camera;
-  scene: Scene;
-  animation: Animation;
-  gameEvent: TMEvent;
+  renderer!: Renderer;
+  camera!: Camera;
+  scene!: Scene;
+  animation!: Animation;
+  gameEvent!: TMEvent;
 
-  uiRenderer: Renderer;
-  uiCamera: Camera;
-  uiScene: Scene;
-  uiEvent: TMEvent;
+  uiRenderer!: Renderer;
+  uiCamera!: Camera;
+  uiScene!: Scene;
+  uiEvent!: TMEvent;
 
   constructor(public $el: HTMLElement) {
     const { offsetWidth, offsetHeight } = $el;
@@ -62,7 +62,7 @@ class SnowballGame {
     });
   }
 
-  treeResource: HTMLImageElement;
+  treeResource!: HTMLImageElement;
   async loadResource(): Promise<SnowballGame> {
     const [treeResourceUrl] = await utils.loadResource(['/images/terr.png']);
     this.treeResource = await new Promise<HTMLImageElement>(resolve => {
@@ -75,8 +75,8 @@ class SnowballGame {
     return this;
   }
 
-  elapsedTime = 0;
   maxTreeNum = 10;
+  elapsedTime = 0;
   animationFrame(timestamp: number) {
     let { maxTreeNum } = this;
     const { scene, renderer, snowball, animation, treeList } = this;
@@ -84,6 +84,7 @@ class SnowballGame {
 
     {
       const { startTime } = animation;
+      console.log(timestamp - startTime);
       this.elapsedTime = timestamp - startTime;
     }
 
@@ -125,7 +126,7 @@ class SnowballGame {
         // 将🌲保证在一定范围内
         const keys = Array.from(treeList.keys());
         const lastTree = treeList.get(keys[keys.length - 1]);
-        const { config } = lastTree;
+        const { config } = lastTree!;
         let minY = config.top + config.height;
         const viewerTop = -translateY + rendererHeight;
         if (minY < viewerTop) minY = viewerTop;
@@ -146,7 +147,7 @@ class SnowballGame {
     this.render();
   }
 
-  scoreTimer: number = null;
+  scoreTimer: number = 0;
   startGame() {
     const { animation, score } = this;
     if (animation.status === 'stationary') {
@@ -159,9 +160,9 @@ class SnowballGame {
     }
   }
 
-  snowball: SnowBall;
+  snowball!: SnowBall;
   treeList: Map<string, Tree> = new Map();
-  score: Entity<Score>;
+  score!: Entity<Score>;
 
   ready() {
     const {

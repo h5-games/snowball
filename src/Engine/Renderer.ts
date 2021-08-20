@@ -8,10 +8,10 @@ interface RendererProps {
 }
 
 export class Renderer {
-  dom: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  width: number;
-  height: number;
+  dom!: HTMLCanvasElement;
+  ctx!: CanvasRenderingContext2D;
+  width: number = 0;
+  height: number = 0;
   entityRenderMap: EntityRenderMap = entityRenderMap;
 
   constructor(props?: RendererProps) {
@@ -36,18 +36,20 @@ export class Renderer {
 
   setStyle(style: Partial<CSSStyleDeclaration>) {
     for (const key in style) {
-      this.dom.style[key] = style[key];
+      if (style.hasOwnProperty(key)) {
+        this.dom.style[key] = style[key] as string;
+      }
     }
   }
 
   visible = true;
-  setVisible(visible) {
+  setVisible(visible: boolean) {
     this.visible = visible;
     this.setStyle({ visibility: visible ? 'visible' : 'hidden' });
   }
 
   penetrate = false;
-  setPenetrate(penetrate) {
+  setPenetrate(penetrate: boolean) {
     this.penetrate = penetrate;
     this.setStyle({ pointerEvents: penetrate ? 'none' : 'auto' });
   }
@@ -66,7 +68,7 @@ export class Renderer {
 
   translateX: number = 0;
   translateY: number = 0;
-  translate(x, y) {
+  translate(x: number, y: number) {
     const { ctx } = this;
     this.translateX += x;
     this.translateY += y;
