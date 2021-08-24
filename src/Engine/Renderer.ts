@@ -69,10 +69,15 @@ export class Renderer {
   translateX: number = 0;
   translateY: number = 0;
   translate(x: number, y: number) {
-    const { ctx } = this;
     this.translateX += x;
     this.translateY += y;
-    ctx.translate(x, y);
+    this.ctx.translate(x, y);
+  }
+
+  resetTranslate() {
+    this.translateX = 0;
+    this.translateY = 0;
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
   render(scene: Scene, camera: Camera) {

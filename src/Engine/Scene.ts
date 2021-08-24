@@ -10,6 +10,10 @@ export class Scene {
     return entity;
   }
 
+  clear() {
+    this.entityMap = new Map();
+  }
+
   remove(id: string) {
     this.entityMap.delete(id);
   }

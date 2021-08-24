@@ -82,34 +82,4 @@ UIEntityRenderMap.set('score', (ctx, entity: ScoreEntity) => {
   );
 });
 
-// 时间
-export type TimerEntity = Entity<{
-  millisecond: number;
-  rendererWidth: number;
-}>;
-UIEntityRenderMap.set('timer', (ctx, entity: TimerEntity) => {
-  const { millisecond, rendererWidth } = entity.config;
-  let time = millisecond / 1000;
-  let unix = 's';
-  if (time > 60) {
-    unix = 'm';
-    time /= 60;
-  }
-  if (time > 60) {
-    unix = 'h';
-    time /= 60;
-  }
-  paints.paintText(
-    ctx,
-    time.toFixed(2) + unix,
-    rendererWidth - getActualPixel(15),
-    getActualPixel(18),
-    {
-      fillStyle: 'rgba(0,0,0,0.6)',
-      textAlign: 'right',
-      textBaseline: 'top'
-    }
-  );
-});
-
 export { UIEntityRenderMap };

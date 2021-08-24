@@ -12,12 +12,14 @@ import Tree, { createTree } from './Tree';
 import {
   UIEntityRenderMap,
   ScoreEntity,
-  TimerEntity,
+  StartMaskEntity,
   OverMaskEntity
 } from './entityRenderMap';
 import { checkRectCircleCollide } from './utils/collide';
 
 const { getActualPixel } = utils;
+
+type GamgeStatus = 'initial' | 'ready' | 'game-start' | 'game-over';
 
 class SnowballGame {
   renderer!: Renderer;
@@ -30,6 +32,8 @@ class SnowballGame {
   uiCamera!: Camera;
   uiScene!: Scene;
   uiEvent!: TMEvent;
+
+  status: GamgeStatus = 'initial';
 
   constructor(public $el: HTMLElement) {
     const { offsetWidth, offsetHeight } = $el;
@@ -82,26 +86,15 @@ class SnowballGame {
   }
 
   maxTreeNum = 10;
+  millisecond = 0;
   animationFrame(timestamp: number) {
-    let { maxTreeNum } = this;
-    const {
-      scene,
-      renderer,
-      snowball,
-      animation,
-      treeList,
-      timerEntity
-    } = this;
+    const { scene, renderer, snowball, maxTreeNum, treeList, animation } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
 
-    {
-      const { startTime } = animation;
-      timerEntity.mergeConfig({
-        millisecond: timestamp - startTime
-      });
-    }
+    this.millisecond = timestamp - animation.startTime;
 
     {
+      // 小球逻辑
       const endPosition = rendererHeight / 2;
       let { distance } = snowball.config;
       const { y: snowballY } = snowball.config;
@@ -109,8 +102,6 @@ class SnowballGame {
 
       if (Math.ceil(offsetTop) >= endPosition) {
         // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
-        maxTreeNum += 1;
-        this.maxTreeNum = maxTreeNum;
         renderer.translate(0, -distance);
       } else {
         // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
@@ -123,8 +114,9 @@ class SnowballGame {
       snowball.move();
     }
 
-    const { translateY } = renderer;
     {
+      // 树木逻辑
+      const { translateY } = renderer;
       for (const [id, tree] of Array.from(treeList)) {
         {
           // 小球与🌲底部发生碰撞
@@ -188,6 +180,7 @@ class SnowballGame {
   startGame() {
     const { animation, scoreEntity } = this;
     if (animation.status === 'stationary') {
+      this.status = 'game-start';
       animation.start();
       window.clearInterval(this.scoreTimer);
       this.scoreTimer = window.setInterval(() => {
@@ -200,44 +193,38 @@ class SnowballGame {
   }
 
   gamgeOver() {
-    const {
-      scoreTimer,
-      overMaskEntity,
-      scoreEntity,
-      timerEntity,
-      uiRenderer
-    } = this;
+    const { scoreTimer, overMaskEntity, scoreEntity, uiRenderer } = this;
 
     window.clearInterval(scoreTimer);
+
     uiRenderer.setPenetrate(false);
     overMaskEntity.setVisible(true);
     overMaskEntity.mergeConfig({
       score: scoreEntity.config.count
     });
     scoreEntity.setVisible(false);
-    timerEntity.setVisible(false);
 
     this.render();
+    this.status = 'game-over';
+  }
+
+  render() {
+    const { camera, scene, renderer, uiRenderer, uiScene, uiCamera } = this;
+    renderer.render(scene, camera);
+    uiRenderer.render(uiScene, uiCamera);
   }
 
   snowball!: SnowBall;
   treeList!: Map<string, Tree>;
-  scoreEntity!: ScoreEntity;
-  timerEntity!: TimerEntity;
-  overMaskEntity!: OverMaskEntity;
 
-  ready() {
-    const {
-      renderer,
-      scene,
-      treeResource,
-      uiScene,
-      uiEvent,
-      uiRenderer,
-      gameEvent
-    } = this;
+  // 初始化游戏逻辑
+  initializeGame() {
+    const { renderer, scene, treeResource, camera } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
     const minTop = rendererHeight / 2;
+
+    renderer.resetTranslate();
+    scene.clear();
 
     // 创建雪球
     const snowball = new SnowBall({
@@ -248,9 +235,9 @@ class SnowballGame {
     this.snowball = scene.add(snowball);
 
     this.maxTreeNum = 10;
-    // 初始给前两屏幕总计创建 12 棵🌲
+    // 初始给前两屏幕总计创建 10 棵🌲
     this.treeList = new Map();
-    createTree(12, {
+    createTree(10, {
       minX: 0,
       maxX: rendererWidth,
       minY: minTop,
@@ -261,41 +248,32 @@ class SnowballGame {
       this.treeList.set(tree.id, tree);
     });
 
+    renderer.render(scene, camera);
+  }
+
+  scoreEntity!: ScoreEntity;
+  overMaskEntity!: OverMaskEntity;
+  startMaskEntity!: StartMaskEntity;
+
+  // 初始化UI界面
+  initializeUI() {
+    const { renderer, uiScene, uiRenderer, uiCamera } = this;
+    const { width: rendererWidth, height: rendererHeight } = renderer;
+
     {
       // 分数显示
       const scoreEntity = new Entity('score', {
         count: 0
       });
       scoreEntity.setVisible(false);
-
-      this.scoreEntity = scoreEntity;
-      uiScene.add(scoreEntity);
-
-      const timerEntity = new Entity('timer', {
-        millisecond: 0,
-        rendererWidth
-      });
-      timerEntity.setVisible(false);
-
-      this.timerEntity = timerEntity;
-      uiScene.add(timerEntity);
+      this.scoreEntity = uiScene.add(scoreEntity);
 
       // 开始游戏遮罩
       const startMaskEntity = new Entity('start-mask', {
         width: rendererWidth,
         height: rendererHeight
       });
-
-      uiScene.add(startMaskEntity);
-
-      uiEvent.add('tap', () => {
-        scoreEntity.setVisible(true);
-        timerEntity.setVisible(true);
-        startMaskEntity.setVisible(false);
-
-        uiRenderer.setPenetrate(true);
-        this.startGame();
-      });
+      this.startMaskEntity = uiScene.add(startMaskEntity);
     }
 
     {
@@ -306,27 +284,65 @@ class SnowballGame {
         score: 0
       });
       overMaskEntity.setVisible(false);
-      uiScene.add(overMaskEntity);
-      this.overMaskEntity = overMaskEntity;
+      this.overMaskEntity = uiScene.add(overMaskEntity);
     }
 
+    uiRenderer.render(uiScene, uiCamera);
+  }
+
+  ready() {
+    const { uiEvent, gameEvent } = this;
+    this.initializeGame();
+    this.initializeUI();
+
+    uiEvent.add('tap', () => {
+      const {
+        scoreEntity,
+        startMaskEntity,
+        overMaskEntity,
+        uiRenderer,
+        status
+      } = this;
+      switch (status) {
+        case 'ready':
+          scoreEntity.setVisible(true);
+          startMaskEntity.setVisible(false);
+
+          uiRenderer.setPenetrate(true);
+          this.render();
+          this.startGame();
+          break;
+        case 'game-over':
+          this.initializeGame();
+          scoreEntity.setVisible(true);
+          scoreEntity.mergeConfig({
+            count: 0
+          });
+
+          overMaskEntity.setVisible(false);
+
+          uiRenderer.setPenetrate(true);
+          this.render();
+          this.startGame();
+          break;
+      }
+    });
+
     gameEvent.add('touchStart', () => {
+      const { snowball, status } = this;
+      if (status !== 'game-start') return;
       let { direction } = snowball.config;
       direction = -direction; // 按下转向
       snowball.mergeConfig({ turnTo: true, direction });
     });
 
     gameEvent.add('touchEnd', () => {
+      const { snowball, status } = this;
+      if (status !== 'game-start') return;
       snowball.mergeConfig({ turnTo: false });
     });
 
-    this.render();
-  }
-
-  render() {
-    const { camera, scene, renderer, uiRenderer, uiScene, uiCamera } = this;
-    renderer.render(scene, camera);
-    uiRenderer.render(uiScene, uiCamera);
+    this.status = 'ready';
   }
 }
 
