@@ -2,6 +2,9 @@
 
 yarn.lock
 
+# build
+/dist
+
 # dependencies
 /node_modules
 
