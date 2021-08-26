@@ -24,11 +24,12 @@ UIEntityRenderMap.set('start-mask', (ctx, entity: StartMaskEntity) => {
 
   paints.paintText(
     ctx,
-    '（长按屏幕进行转向）',
+    '（长按屏幕控制小球转向）',
     center,
     top + getActualPixel(36),
     {
-      fillStyle: '#fff'
+      fillStyle: '#fff',
+      px: 20
     }
   );
 });

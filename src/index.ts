@@ -114,13 +114,20 @@ class SnowballGame {
       snowball.move();
     }
 
+    // 小球撞到了两边
+    const { config: snowballConfig } = snowball;
+    const { x, radius } = snowballConfig;
+    if (x - radius < 0 || x + radius > rendererWidth) {
+      this.gamgeOver();
+      return false;
+    }
+
     {
       // 树木逻辑
       const { translateY } = renderer;
       for (const [id, tree] of Array.from(treeList)) {
         {
           // 小球与🌲底部发生碰撞
-          const { config: snowballConfig } = snowball;
           if (checkRectCircleCollide(tree.body, snowballConfig)) {
             this.gamgeOver();
             return false;
