@@ -74,7 +74,7 @@ class SnowballGame {
 
   treeResource!: HTMLImageElement;
   async loadResource(): Promise<SnowballGame> {
-    const [treeResourceUrl] = await utils.loadResource(['/images/terr.png']);
+    const [treeResourceUrl] = await utils.loadResource(['./images/terr.png']);
     this.treeResource = await new Promise<HTMLImageElement>(resolve => {
       const img = new Image();
       img.src = treeResourceUrl;
@@ -121,20 +121,7 @@ class SnowballGame {
         {
           // 小球与🌲底部发生碰撞
           const { config: snowballConfig } = snowball;
-          const { left, width, height, bottom } = tree.body;
-          let _height = snowballConfig.radius; // 小球半径高度为碰撞区域的高度
-          _height = _height > height ? height : _height; // 最高的碰撞区域高度为树干高度
-          if (
-            checkRectCircleCollide(
-              {
-                left,
-                top: bottom - _height,
-                height: _height,
-                width
-              },
-              snowballConfig
-            )
-          ) {
+          if (checkRectCircleCollide(tree.body, snowballConfig)) {
             this.gamgeOver();
             return false;
           }

@@ -52,12 +52,12 @@ interface TreeConfig {
   height: number;
   resource: HTMLImageElement;
 }
+
 interface TreeBody {
   left: number;
   top: number;
   width: number;
   height: number;
-  bottom: number;
 }
 
 export default class Tree extends Entity<TreeConfig> {
@@ -65,10 +65,11 @@ export default class Tree extends Entity<TreeConfig> {
   constructor(config: TreeConfig) {
     super('tree');
 
+    // 树干为可被撞击的区域
     // 根据图片比例计算树木树干的位置与大小
     const { left, top, width, height } = config;
     const _width = width * 0.2;
-    const _height = height * 0.8;
+    const _height = height * 0.1;
     const _top = top + height - _height;
     const _left = left + width * 0.37;
 
@@ -76,8 +77,7 @@ export default class Tree extends Entity<TreeConfig> {
       left: _left,
       top: _top,
       width: _width,
-      height: _height,
-      bottom: _top + _height
+      height: _height
     };
     this.mergeConfig(config);
   }
