@@ -47,7 +47,7 @@ UIEntityRenderMap.set('over-mask', (ctx, entity: OverMaskEntity) => {
 
   const top = height / 2.5;
   const center = width / 2;
-  paints.paintText(ctx, `Game Over 得分 ${score}`, center, top, {
+  paints.paintText(ctx, `游戏结束（得分 ${score}）`, center, top, {
     fillStyle: '#fff',
     px: 28
   });
@@ -81,6 +81,20 @@ UIEntityRenderMap.set('score', (ctx, entity: ScoreEntity) => {
       textBaseline: 'top'
     }
   );
+});
+
+// 设置Icon
+export type SettingIconEntity = Entity<{
+  settingIcon: HTMLImageElement;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}>;
+UIEntityRenderMap.set('setting-icon', (ctx, entity: SettingIconEntity) => {
+  const { settingIcon, left, top, width, height } = entity.config;
+
+  ctx.drawImage(settingIcon, left, top, width, height);
 });
 
 export { UIEntityRenderMap };

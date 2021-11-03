@@ -10,6 +10,7 @@ interface CircleEntity {
   radius: number;
 }
 
+// 正方形和圆形碰撞检测
 export const checkRectCircleCollide = (
   rectEntity: RectEntity,
   circleEntity: CircleEntity

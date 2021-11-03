@@ -65,11 +65,11 @@ export const loadResource = async (
   return await new Promise<ResourcesUrl>((resolve, reject) => {
     const total: number = Object.keys(resources).length;
     const _resources: ResourcesUrl = [];
-    const load = async (src: string) => {
+    const load = async (src: string, index: number) => {
       try {
         const res = await fetch(src);
         const blob = await res.blob();
-        _resources.push(window.URL.createObjectURL(blob));
+        _resources[index] = window.URL.createObjectURL(blob);
         const { length } = _resources;
         if (length === total) {
           resolve(_resources);
@@ -79,6 +79,41 @@ export const loadResource = async (
       } catch (e) {
         reject(e);
       }
+    };
+    resources.forEach(load);
+  });
+};
+
+type ImageResources = HTMLImageElement[];
+/**
+ * @description 将图片资源转化为 Image 元素
+ * @param resources
+ * @param callback
+ */
+export const loadImageResource = async (
+  resources: ResourcesUrl,
+  callback?: {
+    (progress: number): void;
+  }
+): Promise<ImageResources> => {
+  return await new Promise<ImageResources>((resolve, reject) => {
+    const total: number = Object.keys(resources).length;
+    const _resources: ImageResources = [];
+    const load = async (src: string, index: number) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        _resources[index] = img;
+        const { length } = _resources;
+        if (length === total) {
+          resolve(_resources);
+        } else {
+          callback && callback(Math.floor((length / total) * 10000) / 100);
+        }
+      };
+      img.onerror = e => {
+        reject(e);
+      };
     };
     resources.forEach(load);
   });

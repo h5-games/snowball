@@ -13,13 +13,19 @@ import {
   UIEntityRenderMap,
   ScoreEntity,
   StartMaskEntity,
-  OverMaskEntity
+  OverMaskEntity,
+  SettingIconEntity
 } from './entityRenderMap';
 import { checkRectCircleCollide } from './utils/collide';
 
 const { getActualPixel } = utils;
 
 type GamgeStatus = 'initial' | 'ready' | 'game-start' | 'game-over';
+
+interface Resource {
+  tree: HTMLImageElement | null;
+  settingIcon?: HTMLImageElement | null;
+}
 
 class SnowballGame {
   renderer!: Renderer;
@@ -72,16 +78,18 @@ class SnowballGame {
     });
   }
 
-  treeResource!: HTMLImageElement;
+  resource: Resource = {
+    tree: null,
+    settingIcon: null
+  };
+
   async loadResource(): Promise<SnowballGame> {
-    const [treeResourceUrl] = await utils.loadResource(['./images/terr.png']);
-    this.treeResource = await new Promise<HTMLImageElement>(resolve => {
-      const img = new Image();
-      img.src = treeResourceUrl;
-      img.onload = () => {
-        resolve(img);
-      };
-    });
+    // 先将图片资源加载至本地 然后再把本地的资源变为 Image 元素
+    const [tree, settingIcon] = await utils.loadImageResource(
+      await utils.loadResource(['./images/terr.png', './images/setting.png'])
+    );
+    this.resource.tree = tree;
+    this.resource.settingIcon = settingIcon;
     return this;
   }
 
@@ -144,8 +152,8 @@ class SnowballGame {
         }
       }
 
-      const { treeResource } = this;
-      if (treeList.size < maxTreeNum) {
+      const resource = this.resource.tree;
+      if (resource && treeList.size < maxTreeNum) {
         // 将🌲保证在一定范围内
         const keys = Array.from(treeList.keys());
         const lastTree = treeList.get(keys[keys.length - 1]);
@@ -159,7 +167,7 @@ class SnowballGame {
           maxX: rendererWidth,
           minY,
           maxY: minY + rendererHeight / 10,
-          resource: treeResource
+          resource
         }).forEach(tree => {
           scene.add(tree);
           this.treeList.set(tree.id, tree);
@@ -191,11 +199,15 @@ class SnowballGame {
 
     window.clearInterval(scoreTimer);
 
+    // 游戏结束 使UI 界面可点击
     uiRenderer.setPenetrate(false);
-    overMaskEntity.setVisible(true);
+    // 传入分数
     overMaskEntity.mergeConfig({
       score: scoreEntity.config.count
     });
+    // 展示游戏结束提示
+    overMaskEntity.setVisible(true);
+    // 隐藏右上角分数
     scoreEntity.setVisible(false);
 
     this.render();
@@ -213,9 +225,13 @@ class SnowballGame {
 
   // 初始化游戏逻辑
   initializeGame() {
-    const { renderer, scene, treeResource, camera } = this;
+    const { renderer, scene, resource, camera } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
     const minTop = rendererHeight / 2;
+
+    if (!resource.tree) {
+      throw Error('required resource');
+    }
 
     renderer.resetTranslate();
     scene.clear();
@@ -236,7 +252,7 @@ class SnowballGame {
       maxX: rendererWidth,
       minY: minTop,
       maxY: rendererHeight * 2,
-      resource: treeResource
+      resource: resource.tree!
     }).forEach(tree => {
       scene.add(tree);
       this.treeList.set(tree.id, tree);
@@ -248,6 +264,7 @@ class SnowballGame {
   scoreEntity!: ScoreEntity;
   overMaskEntity!: OverMaskEntity;
   startMaskEntity!: StartMaskEntity;
+  settingIconEntity!: SettingIconEntity;
 
   // 初始化UI界面
   initializeUI() {
@@ -271,6 +288,20 @@ class SnowballGame {
     }
 
     {
+      // 设置按钮
+      const width = getActualPixel(32);
+      const top = getActualPixel(10);
+      const settingIconEntity = new Entity('setting-icon', {
+        settingIcon: this.resource.settingIcon!,
+        left: rendererWidth - width - top,
+        top,
+        width,
+        height: width
+      });
+      this.settingIconEntity = uiScene.add(settingIconEntity);
+    }
+
+    {
       // 游戏结束遮罩
       const overMaskEntity = new Entity('over-mask', {
         width: rendererWidth,
@@ -289,7 +320,8 @@ class SnowballGame {
     this.initializeGame();
     this.initializeUI();
 
-    uiEvent.add('tap', () => {
+    uiEvent.add('tap', e => {
+      console.log(e);
       const {
         scoreEntity,
         startMaskEntity,
