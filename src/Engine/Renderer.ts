@@ -12,6 +12,8 @@ export class Renderer {
   ctx!: CanvasRenderingContext2D;
   width: number = 0;
   height: number = 0;
+  actualWidth: number = 0;
+  actualHeight: number = 0;
   entityRenderMap: EntityRenderMap = entityRenderMap;
 
   constructor(props?: RendererProps) {
@@ -58,11 +60,16 @@ export class Renderer {
     const { dom } = this;
     dom.style.width = width + 'px';
     dom.style.height = height + 'px';
-    dom.width = getActualPixel(width);
-    dom.height = getActualPixel(height);
+
+    const actualWidth = getActualPixel(width);
+    const actualHeight = getActualPixel(height);
+    dom.width = actualWidth;
+    dom.height = actualHeight;
     Object.assign(this, {
-      width: dom.width,
-      height: dom.height
+      width,
+      height,
+      actualWidth,
+      actualHeight
     });
   }
 
@@ -71,7 +78,7 @@ export class Renderer {
   translate(x: number, y: number) {
     this.translateX += x;
     this.translateY += y;
-    this.ctx.translate(x, y);
+    this.ctx.translate(getActualPixel(x), getActualPixel(y));
   }
 
   resetTranslate() {
@@ -84,24 +91,34 @@ export class Renderer {
     const {
       ctx,
       entityRenderMap,
-      width,
-      height,
+      actualWidth,
+      actualHeight,
       translateX,
       translateY
     } = this;
 
     {
       // 清除 canvas 视口区域的内容
-      const renderX = 0 - translateX;
-      const renderY = 0 - translateY;
-      ctx.clearRect(renderX, renderY, renderX + width, renderY + height);
+      const renderX = getActualPixel(0 - translateX);
+      const renderY = getActualPixel(0 - translateY);
+      ctx.clearRect(
+        renderX,
+        renderY,
+        renderX + actualWidth,
+        renderY + actualHeight
+      );
     }
 
     {
       // 绘制照相机区域
       const { left, top, offsetLeft, offsetTop, width, height } = camera;
       ctx.beginPath();
-      ctx.rect(left + offsetLeft, top + offsetTop, width, height);
+      ctx.rect(
+        getActualPixel(left + offsetLeft),
+        getActualPixel(top + offsetTop),
+        getActualPixel(width),
+        getActualPixel(height)
+      );
       ctx.clip();
     }
 

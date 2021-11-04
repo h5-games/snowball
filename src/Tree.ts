@@ -22,7 +22,7 @@ export const createTree = (
   num: number,
   { minX, minY, maxX, maxY, resource }: CreateTreeConfig
 ): TreeList => {
-  const width = getActualPixel(40);
+  const width = 40;
   const height = width * 2;
 
   const trees: TreeList = [];
@@ -85,6 +85,12 @@ export default class Tree extends Entity<TreeConfig> {
   render(ctx: CanvasRenderingContext2D) {
     const { resource, left, top, width, height } = this.config;
 
-    ctx.drawImage(resource, left, top, width, height);
+    ctx.drawImage(
+      resource,
+      getActualPixel(left),
+      getActualPixel(top),
+      getActualPixel(width),
+      getActualPixel(height)
+    );
   }
 }

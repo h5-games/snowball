@@ -35,12 +35,12 @@ export class Camera {
 
   observerRenderer: Renderer | undefined;
   traceRenderer(renderer: Renderer): Camera {
-    const { translateY, translateX, width, height } = renderer;
+    const { translateY, translateX, actualWidth, actualHeight } = renderer;
     Object.assign(this, {
       top: -translateY,
       left: -translateX,
-      width,
-      height,
+      width: actualWidth,
+      height: actualHeight,
       renderer
     });
 
@@ -51,10 +51,10 @@ export class Camera {
     observerSet(renderer, 'translateX', value => {
       this.left = -value;
     });
-    observerSet(renderer, 'width', value => {
+    observerSet(renderer, 'actualWidth', value => {
       this.width = value;
     });
-    observerSet(renderer, 'height', value => {
+    observerSet(renderer, 'actualHeight', value => {
       this.height = value;
     });
 

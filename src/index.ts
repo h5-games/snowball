@@ -16,9 +16,7 @@ import {
   OverMaskEntity,
   SettingIconEntity
 } from './entityRenderMap';
-import { checkRectCircleCollide } from './utils/collide';
-
-const { getActualPixel } = utils;
+import { checkRectCircleCollide, checkPointRectCollide } from './utils/collide';
 
 type GamgeStatus = 'initial' | 'ready' | 'game-start' | 'game-over';
 
@@ -114,7 +112,7 @@ class SnowballGame {
       } else {
         // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
-        distance = getActualPixel(ratio * 3);
+        distance = ratio * 3;
         renderer.translate(0, -(ratio * distance)); // 初始画布向上偏移的速度低于小球向下走的速度，使得小球看起来在向下走
       }
 
@@ -238,7 +236,7 @@ class SnowballGame {
 
     // 创建雪球
     const snowball = new SnowBall({
-      radius: 24,
+      radius: 12,
       x: rendererWidth / 2,
       y: minTop / 2
     });
@@ -289,8 +287,8 @@ class SnowballGame {
 
     {
       // 设置按钮
-      const width = getActualPixel(32);
-      const top = getActualPixel(10);
+      const width = 32;
+      const top = 10;
       const settingIconEntity = new Entity('setting-icon', {
         settingIcon: this.resource.settingIcon!,
         left: rendererWidth - width - top,
@@ -321,14 +319,26 @@ class SnowballGame {
     this.initializeUI();
 
     uiEvent.add('tap', e => {
-      console.log(e);
       const {
         scoreEntity,
         startMaskEntity,
         overMaskEntity,
+        settingIconEntity,
         uiRenderer,
         status
       } = this;
+      if (
+        checkPointRectCollide(
+          {
+            x: e.pointX,
+            y: e.pointY
+          },
+          settingIconEntity.config
+        )
+      ) {
+        alert('敬请期待！');
+        return;
+      }
       switch (status) {
         case 'ready':
           scoreEntity.setVisible(true);

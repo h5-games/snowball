@@ -1,4 +1,7 @@
 import { Entity } from './Engine';
+import { utils } from './Engine';
+
+const { getActualPixel } = utils;
 
 interface SnowBallTail {
   x: number;
@@ -26,10 +29,10 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     radius: 0,
     direction: -1,
     turnTo: false,
-    degree: 0,
-    maxDegree: 50,
-    minDegree: -50,
-    distance: 0,
+    degree: 0, // 当前偏移值
+    maxDegree: 50, // 最大偏移数值
+    minDegree: -50, // 最小偏移数值
+    distance: 0, // 小球每次移动的距离
     TAIL_MAX_LENGTH: 50
   };
   tailList: Array<SnowBallTail> = [];
@@ -98,7 +101,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
           const radian = (degree * Math.PI) / 180;
           const cos = Math.cos(radian) * _radius * step;
           const sin = Math.sin(radian) * _radius * step;
-          ctx.lineTo(x - cos, y + sin);
+          ctx.lineTo(getActualPixel(x - cos), getActualPixel(y + sin));
 
           if (index === tailListsLength - 1) step = -1;
           index += step;
@@ -132,7 +135,13 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     // 绘制小球
     ctx.beginPath();
     ctx.fillStyle = '#d2fdff';
-    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.arc(
+      getActualPixel(x),
+      getActualPixel(y),
+      getActualPixel(radius),
+      0,
+      2 * Math.PI
+    );
     ctx.fill();
   }
 }

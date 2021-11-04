@@ -5,6 +5,8 @@ const UIEntityRenderMap = new Map(entityRenderMap);
 
 const { getActualPixel } = utils;
 
+// todo 可以将 getActualPixel 的应用再向下抽一级
+
 // 开始游戏遮罩
 export type StartMaskEntity = Entity<{
   width: number;
@@ -13,10 +15,13 @@ export type StartMaskEntity = Entity<{
 UIEntityRenderMap.set('start-mask', (ctx, entity: StartMaskEntity) => {
   const { width, height } = entity.config;
 
-  paints.paintMask(ctx, { width, height });
+  paints.paintMask(ctx, {
+    width: getActualPixel(width),
+    height: getActualPixel(height)
+  });
 
-  const top = height / 2.5;
-  const center = width / 2;
+  const top = getActualPixel(height / 2.5);
+  const center = getActualPixel(width / 2);
   paints.paintText(ctx, '点击屏幕开始游戏', center, top, {
     fillStyle: '#fff',
     px: 28
@@ -43,10 +48,13 @@ export type OverMaskEntity = Entity<{
 UIEntityRenderMap.set('over-mask', (ctx, entity: OverMaskEntity) => {
   const { width, height, score } = entity.config;
 
-  paints.paintMask(ctx, { width, height });
+  paints.paintMask(ctx, {
+    width: getActualPixel(width),
+    height: getActualPixel(height)
+  });
 
-  const top = height / 2.5;
-  const center = width / 2;
+  const top = getActualPixel(height / 2.5);
+  const center = getActualPixel(width / 2);
   paints.paintText(ctx, `游戏结束（得分 ${score}）`, center, top, {
     fillStyle: '#fff',
     px: 28
@@ -94,7 +102,13 @@ export type SettingIconEntity = Entity<{
 UIEntityRenderMap.set('setting-icon', (ctx, entity: SettingIconEntity) => {
   const { settingIcon, left, top, width, height } = entity.config;
 
-  ctx.drawImage(settingIcon, left, top, width, height);
+  ctx.drawImage(
+    settingIcon,
+    getActualPixel(left),
+    getActualPixel(top),
+    getActualPixel(width),
+    getActualPixel(height)
+  );
 });
 
 export { UIEntityRenderMap };

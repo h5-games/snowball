@@ -63,7 +63,7 @@ export const loadResource = async (
   }
 ): Promise<ResourcesUrl> => {
   return await new Promise<ResourcesUrl>((resolve, reject) => {
-    const total: number = Object.keys(resources).length;
+    const total: number = resources.length;
     const _resources: ResourcesUrl = [];
     const load = async (src: string, index: number) => {
       try {
@@ -71,7 +71,7 @@ export const loadResource = async (
         const blob = await res.blob();
         _resources[index] = window.URL.createObjectURL(blob);
         const { length } = _resources;
-        if (length === total) {
+        if (length === total && [..._resources].every(x => x)) {
           resolve(_resources);
         } else {
           callback && callback(Math.floor((length / total) * 10000) / 100);
@@ -97,21 +97,23 @@ export const loadImageResource = async (
   }
 ): Promise<ImageResources> => {
   return await new Promise<ImageResources>((resolve, reject) => {
-    const total: number = Object.keys(resources).length;
+    const total: number = resources.length;
     const _resources: ImageResources = [];
     const load = async (src: string, index: number) => {
       const img = new Image();
       img.src = src;
       img.onload = () => {
         _resources[index] = img;
+
         const { length } = _resources;
-        if (length === total) {
+        if (length === total && [..._resources].every(x => x)) {
           resolve(_resources);
         } else {
           callback && callback(Math.floor((length / total) * 10000) / 100);
         }
       };
       img.onerror = e => {
+        console.error(`Resource ${src} failed to load`);
         reject(e);
       };
     };
