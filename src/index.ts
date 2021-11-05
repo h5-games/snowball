@@ -14,16 +14,22 @@ import {
   ScoreEntity,
   StartMaskEntity,
   OverMaskEntity,
-  SettingIconEntity
+  IconEntity,
+  SettingMaskEntity
 } from './entityRenderMap';
 import { checkRectCircleCollide, checkPointRectCollide } from './utils/collide';
 
-type GamgeStatus = 'initial' | 'ready' | 'game-start' | 'game-over';
+type GamgeStatus = 'initial' | 'ready' | 'setting' | 'game-start' | 'game-over';
 
+type ImageResource = HTMLImageElement | null;
 interface Resource {
-  tree: HTMLImageElement | null;
-  settingIcon?: HTMLImageElement | null;
+  tree: ImageResource;
+  settingIcon: ImageResource;
+  yesIcon: ImageResource;
+  returnIcon: ImageResource;
 }
+
+const HANDLE_STATUS = 'handleStatus';
 
 class SnowballGame {
   renderer!: Renderer;
@@ -36,8 +42,6 @@ class SnowballGame {
   uiCamera!: Camera;
   uiScene!: Scene;
   uiEvent!: TMEvent;
-
-  status: GamgeStatus = 'initial';
 
   constructor(public $el: HTMLElement) {
     const { offsetWidth, offsetHeight } = $el;
@@ -76,18 +80,41 @@ class SnowballGame {
     });
   }
 
+  status: GamgeStatus = 'initial';
+  prevStatus: GamgeStatus = 'initial';
+  setStatus(status: GamgeStatus) {
+    this.prevStatus = this.status;
+    this.status = status;
+  }
+
   resource: Resource = {
     tree: null,
-    settingIcon: null
+    settingIcon: null,
+    yesIcon: null,
+    returnIcon: null
   };
 
   async loadResource(): Promise<SnowballGame> {
     // 先将图片资源加载至本地 然后再把本地的资源变为 Image 元素
-    const [tree, settingIcon] = await utils.loadImageResource(
-      await utils.loadResource(['./images/terr.png', './images/setting.png'])
+    const [
+      tree,
+      settingIcon,
+      yesIcon,
+      returnIcon
+    ] = await utils.loadImageResource(
+      await utils.loadResource([
+        './images/terr.png',
+        './images/setting.png',
+        './images/yes.png',
+        './images/return.png'
+      ])
     );
-    this.resource.tree = tree;
-    this.resource.settingIcon = settingIcon;
+    Object.assign(this.resource, {
+      tree,
+      settingIcon,
+      yesIcon,
+      returnIcon
+    });
     return this;
   }
 
@@ -178,9 +205,11 @@ class SnowballGame {
 
   scoreTimer: number = 0;
   startGame() {
-    const { animation, scoreEntity } = this;
+    const { animation, scoreEntity, settingIconEntity } = this;
     if (animation.status === 'stationary') {
-      this.status = 'game-start';
+      this.setStatus('game-start');
+      // 隐藏设置按钮
+      settingIconEntity.setVisible(false);
       animation.start();
       window.clearInterval(this.scoreTimer);
       this.scoreTimer = window.setInterval(() => {
@@ -193,7 +222,13 @@ class SnowballGame {
   }
 
   gamgeOver() {
-    const { scoreTimer, overMaskEntity, scoreEntity, uiRenderer } = this;
+    const {
+      scoreTimer,
+      uiRenderer,
+      overMaskEntity,
+      scoreEntity,
+      settingIconEntity
+    } = this;
 
     window.clearInterval(scoreTimer);
 
@@ -207,9 +242,11 @@ class SnowballGame {
     overMaskEntity.setVisible(true);
     // 隐藏右上角分数
     scoreEntity.setVisible(false);
+    // 显示设置按钮
+    settingIconEntity.setVisible(true);
 
+    this.setStatus('game-over');
     this.render();
-    this.status = 'game-over';
   }
 
   render() {
@@ -262,7 +299,9 @@ class SnowballGame {
   scoreEntity!: ScoreEntity;
   overMaskEntity!: OverMaskEntity;
   startMaskEntity!: StartMaskEntity;
-  settingIconEntity!: SettingIconEntity;
+  settingIconEntity!: IconEntity;
+  returnIconEntity!: IconEntity;
+  settingMaskEntity!: SettingMaskEntity;
 
   // 初始化UI界面
   initializeUI() {
@@ -286,20 +325,6 @@ class SnowballGame {
     }
 
     {
-      // 设置按钮
-      const width = 32;
-      const top = 10;
-      const settingIconEntity = new Entity('setting-icon', {
-        settingIcon: this.resource.settingIcon!,
-        left: rendererWidth - width - top,
-        top,
-        width,
-        height: width
-      });
-      this.settingIconEntity = uiScene.add(settingIconEntity);
-    }
-
-    {
       // 游戏结束遮罩
       const overMaskEntity = new Entity('over-mask', {
         width: rendererWidth,
@@ -308,6 +333,44 @@ class SnowballGame {
       });
       overMaskEntity.setVisible(false);
       this.overMaskEntity = uiScene.add(overMaskEntity);
+    }
+
+    {
+      // 设置遮罩
+      const status = localStorage.getItem(HANDLE_STATUS);
+      const settingMaskEntity = new Entity('setting-mask', {
+        yesIcon: this.resource.yesIcon!,
+        width: rendererWidth,
+        height: rendererHeight,
+        status: status ? +status : 1
+      });
+      settingMaskEntity.setVisible(false);
+      this.settingMaskEntity = uiScene.add(settingMaskEntity);
+    }
+
+    {
+      // 设置按钮
+      const width = 32;
+      const top = 10;
+      const settingIconEntity = new Entity('icon', {
+        icon: this.resource.settingIcon!,
+        left: rendererWidth - width - top,
+        top,
+        width,
+        height: width
+      });
+      this.settingIconEntity = uiScene.add(settingIconEntity);
+
+      // 返回按钮
+      const returnIconEntity = new Entity('icon', {
+        icon: this.resource.returnIcon!,
+        left: rendererWidth - width - top,
+        top,
+        width,
+        height: width
+      });
+      returnIconEntity.setVisible(false);
+      this.returnIconEntity = uiScene.add(returnIconEntity);
     }
 
     uiRenderer.render(uiScene, uiCamera);
@@ -324,23 +387,34 @@ class SnowballGame {
         startMaskEntity,
         overMaskEntity,
         settingIconEntity,
+        settingMaskEntity,
+        returnIconEntity,
         uiRenderer,
-        status
+        status,
+        prevStatus
       } = this;
-      if (
-        checkPointRectCollide(
-          {
-            x: e.pointX,
-            y: e.pointY
-          },
-          settingIconEntity.config
-        )
-      ) {
-        alert('敬请期待！');
-        return;
-      }
+      const point = {
+        x: e.pointX,
+        y: e.pointY
+      };
+      const checkSettingPointRectCollide = () => {
+        if (checkPointRectCollide(point, settingIconEntity.config)) {
+          this.setStatus('setting');
+          scoreEntity.setVisible(false);
+          startMaskEntity.setVisible(false);
+          overMaskEntity.setVisible(false);
+          settingIconEntity.setVisible(false);
+
+          returnIconEntity.setVisible(true);
+          settingMaskEntity.setVisible(true);
+
+          this.render();
+          return 'handled';
+        }
+      };
       switch (status) {
         case 'ready':
+          if (checkSettingPointRectCollide() === 'handled') break;
           scoreEntity.setVisible(true);
           startMaskEntity.setVisible(false);
 
@@ -349,6 +423,7 @@ class SnowballGame {
           this.startGame();
           break;
         case 'game-over':
+          if (checkSettingPointRectCollide() === 'handled') break;
           this.initializeGame();
           scoreEntity.setVisible(true);
           scoreEntity.mergeConfig({
@@ -360,6 +435,41 @@ class SnowballGame {
           uiRenderer.setPenetrate(true);
           this.render();
           this.startGame();
+          break;
+        case 'setting':
+          const button1Config = settingMaskEntity.getButton1Config?.();
+          const button2Config = settingMaskEntity.getButton2Config?.();
+
+          if (checkPointRectCollide(point, returnIconEntity.config)) {
+            settingMaskEntity.setVisible(false);
+            returnIconEntity.setVisible(false);
+            if (prevStatus === 'ready') {
+              startMaskEntity.setVisible(true);
+            } else if (prevStatus === 'game-over') {
+              overMaskEntity.setVisible(true);
+            }
+            settingIconEntity.setVisible(true);
+            this.setStatus(this.prevStatus);
+          } else if (
+            button1Config &&
+            checkPointRectCollide(point, button1Config)
+          ) {
+            // 点击第一个按钮
+            localStorage.setItem(HANDLE_STATUS, '1');
+            settingMaskEntity.mergeConfig({
+              status: 1
+            });
+          } else if (
+            button2Config &&
+            checkPointRectCollide(point, button2Config)
+          ) {
+            // 点击第二个按钮
+            localStorage.setItem(HANDLE_STATUS, '2');
+            settingMaskEntity.mergeConfig({
+              status: 2
+            });
+          }
+          this.render();
           break;
       }
     });
@@ -378,7 +488,7 @@ class SnowballGame {
       snowball.mergeConfig({ turnTo: false });
     });
 
-    this.status = 'ready';
+    this.setStatus('ready');
   }
 }
 
