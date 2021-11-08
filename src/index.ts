@@ -29,7 +29,8 @@ interface Resource {
   returnIcon: ImageResource;
 }
 
-const HANDLE_STATUS = 'handleStatus';
+const HANDLE_TYPE = 'handleType';
+type HandleType = 1 | 2;
 
 class SnowballGame {
   renderer!: Renderer;
@@ -66,6 +67,9 @@ class SnowballGame {
     const uiScene = new Scene();
     const uiEvent = new TMEvent(uiRenderer.dom);
 
+    // 读取本地存的操作方式
+    const handleType = Number(localStorage.getItem(HANDLE_TYPE)) || 1;
+
     Object.assign(this, {
       renderer,
       scene,
@@ -76,15 +80,28 @@ class SnowballGame {
       uiRenderer,
       uiCamera,
       uiScene,
-      uiEvent
+      uiEvent,
+
+      handleType
     });
   }
 
+  // 当前游戏状态
   status: GamgeStatus = 'initial';
   prevStatus: GamgeStatus = 'initial';
   setStatus(status: GamgeStatus) {
     this.prevStatus = this.status;
     this.status = status;
+  }
+
+  // 操作方式
+  handleType: HandleType = 1;
+  setHandleType(type: HandleType) {
+    this.handleType = type;
+    localStorage.setItem(HANDLE_TYPE, String(type));
+    this.settingMaskEntity.mergeConfig({
+      status: type
+    });
   }
 
   resource: Resource = {
@@ -121,7 +138,15 @@ class SnowballGame {
   maxTreeNum = 10;
   millisecond = 0;
   animationFrame(timestamp: number) {
-    const { scene, renderer, snowball, maxTreeNum, treeList, animation } = this;
+    const {
+      scene,
+      renderer,
+      snowball,
+      maxTreeNum,
+      treeList,
+      animation,
+      scoreEntity
+    } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
 
     this.millisecond = timestamp - animation.startTime;
@@ -129,22 +154,24 @@ class SnowballGame {
     {
       // 小球逻辑
       const endPosition = rendererHeight / 2;
-      let { distance } = snowball.config;
-      const { y: snowballY } = snowball.config;
+      const { y: snowballY, distance } = snowball.config;
       const offsetTop = snowballY + renderer.translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
 
       if (Math.ceil(offsetTop) >= endPosition) {
+        if (scoreEntity.config.count % 10 === 0) {
+          snowball.mergeConfig({ distance: distance + 0.0 });
+        }
+        const { offsetY } = snowball.move();
         // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
-        renderer.translate(0, -distance);
+        renderer.translate(0, -offsetY);
       } else {
         // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
-        distance = ratio * 3;
-        renderer.translate(0, -(ratio * distance)); // 初始画布向上偏移的速度低于小球向下走的速度，使得小球看起来在向下走
-      }
+        snowball.mergeConfig({ distance: ratio * 3 });
+        const { offsetY } = snowball.move();
 
-      snowball.mergeConfig({ distance });
-      snowball.move();
+        renderer.translate(0, -(ratio * offsetY)); // 初始画布向上偏移的速度低于小球向下走的速度，使得小球看起来在向下走
+      }
     }
 
     // 小球撞到了两边
@@ -221,6 +248,7 @@ class SnowballGame {
     }
   }
 
+  // 游戏结束
   gamgeOver() {
     const {
       scoreTimer,
@@ -273,7 +301,7 @@ class SnowballGame {
 
     // 创建雪球
     const snowball = new SnowBall({
-      radius: 12,
+      radius: 11,
       x: rendererWidth / 2,
       y: minTop / 2
     });
@@ -305,7 +333,7 @@ class SnowballGame {
 
   // 初始化UI界面
   initializeUI() {
-    const { renderer, uiScene, uiRenderer, uiCamera } = this;
+    const { renderer, uiScene, uiRenderer, uiCamera, handleType } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
 
     {
@@ -337,12 +365,11 @@ class SnowballGame {
 
     {
       // 设置遮罩
-      const status = localStorage.getItem(HANDLE_STATUS);
       const settingMaskEntity = new Entity('setting-mask', {
         yesIcon: this.resource.yesIcon!,
         width: rendererWidth,
         height: rendererHeight,
-        status: status ? +status : 1
+        status: handleType
       });
       settingMaskEntity.setVisible(false);
       this.settingMaskEntity = uiScene.add(settingMaskEntity);
@@ -455,30 +482,33 @@ class SnowballGame {
             checkPointRectCollide(point, button1Config)
           ) {
             // 点击第一个按钮
-            localStorage.setItem(HANDLE_STATUS, '1');
-            settingMaskEntity.mergeConfig({
-              status: 1
-            });
+            this.setHandleType(1);
           } else if (
             button2Config &&
             checkPointRectCollide(point, button2Config)
           ) {
             // 点击第二个按钮
-            localStorage.setItem(HANDLE_STATUS, '2');
-            settingMaskEntity.mergeConfig({
-              status: 2
-            });
+            this.setHandleType(2);
           }
           this.render();
           break;
       }
     });
 
-    gameEvent.add('touchStart', () => {
-      const { snowball, status } = this;
+    gameEvent.add('touchStart', e => {
+      const { snowball, status, handleType, renderer } = this;
       if (status !== 'game-start') return;
       let { direction } = snowball.config;
-      direction = -direction; // 按下转向
+      if (handleType === 1) {
+        // 按下转向
+        direction = -direction;
+      } else {
+        if (e.pointX > renderer.width / 2) {
+          direction = 1;
+        } else {
+          direction = -1;
+        }
+      }
       snowball.mergeConfig({ turnTo: true, direction });
     });
 

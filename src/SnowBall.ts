@@ -30,8 +30,8 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     direction: -1,
     turnTo: false,
     degree: 0, // 当前偏移值
-    maxDegree: 50, // 最大偏移数值
-    minDegree: -50, // 最小偏移数值
+    maxDegree: 60, // 最大偏移数值
+    minDegree: -60, // 最小偏移数值
     distance: 0, // 小球每次移动的距离
     TAIL_MAX_LENGTH: 50
   };
@@ -57,7 +57,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     // 小球正在转向
     if (turnTo) {
       // 递增旋转角度
-      degree = degree + direction;
+      degree = degree + direction * 1.2; // 增加一点转向灵敏度
       // 限制最大、最小旋转角度
       if (degree > maxDegree) {
         degree = maxDegree;
@@ -67,8 +67,10 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     }
 
     const radian = (degree * Math.PI) / 180;
-    x += Math.sin(radian) * distance;
-    y += Math.cos(radian) * distance;
+    const offsetX = Math.sin(radian) * distance;
+    const offsetY = Math.cos(radian) * distance;
+    x += offsetX;
+    y += offsetY;
 
     this.mergeConfig({ x, y, degree });
 
@@ -81,6 +83,11 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     if (tailList.length > TAIL_MAX_LENGTH) {
       tailList.splice(TAIL_MAX_LENGTH);
     }
+
+    return {
+      offsetX,
+      offsetY
+    };
   }
 
   render(ctx: CanvasRenderingContext2D) {

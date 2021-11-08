@@ -110,7 +110,7 @@ export const paintMask = (
     y = 0,
     width = 0,
     height = 0,
-    alpha = 0.3,
+    alpha = 0.36,
     fillStyle = `rgba(0, 0, 0, ${alpha})`
   }: PaintMaskOption
 ) => {
