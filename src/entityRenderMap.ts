@@ -165,8 +165,14 @@ UIEntityRenderMap.set('setting-mask', (ctx, entity: SettingMaskEntity) => {
     );
   } else {
     paints.paintImage(ctx, yesIcon, iconLeft, b2t + 12, 24, 24);
-    paints.paintText(ctx, '按屏幕两侧控制小球往对应方向应', center, b2t + 180, {
-      fillStyle: '#fff'
-    });
+    paints.paintText(
+      ctx,
+      '按屏幕两侧控制小球往对应方向移动',
+      center,
+      b2t + 180,
+      {
+        fillStyle: '#fff'
+      }
+    );
   }
 });

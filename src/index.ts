@@ -54,6 +54,17 @@ class SnowballGame {
     const camera = new Camera(renderer); // 创建照相机 自动跟随渲染区域
     const scene = new Scene();
     const animation = new Animation(this.animationFrame.bind(this));
+    animation.bind(() => {
+      const { scoreEntity, snowball, accelerationEnd } = this;
+      const { count } = scoreEntity.config;
+      scoreEntity.mergeConfig({
+        count: count + 1
+      });
+      if (accelerationEnd) {
+        // 加速度结束后每隔 0.5 秒速度增加 0.03
+        snowball.mergeConfig({ distance: snowball.config.distance + 0.03 });
+      }
+    }, 500);
     const gameEvent = new TMEvent(renderer.dom);
 
     // 交互界面
@@ -136,31 +147,19 @@ class SnowballGame {
   }
 
   maxTreeNum = 10;
-  millisecond = 0;
-  animationFrame(timestamp: number) {
-    const {
-      scene,
-      renderer,
-      snowball,
-      maxTreeNum,
-      treeList,
-      animation,
-      scoreEntity
-    } = this;
+  accelerationEnd: boolean = false; // 标记小球起始加速度结束
+  animationFrame() {
+    const { scene, renderer, snowball, maxTreeNum, treeList } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
-
-    this.millisecond = timestamp - animation.startTime;
 
     {
       // 小球逻辑
       const endPosition = rendererHeight / 2;
-      const { y: snowballY, distance } = snowball.config;
+      const { y: snowballY } = snowball.config;
       const offsetTop = snowballY + renderer.translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
 
       if (Math.ceil(offsetTop) >= endPosition) {
-        if (scoreEntity.config.count % 10 === 0) {
-          snowball.mergeConfig({ distance: distance + 0.0 });
-        }
+        this.accelerationEnd = true;
         const { offsetY } = snowball.move();
         // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
         renderer.translate(0, -offsetY);
@@ -230,35 +229,19 @@ class SnowballGame {
     this.render();
   }
 
-  scoreTimer: number = 0;
   startGame() {
-    const { animation, scoreEntity, settingIconEntity } = this;
+    const { animation, settingIconEntity } = this;
     if (animation.status === 'stationary') {
       this.setStatus('game-start');
       // 隐藏设置按钮
       settingIconEntity.setVisible(false);
       animation.start();
-      window.clearInterval(this.scoreTimer);
-      this.scoreTimer = window.setInterval(() => {
-        // 每 500 毫秒增加 1 分
-        scoreEntity.mergeConfig({
-          count: scoreEntity.config.count + 1
-        });
-      }, 500);
     }
   }
 
   // 游戏结束
   gamgeOver() {
-    const {
-      scoreTimer,
-      uiRenderer,
-      overMaskEntity,
-      scoreEntity,
-      settingIconEntity
-    } = this;
-
-    window.clearInterval(scoreTimer);
+    const { uiRenderer, overMaskEntity, scoreEntity, settingIconEntity } = this;
 
     // 游戏结束 使UI 界面可点击
     uiRenderer.setPenetrate(false);
