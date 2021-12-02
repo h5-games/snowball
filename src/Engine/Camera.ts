@@ -18,7 +18,7 @@ export class Camera {
   offsetTop: number = 0;
   offsetLeft: number = 0;
 
-  constructor(config: CameraConfig | Renderer = {}) {
+  constructor(config: CameraConfig | Renderer) {
     if (config instanceof Renderer) {
       // 如果传入的为 Renderer 实例，则相机自动追踪 render 区域
       this.traceRenderer(config);

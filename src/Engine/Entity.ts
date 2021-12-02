@@ -32,7 +32,5 @@ export class Entity<T extends EntityConfig = {}> {
     this.visible = visible;
   }
 
-  render(ctx: CanvasRenderingContext2D) {
-    console.warn(`The ${this.id} Entity requires a render method!`);
-  }
+  render?(ctx: CanvasRenderingContext2D): void;
 }
