@@ -125,11 +125,11 @@ export class Renderer {
 
     {
       // 绘制照相机区域 参考方法：https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/clip
-      const { left, top, offsetLeft, offsetTop, width, height } = camera;
+      const { left, top, width, height } = camera;
       ctx.beginPath(); // 路径开始
       ctx.rect(
-        getActualPixel(left + offsetLeft),
-        getActualPixel(top + offsetTop),
+        getActualPixel(left),
+        getActualPixel(top),
         getActualPixel(width),
         getActualPixel(height)
       );

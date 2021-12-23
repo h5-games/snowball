@@ -6,8 +6,6 @@ interface CameraConfig {
   top?: number;
   width?: number;
   height?: number;
-  offsetTop?: number;
-  offsetLeft?: number;
 }
 
 export class Camera {
@@ -15,12 +13,10 @@ export class Camera {
   top: number = 0;
   width: number = 0;
   height: number = 0;
-  offsetTop: number = 0;
-  offsetLeft: number = 0;
 
   constructor(config: CameraConfig | Renderer) {
     if (config instanceof Renderer) {
-      // 如果传入的为 Renderer 实例，则相机自动追踪 render 区域
+      // 如果传入的为 Renderer 实例，则相机自动追踪 Render 区域
       this.traceRenderer(config);
       this.observerRenderer = config;
     } else {
@@ -28,12 +24,14 @@ export class Camera {
     }
   }
 
+  // 更新照相机的配置
   update(config: CameraConfig): Camera {
     Object.assign(this, config);
     return this;
   }
 
   observerRenderer: Renderer | undefined;
+  // 追踪 Render 渲染的位置与大小，用于自动绘制出全屏的画面
   traceRenderer(renderer: Renderer): Camera {
     const { translateY, translateX, actualWidth, actualHeight } = renderer;
     Object.assign(this, {
@@ -44,7 +42,7 @@ export class Camera {
       renderer
     });
 
-    // 追踪相机位置与大小
+    // 使用 Object.defineProperty 封住哪个的方法，用来追踪相机位置与大小
     observerSet(renderer, 'translateY', value => {
       this.top = -value;
     });
@@ -61,6 +59,7 @@ export class Camera {
     return this;
   }
 
+  // 取消对 Render 的追踪
   clearTraceRenderer() {
     const { observerRenderer } = this;
     if (!observerRenderer) return;

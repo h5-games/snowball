@@ -68,10 +68,10 @@ export default class Tree extends Entity<TreeConfig> {
     // 树干为可被撞击的区域
     // 根据图片比例计算树木树干的位置与大小
     const { left, top, width, height } = config;
-    const _width = width * 0.2;
+    const _width = width * 0.19;
     const _height = height * 0.1;
     const _top = top + height - _height;
-    const _left = left + width * 0.37;
+    const _left = left + width * 0.38;
 
     this.body = {
       left: _left,

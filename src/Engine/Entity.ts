@@ -18,19 +18,22 @@ export class Entity<T extends EntityConfig = {}> {
   config: T = {} as T;
 
   constructor(public type: EntityType, config?: Partial<T>) {
-    this.id = type + '-' + utils.getRandomId();
+    this.id = type + '-' + utils.getRandomId(); // 随机生成一个ID
     config && this.mergeConfig(config);
   }
 
+  // 更新实体的 config
   mergeConfig(config: Partial<T>) {
     Object.assign(this.config, config);
     return this;
   }
 
+  // 设置该实体是否可见，渲染的时候会忽略不可见的实体
   visible: boolean = true;
   setVisible(visible: boolean) {
     this.visible = visible;
   }
 
+  // 定义实体渲染的方法
   render?(ctx: CanvasRenderingContext2D): void;
 }
