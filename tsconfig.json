@@ -7,7 +7,8 @@
     "sourceMap": true,
     "locale": "zh-CN",
     "strict": true,
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
+    "downlevelIteration": true
   },
   "exclude": ["node_modules"],
   "include": ["src/**/*", "@types"]

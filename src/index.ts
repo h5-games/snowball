@@ -163,6 +163,7 @@ class SnowballGame {
         const { offsetY } = snowball.move();
         // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
         renderer.translate(0, -offsetY);
+        // console.log(scene.finds(item => item.type === 'tree')); todo 比较 小球和树木的距离 增加分数
       } else {
         // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
@@ -173,10 +174,11 @@ class SnowballGame {
       }
     }
 
-    // 小球撞到了两边
+    // 小球超出屏幕
     const { config: snowballConfig } = snowball;
     const { x, radius } = snowballConfig;
-    if (x - radius < 0 || x + radius > rendererWidth) {
+    if (x - radius < 0 || x - radius > rendererWidth) {
+      // 允许超出屏幕一个小球的位置
       this.gamgeOver();
       return false;
     }
