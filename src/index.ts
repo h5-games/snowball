@@ -179,12 +179,26 @@ class SnowballGame {
 
         renderer.translate(0, -(ratio * offsetY)); // 初始画布向上偏移的速度低于小球向下走的速度，使得小球看起来在向下走
       }
+
+      // 递增分数改变小球颜色
+      const { addCount } = scoreEntity.config;
+      if (addCount > 30) {
+        snowball.mergeConfig({ color: '#df3108' });
+      } else if (addCount > 20) {
+        snowball.mergeConfig({ color: '#ed9344' });
+      } else if (addCount > 10) {
+        snowball.mergeConfig({ color: '#fb7626' });
+      } else if (addCount > 5) {
+        snowball.mergeConfig({ color: '#f5e885' });
+      } else {
+        snowball.mergeConfig({ color: '#d2fdff' });
+      }
     }
 
     // 小球超出屏幕
     const { config: snowballConfig } = snowball;
     const { x, radius } = snowballConfig;
-    if (x - radius < 0 || x - radius > rendererWidth) {
+    if (x - radius < 0 - radius * 2 || x - radius > rendererWidth) {
       // 允许超出屏幕一个小球的位置
       this.gamgeOver();
       return false;
@@ -199,7 +213,7 @@ class SnowballGame {
           const { left, top, width, height } = tree.body;
           const treeX = left + width / 2;
           const treeY = top + height / 2;
-          if (isNear(snowball.config, { x: treeX, y: treeY }, 80)) {
+          if (isNear(snowball.config, { x: treeX, y: treeY }, 100)) {
             const { count, addCount } = scoreEntity.config;
             if (tree.dispatchScore(addCount)) {
               scoreEntity.mergeConfig({

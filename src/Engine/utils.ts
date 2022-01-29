@@ -120,3 +120,28 @@ export const loadImageResource = async (
     resources.forEach(load);
   });
 };
+
+/**
+ * @description 十六进制数字转化为十进制数字
+ * @param hex
+ * @returns 十进制 string
+ */
+const HEX2DEC = (hex: string) => {
+  return parseInt(hex, 16).toString();
+};
+
+/**
+ * @description 十六进制颜色转化为RGB颜色
+ * @param hex
+ * @param opacity
+ * @returns RGB string
+ */
+export const transparentHex = (hex: string, opacity: number): string => {
+  hex = hex.substring(1);
+  if (hex.length === 3) {
+    hex += hex;
+  }
+  return `rgb(${HEX2DEC(hex.substring(0, 2))},${HEX2DEC(
+    hex.substring(2, 4)
+  )},${HEX2DEC(hex.substring(4))}, ${opacity})`;
+};

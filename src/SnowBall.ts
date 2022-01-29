@@ -20,6 +20,7 @@ interface SnowBallConfig {
   minDegree: number;
   distance: number;
   TAIL_MAX_LENGTH: number;
+  color: string;
 }
 
 export default class SnowBall extends Entity<SnowBallConfig> {
@@ -33,7 +34,8 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     maxDegree: 60, // 最大偏移数值
     minDegree: -60, // 最小偏移数值
     distance: 0, // 小球每次移动的距离
-    TAIL_MAX_LENGTH: 50
+    TAIL_MAX_LENGTH: 50,
+    color: '#d2fdff'
   };
   tailList: Array<SnowBallTail> = [];
 
@@ -92,7 +94,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
 
   render(ctx: CanvasRenderingContext2D) {
     const { tailList } = this;
-    const { radius, x, y } = this.config;
+    const { radius, x, y, color } = this.config;
 
     {
       // 绘制小球尾巴
@@ -121,18 +123,18 @@ export default class SnowBall extends Entity<SnowBallConfig> {
         const firstTail = tailList[0];
         const lastTail = tailList[tailListsLength - 1];
         const line = ctx.createLinearGradient(
-          firstTail.x,
-          firstTail.y,
-          lastTail.x,
-          lastTail.y
+          getActualPixel(firstTail.x),
+          getActualPixel(firstTail.y),
+          getActualPixel(lastTail.x),
+          getActualPixel(lastTail.y)
         );
 
         try {
-          line.addColorStop(0, '#eee');
-          line.addColorStop(1, '#fff');
+          line.addColorStop(0, color + '80');
+          line.addColorStop(1, color + '10');
           ctx.fillStyle = line;
         } catch (e) {
-          ctx.fillStyle = '#eee';
+          ctx.fillStyle = color + '60';
         }
 
         ctx.fill();
@@ -141,7 +143,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
 
     // 绘制小球
     ctx.beginPath();
-    ctx.fillStyle = '#d2fdff';
+    ctx.fillStyle = color;
     ctx.arc(
       getActualPixel(x),
       getActualPixel(y),

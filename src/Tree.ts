@@ -108,6 +108,9 @@ export default class Tree extends Entity<TreeConfig> {
     }, 100);
     return true;
   }
+  mergeScore(score: Partial<Score>) {
+    Object.assign(this.score, score);
+  }
 
   render(ctx: CanvasRenderingContext2D) {
     const { score, config } = this;
@@ -120,7 +123,7 @@ export default class Tree extends Entity<TreeConfig> {
     if (score) {
       const { count, top: scoreTop, opacity } = score;
       paints.paintText(ctx, `+${count}`, left + width / 2, top + scoreTop, {
-        fillStyle: `rgba(100, 100, 100, ${opacity})`,
+        fillStyle: `rgba(50, 50, 50, ${opacity})`,
         px: 16
       });
     }
