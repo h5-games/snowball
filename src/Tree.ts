@@ -1,7 +1,6 @@
-import { Entity, utils } from './Engine';
+import { Entity } from './Engine';
 import { randomRange } from './utils';
-
-const { getActualPixel } = utils;
+import paints from './utils/paints';
 
 interface CreateTreeConfig {
   minX: number;
@@ -12,6 +11,12 @@ interface CreateTreeConfig {
 }
 
 type TreeList = Tree[];
+
+interface Score {
+  count: number;
+  top: number;
+  opacity: number;
+}
 
 /**
  * @description 批量创建🌲
@@ -82,15 +87,42 @@ export default class Tree extends Entity<TreeConfig> {
     this.mergeConfig(config);
   }
 
-  render(ctx: CanvasRenderingContext2D) {
-    const { resource, left, top, width, height } = this.config;
+  score: Score | null = null;
+  scoreTimer: number = 0;
+  dispatchScore(count: number): boolean {
+    if (this.scoreTimer) return false;
+    this.score = {
+      count,
+      top: -10,
+      opacity: 1
+    };
+    this.scoreTimer = window.setInterval(() => {
+      if (!this.score) {
+        window.clearTimeout(this.scoreTimer);
+        return;
+      }
+      this.score.opacity -= 0.1;
+      if (this.score.opacity <= 0) {
+        window.clearTimeout(this.scoreTimer);
+      }
+    }, 100);
+    return true;
+  }
 
-    ctx.drawImage(
-      resource,
-      getActualPixel(left),
-      getActualPixel(top),
-      getActualPixel(width),
-      getActualPixel(height)
-    );
+  render(ctx: CanvasRenderingContext2D) {
+    const { score, config } = this;
+
+    // 绘制树木
+    const { resource, left, top, width, height } = config;
+    paints.paintImage(ctx, resource, left, top, width, height);
+
+    // 绘制分数
+    if (score) {
+      const { count, top: scoreTop, opacity } = score;
+      paints.paintText(ctx, `+${count}`, left + width / 2, top + scoreTop, {
+        fillStyle: `rgba(100, 100, 100, ${opacity})`,
+        px: 16
+      });
+    }
   }
 }

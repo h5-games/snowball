@@ -18,6 +18,7 @@ import {
   SettingMaskEntity
 } from './entityRenderMap';
 import { checkRectCircleCollide, checkPointRectCollide } from './utils/collide';
+import { isNear } from './utils';
 
 type GamgeStatus = 'initial' | 'ready' | 'setting' | 'game-start' | 'game-over';
 
@@ -149,7 +150,14 @@ class SnowballGame {
   maxTreeNum = 10;
   accelerationEnd: boolean = false; // 标记小球起始加速度结束
   animationFrame() {
-    const { scene, renderer, snowball, maxTreeNum, treeList } = this;
+    const {
+      scene,
+      renderer,
+      snowball,
+      maxTreeNum,
+      treeList,
+      scoreEntity
+    } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
 
     {
@@ -163,7 +171,6 @@ class SnowballGame {
         const { offsetY } = snowball.move();
         // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
         renderer.translate(0, -offsetY);
-        // console.log(scene.finds(item => item.type === 'tree')); todo 比较 小球和树木的距离 增加分数
       } else {
         // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
@@ -188,6 +195,22 @@ class SnowballGame {
       const { translateY } = renderer;
       for (const [id, tree] of Array.from(treeList)) {
         {
+          // 小球接近树木
+          const { left, top, width, height } = tree.body;
+          const treeX = left + width / 2;
+          const treeY = top + height / 2;
+          if (isNear(snowball.config, { x: treeX, y: treeY }, 80)) {
+            const { count, addCount } = scoreEntity.config;
+            if (tree.dispatchScore(addCount)) {
+              scoreEntity.mergeConfig({
+                addCount: addCount + 1,
+                count: count + addCount
+              });
+            }
+          }
+        }
+
+        {
           // 小球与🌲底部发生碰撞
           if (checkRectCircleCollide(tree.body, snowballConfig)) {
             this.gamgeOver();
@@ -196,8 +219,8 @@ class SnowballGame {
         }
 
         {
-          const { top, height } = tree.config;
           // 🌲超出场景移除
+          const { top, height } = tree.config;
           if (top + height < -translateY) {
             scene.remove(tree.id);
             treeList.delete(tree.id);
@@ -324,7 +347,8 @@ class SnowballGame {
     {
       // 分数显示
       const scoreEntity = new Entity('score', {
-        count: 0
+        count: 0,
+        addCount: 1
       });
       scoreEntity.setVisible(false);
       this.scoreEntity = uiScene.add(scoreEntity);
@@ -439,7 +463,8 @@ class SnowballGame {
           this.initializeGame();
           scoreEntity.setVisible(true);
           scoreEntity.mergeConfig({
-            count: 0
+            count: 0,
+            addCount: 1
           });
 
           overMaskEntity.setVisible(false);

@@ -58,6 +58,7 @@ UIEntityRenderMap.set('over-mask', (ctx, entity: OverMaskEntity) => {
 // 分数
 export type ScoreEntity = Entity<{
   count: number;
+  addCount: number;
 }>;
 UIEntityRenderMap.set('score', (ctx, entity: ScoreEntity) => {
   const { count } = entity.config;

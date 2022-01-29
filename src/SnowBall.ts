@@ -57,7 +57,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     // 小球正在转向
     if (turnTo) {
       // 递增旋转角度
-      degree = degree + direction * 1.2; // 增加一点转向灵敏度
+      degree = degree + direction * 1.3; // 增加一点转向灵敏度
       // 限制最大、最小旋转角度
       if (degree > maxDegree) {
         degree = maxDegree;

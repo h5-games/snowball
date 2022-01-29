@@ -25,20 +25,20 @@ export class Scene {
     this.entityMap.delete(id);
   }
 
-  find(callback: FindCallback): Entity<any> | null {
+  find<T extends Entity>(callback: FindCallback): T | null {
     for (const [id, item] of this.entityMap) {
       if (callback(item, id)) {
-        return item;
+        return item as T;
       }
     }
     return null;
   }
 
-  finds(callback: FindCallback): Entity[] {
-    const result: Entity[] = [];
+  finds<T extends Entity>(callback: FindCallback): T[] {
+    const result: T[] = [];
     this.entityMap.forEach((item, id) => {
       if (callback(item, id)) {
-        result.push(item);
+        result.push(item as T);
       }
     });
     return result;

@@ -70,7 +70,7 @@ export const paintText: IPaintText = (
 interface PaintImage {
   (
     ctx: CanvasRenderingContext2D,
-    settingIcon: HTMLImageElement,
+    image: HTMLImageElement,
     left: number,
     top: number,
     width: number,
@@ -79,14 +79,14 @@ interface PaintImage {
 }
 export const paintImage: PaintImage = (
   ctx: CanvasRenderingContext2D,
-  settingIcon,
+  image,
   left,
   top,
   width,
   height
 ) => {
   ctx.drawImage(
-    settingIcon,
+    image,
     getActualPixel(left),
     getActualPixel(top),
     getActualPixel(width),
