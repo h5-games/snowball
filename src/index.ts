@@ -5,7 +5,8 @@ import {
   Camera,
   Animation,
   utils,
-  TMEvent
+  TMEvent,
+  TMJoinEvent
 } from './Engine';
 import SnowBall from './SnowBall';
 import Tree, { createTree } from './Tree';
@@ -185,9 +186,9 @@ class SnowballGame {
       if (addCount > 30) {
         snowball.mergeConfig({ color: '#df3108' });
       } else if (addCount > 20) {
-        snowball.mergeConfig({ color: '#ed9344' });
-      } else if (addCount > 10) {
         snowball.mergeConfig({ color: '#fb7626' });
+      } else if (addCount > 10) {
+        snowball.mergeConfig({ color: '#ed9344' });
       } else if (addCount > 5) {
         snowball.mergeConfig({ color: '#f5e885' });
       } else {
@@ -213,7 +214,7 @@ class SnowballGame {
           const { left, top, width, height } = tree.body;
           const treeX = left + width / 2;
           const treeY = top + height / 2;
-          if (isNear(snowball.config, { x: treeX, y: treeY }, 100)) {
+          if (isNear(snowball.config, { x: treeX, y: treeY }, 70)) {
             const { count, addCount } = scoreEntity.config;
             if (tree.dispatchScore(addCount)) {
               scoreEntity.mergeConfig({
@@ -490,8 +491,16 @@ class SnowballGame {
         case 'setting':
           const button1Config = settingMaskEntity.getButton1Config?.();
           const button2Config = settingMaskEntity.getButton2Config?.();
-
-          if (checkPointRectCollide(point, returnIconEntity.config)) {
+          if (button1Config && checkPointRectCollide(point, button1Config)) {
+            // 点击第一个按钮
+            this.setHandleType(1);
+          } else if (
+            button2Config &&
+            checkPointRectCollide(point, button2Config)
+          ) {
+            // 点击第二个按钮
+            this.setHandleType(2);
+          } else {
             settingMaskEntity.setVisible(false);
             returnIconEntity.setVisible(false);
             if (prevStatus === 'ready') {
@@ -501,18 +510,6 @@ class SnowballGame {
             }
             settingIconEntity.setVisible(true);
             this.setStatus(this.prevStatus);
-          } else if (
-            button1Config &&
-            checkPointRectCollide(point, button1Config)
-          ) {
-            // 点击第一个按钮
-            this.setHandleType(1);
-          } else if (
-            button2Config &&
-            checkPointRectCollide(point, button2Config)
-          ) {
-            // 点击第二个按钮
-            this.setHandleType(2);
           }
           this.render();
           break;
@@ -520,20 +517,29 @@ class SnowballGame {
     });
 
     gameEvent.add('touchStart', e => {
-      const { snowball, status, handleType, renderer } = this;
+      const { snowball, status, handleType } = this;
       if (status !== 'game-start') return;
       let { direction } = snowball.config;
       if (handleType === 1) {
+        let prevX = e.pointX;
+        const move: TMJoinEvent = e => {
+          direction = e.pointX - prevX;
+          prevX = e.pointX;
+          if (direction > 1 || direction < -1) {
+            snowball.mergeConfig({ turnTo: true, direction });
+          }
+        };
+        gameEvent.add('touchMove', move);
+        const end: TMJoinEvent = () => {
+          gameEvent.remove('touchMove', move);
+          gameEvent.remove('touchEnd', end);
+        };
+        gameEvent.add('touchEnd', end);
+      } else {
         // 按下转向
         direction = -direction;
-      } else {
-        if (e.pointX > renderer.width / 2) {
-          direction = 1;
-        } else {
-          direction = -1;
-        }
+        snowball.mergeConfig({ turnTo: true, direction });
       }
-      snowball.mergeConfig({ turnTo: true, direction });
     });
 
     gameEvent.add('touchEnd', () => {

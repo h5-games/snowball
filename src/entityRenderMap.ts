@@ -128,7 +128,7 @@ UIEntityRenderMap.set('setting-mask', (ctx, entity: SettingMaskEntity) => {
   ctx.fillStyle = 'rgba(0,0,0,0.1)';
 
   paints.paintRoundedRect(ctx, bl, bt, bw, bh, br);
-  paints.paintText(ctx, '单指模式', center, bt + 25, {
+  paints.paintText(ctx, '拖拽模式', center, bt + 25, {
     fillStyle: '#fff',
     px: 20
   });
@@ -141,7 +141,7 @@ UIEntityRenderMap.set('setting-mask', (ctx, entity: SettingMaskEntity) => {
 
   const b2t = bt + 80;
   paints.paintRoundedRect(ctx, bl, b2t, bw, bh, br);
-  paints.paintText(ctx, '双指模式', center, b2t + 25, {
+  paints.paintText(ctx, '反向模式', center, b2t + 25, {
     fillStyle: '#fff',
     px: 20
   });
@@ -155,20 +155,14 @@ UIEntityRenderMap.set('setting-mask', (ctx, entity: SettingMaskEntity) => {
   const iconLeft = center - 80;
   if (status === 1) {
     paints.paintImage(ctx, yesIcon, iconLeft, bt + 12, 24, 24);
-    paints.paintText(
-      ctx,
-      '按下屏幕小球往当前朝向的反方向移动',
-      center,
-      b2t + 180,
-      {
-        fillStyle: '#fff'
-      }
-    );
+    paints.paintText(ctx, '手指按下拖拽控制小球移动', center, b2t + 180, {
+      fillStyle: '#fff'
+    });
   } else {
     paints.paintImage(ctx, yesIcon, iconLeft, b2t + 12, 24, 24);
     paints.paintText(
       ctx,
-      '按屏幕两侧控制小球往对应方向移动',
+      '按下屏幕小球往当前朝向的反方向移动',
       center,
       b2t + 180,
       {

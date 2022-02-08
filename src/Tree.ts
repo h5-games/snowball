@@ -75,7 +75,7 @@ export default class Tree extends Entity<TreeConfig> {
     const { left, top, width, height } = config;
     const _width = width * 0.16;
     const _height = height * 0.1;
-    const _top = top + height - _height;
+    const _top = top + height - _height - 1; // - 1 是为了减少小球扫到树木底部的可能性 让游戏更简单点
     const _left = left + width * 0.4;
 
     this.body = {

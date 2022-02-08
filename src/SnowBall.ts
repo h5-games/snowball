@@ -19,7 +19,7 @@ interface SnowBallConfig {
   maxDegree: number;
   minDegree: number;
   distance: number;
-  TAIL_MAX_LENGTH: number;
+  tailMaxLength: number;
   color: string;
 }
 
@@ -31,10 +31,10 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     direction: -1,
     turnTo: false,
     degree: 0, // 当前偏移值
-    maxDegree: 60, // 最大偏移数值
-    minDegree: -60, // 最小偏移数值
+    maxDegree: 50, // 最大偏移数值
+    minDegree: -50, // 最小偏移数值
     distance: 0, // 小球每次移动的距离
-    TAIL_MAX_LENGTH: 50,
+    tailMaxLength: 50, // 尾巴最大长度值
     color: '#d2fdff'
   };
   tailList: Array<SnowBallTail> = [];
@@ -48,18 +48,18 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     const { tailList } = this;
     const {
       turnTo,
-      direction,
+      direction, // direction 只有正负值区别
       distance,
       maxDegree,
       minDegree,
-      TAIL_MAX_LENGTH
+      tailMaxLength
     } = this.config;
     let { degree, x, y } = this.config;
 
     // 小球正在转向
-    if (turnTo) {
+    if (turnTo && direction) {
       // 递增旋转角度
-      degree = degree + direction * 1.3; // 增加一点转向灵敏度
+      degree = degree + (direction > 0 ? 1 : -1) * 1.6; // 增加一点转向灵敏度
       // 限制最大、最小旋转角度
       if (degree > maxDegree) {
         degree = maxDegree;
@@ -82,8 +82,8 @@ export default class SnowBall extends Entity<SnowBallConfig> {
       y,
       degree
     });
-    if (tailList.length > TAIL_MAX_LENGTH) {
-      tailList.splice(TAIL_MAX_LENGTH);
+    if (tailList.length > tailMaxLength) {
+      tailList.splice(tailMaxLength);
     }
 
     return {
