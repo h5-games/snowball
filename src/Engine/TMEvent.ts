@@ -20,7 +20,7 @@ interface IEventListener {
 
 /**
  * Touch Mouse Event
- * 合并了 PC 及移动端的事件，实现了类似于 click 的 tap 事件。
+ * 合并了 PC 及移动端的事件
  */
 export class TMEvent {
   constructor(public dom: HTMLCanvasElement) {

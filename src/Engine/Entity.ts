@@ -12,7 +12,7 @@ interface EntityConfig {
   [key: string]: any;
 }
 
-// Entity 可以被其他类继承使用再生成实例，也可以直接调用 Entity.create 方法进行创建实例
+// Entity 可以被其他类继承使用再生成实例，也可以直接使用 new 创建一个基础的实例
 export class Entity<T extends EntityConfig = {}> {
   id: string;
   config: T = {} as T;

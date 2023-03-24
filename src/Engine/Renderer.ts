@@ -13,8 +13,8 @@ interface RendererProps {
 export class Renderer {
   dom!: HTMLCanvasElement;
   ctx!: CanvasRenderingContext2D;
-  width: number = 0;
-  height: number = 0;
+  width: number = 0; // DOM 宽度
+  height: number = 0; // DOM 高度
   actualWidth: number = 0;
   actualHeight: number = 0;
   entityRenderMap: EntityRenderMap = entityRenderMap;
@@ -112,27 +112,27 @@ export class Renderer {
     } = this;
 
     {
-      // 每次绘制新的画面之前要清除上一次绘制的画面
+      // 清除画布区域
       const renderX = getActualPixel(0 - translateX);
       const renderY = getActualPixel(0 - translateY);
-      ctx.clearRect(
-        renderX,
-        renderY,
-        renderX + actualWidth,
-        renderY + actualHeight
-      );
+      ctx.clearRect(0, 0, renderX + actualWidth, renderY + actualHeight);
     }
 
     {
       // 绘制照相机区域 参考方法：https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/clip
       const { left, top, width, height } = camera;
-      ctx.beginPath(); // 路径开始
-      ctx.rect(
+      const args: [number, number, number, number] = [
         getActualPixel(left),
         getActualPixel(top),
         getActualPixel(width),
         getActualPixel(height)
-      );
+      ];
+
+      // 清除照相机区域
+      ctx.clearRect(...args);
+
+      ctx.beginPath(); // 路径开始
+      ctx.rect(...args);
       ctx.clip(); // 画一个正方形的区域用来限制之后所有的元素都只会在正方形范围内显示
     }
 
