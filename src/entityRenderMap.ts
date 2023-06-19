@@ -9,7 +9,7 @@ export type StartMaskEntity = Entity<{
   height: number;
 }>;
 UIEntityRenderMap.set('start-mask', (ctx, entity: StartMaskEntity) => {
-  const { width, height } = entity.config;
+  const { width, height } = entity.attributes;
 
   paints.paintMask(ctx, {
     width,
@@ -36,7 +36,7 @@ export type OverMaskEntity = Entity<{
   score: number;
 }>;
 UIEntityRenderMap.set('over-mask', (ctx, entity: OverMaskEntity) => {
-  const { width, height, score } = entity.config;
+  const { width, height, score } = entity.attributes;
 
   paints.paintMask(ctx, {
     width,
@@ -61,7 +61,7 @@ export type ScoreEntity = Entity<{
   addCount: number;
 }>;
 UIEntityRenderMap.set('score', (ctx, entity: ScoreEntity) => {
-  const { count } = entity.config;
+  const { count } = entity.attributes;
   paints.paintText(ctx, `得分：${count}`, 15, 18, {
     fillStyle: '#ec8b35',
     px: 24,
@@ -79,7 +79,7 @@ export type IconEntity = Entity<{
   height: number;
 }>;
 UIEntityRenderMap.set('icon', (ctx, entity: IconEntity) => {
-  const { icon, left, top, width, height } = entity.config;
+  const { icon, left, top, width, height } = entity.attributes;
 
   paints.paintImage(ctx, icon, left, top, width, height);
 });
@@ -87,7 +87,7 @@ UIEntityRenderMap.set('icon', (ctx, entity: IconEntity) => {
 export { UIEntityRenderMap };
 
 // 设置遮罩
-interface ButtonConfig {
+interface ButtonAttributes {
   left: number;
   top: number;
   width: number;
@@ -100,11 +100,11 @@ export interface SettingMaskEntity
     yesIcon: HTMLImageElement;
     status: number;
   }> {
-  getButton1Config?(): ButtonConfig;
-  getButton2Config?(): ButtonConfig;
+  getButton1Attributes?(): ButtonAttributes;
+  getButton2Attributes?(): ButtonAttributes;
 }
 UIEntityRenderMap.set('setting-mask', (ctx, entity: SettingMaskEntity) => {
-  const { width, height, yesIcon, status } = entity.config;
+  const { width, height, yesIcon, status } = entity.attributes;
 
   paints.paintMask(ctx, {
     width,
@@ -132,7 +132,7 @@ UIEntityRenderMap.set('setting-mask', (ctx, entity: SettingMaskEntity) => {
     fillStyle: '#fff',
     px: 20
   });
-  entity.getButton1Config = () => ({
+  entity.getButton1Attributes = () => ({
     left: bl,
     top: bt,
     width: bw,
@@ -145,7 +145,7 @@ UIEntityRenderMap.set('setting-mask', (ctx, entity: SettingMaskEntity) => {
     fillStyle: '#fff',
     px: 20
   });
-  entity.getButton2Config = () => ({
+  entity.getButton2Attributes = () => ({
     left: bl,
     top: b2t,
     width: bw,

@@ -79,22 +79,6 @@ export class Renderer {
     });
   }
 
-  translateX: number = 0;
-  translateY: number = 0;
-  translate(x: number, y: number) {
-    // 画布偏移：在我这个游戏中 小球在一直的往下走，但是要保证小球还能在屏幕的中间可见区域，那么就给画布做一个 Y 轴的负偏移。
-    this.translateX += x;
-    this.translateY += y;
-    this.ctx.translate(getActualPixel(x), getActualPixel(y));
-  }
-
-  resetTranslate() {
-    // 重置画布偏移
-    this.translateX = 0;
-    this.translateY = 0;
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-  }
-
   /**
    * 渲染逻辑
    * scene 场景：场景内包含整个界面内的实体
@@ -102,19 +86,16 @@ export class Renderer {
    * 渲染器、照相机、场景 这三个是要配合在一起使用，渲染出照相机范围内的场景（一个个的实体组成）。
    * */
   render(scene: Scene, camera: Camera) {
-    const {
-      ctx,
-      entityRenderMap,
-      actualWidth,
-      actualHeight,
-      translateX,
-      translateY
-    } = this;
+    const { ctx, entityRenderMap, actualWidth, actualHeight } = this;
+
+    // 重置偏移
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.translate(-getActualPixel(camera.left), -getActualPixel(camera.top));
 
     {
       // 清除画布区域
-      const renderX = getActualPixel(0 - translateX);
-      const renderY = getActualPixel(0 - translateY);
+      const renderX = getActualPixel(camera.left);
+      const renderY = getActualPixel(camera.top);
       ctx.clearRect(0, 0, renderX + actualWidth, renderY + actualHeight);
     }
 

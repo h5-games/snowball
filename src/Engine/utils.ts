@@ -14,42 +14,6 @@ export const getActualPixel = (px: number) => {
   return px * devicePixelRatio;
 };
 
-/**
- * @description 观察对象某个 key set 变化
- * @param target
- * @param key
- * @param callback
- */
-export const observerSet = <T extends object, K extends keyof T>(
-  target: T,
-  key: K,
-  callback: (value: T[K]) => void
-) => {
-  let value: T[K] = target[key];
-  Object.defineProperty(target, key, {
-    set(newValue: T[K]) {
-      value = newValue;
-      callback(value);
-    },
-    get() {
-      return value;
-    }
-  });
-};
-
-/**
- * @description 取消对对象某个 key 的观察
- * @param target
- * @param key
- */
-export const clearObserverSet = <T extends object, K extends keyof T>(
-  target: T,
-  key: K
-) => {
-  const value = target[key];
-  Object.defineProperty(target, key, { value, writable: true });
-};
-
 type ResourcesUrl = string[];
 /**
  * @description 加载资源

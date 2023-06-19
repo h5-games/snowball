@@ -9,7 +9,7 @@ interface SnowBallTail {
   degree: number;
 }
 
-interface SnowBallConfig {
+interface SnowballAttributes {
   x: number;
   y: number;
   radius: number;
@@ -23,8 +23,8 @@ interface SnowBallConfig {
   color: string;
 }
 
-export default class SnowBall extends Entity<SnowBallConfig> {
-  config: SnowBallConfig = {
+export default class Snowball extends Entity<SnowballAttributes> {
+  attributes: SnowballAttributes = {
     x: 0,
     y: 0,
     radius: 0,
@@ -39,9 +39,9 @@ export default class SnowBall extends Entity<SnowBallConfig> {
   };
   tailList: Array<SnowBallTail> = [];
 
-  constructor(config: Partial<SnowBallConfig>) {
+  constructor(attributes: Partial<SnowballAttributes>) {
     super('snowball');
-    this.mergeConfig(config);
+    this.mergeAttributes(attributes);
   }
 
   move() {
@@ -53,13 +53,13 @@ export default class SnowBall extends Entity<SnowBallConfig> {
       maxDegree,
       minDegree,
       tailMaxLength
-    } = this.config;
-    let { degree, x, y } = this.config;
+    } = this.attributes;
+    let { degree, x, y } = this.attributes;
 
     // 小球正在转向
     if (turnTo && direction) {
       // 递增旋转角度
-      degree = degree + (direction > 0 ? 1 : -1) * 1.6; // 增加一点转向灵敏度
+      degree = degree + (direction > 0 ? 1 : -1) * 2; // 增加一点转向灵敏度
       // 限制最大、最小旋转角度
       if (degree > maxDegree) {
         degree = maxDegree;
@@ -74,7 +74,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
     x += offsetX;
     y += offsetY;
 
-    this.mergeConfig({ x, y, degree });
+    this.mergeAttributes({ x, y, degree });
 
     // 记录小球移动的位置以及角度
     tailList.unshift({
@@ -86,6 +86,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
       tailList.splice(tailMaxLength);
     }
 
+    // 返回本次位移偏移的信息
     return {
       offsetX,
       offsetY
@@ -94,7 +95,7 @@ export default class SnowBall extends Entity<SnowBallConfig> {
 
   render(ctx: CanvasRenderingContext2D) {
     const { tailList } = this;
-    const { radius, x, y, color } = this.config;
+    const { radius, x, y, color } = this.attributes;
 
     {
       // 绘制小球尾巴

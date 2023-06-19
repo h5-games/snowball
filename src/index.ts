@@ -8,7 +8,7 @@ import {
   TMEvent,
   TMJoinEvent
 } from './Engine';
-import SnowBall from './SnowBall';
+import Snowball from './Snowball';
 import Tree, { createTree } from './Tree';
 import {
   UIEntityRenderMap,
@@ -58,13 +58,15 @@ class SnowballGame {
     const animation = new Animation(this.animationFrame.bind(this));
     animation.bind(() => {
       const { scoreEntity, snowball, accelerationEnd } = this;
-      const { count } = scoreEntity.config;
-      scoreEntity.mergeConfig({
+      const { count } = scoreEntity.attributes;
+      scoreEntity.mergeAttributes({
         count: count + 1
       });
       if (accelerationEnd) {
-        // 加速度结束后每隔 0.5 秒速度增加 0.03
-        snowball.mergeConfig({ distance: snowball.config.distance + 0.03 });
+        // 初始加速度结束后每隔 0.5 秒速度增加 0.03
+        snowball.mergeAttributes({
+          distance: snowball.attributes.distance + 0.03
+        });
       }
     }, 500);
     const gameEvent = new TMEvent(renderer.dom);
@@ -97,6 +99,16 @@ class SnowballGame {
 
       handleType
     });
+
+    window.addEventListener('resize', () => {
+      const { offsetWidth, offsetHeight } = $el;
+      renderer.setSize(offsetWidth, offsetHeight);
+      camera.update(renderer);
+      uiRenderer.setSize(offsetWidth, offsetHeight);
+      uiCamera.update(uiRenderer);
+      this.gamgeOver();
+      this.ready();
+    });
   }
 
   // 当前游戏状态
@@ -112,7 +124,7 @@ class SnowballGame {
   setHandleType(type: HandleType) {
     this.handleType = type;
     localStorage.setItem(HANDLE_TYPE, String(type));
-    this.settingMaskEntity.mergeConfig({
+    this.settingMaskEntity.mergeAttributes({
       status: type
     });
   }
@@ -152,6 +164,7 @@ class SnowballGame {
   accelerationEnd: boolean = false; // 标记小球起始加速度结束
   animationFrame() {
     const {
+      camera,
       scene,
       renderer,
       snowball,
@@ -164,41 +177,45 @@ class SnowballGame {
     {
       // 小球逻辑
       const endPosition = rendererHeight / 2;
-      const { y: snowballY } = snowball.config;
-      const offsetTop = snowballY + renderer.translateY; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
+      const { y: snowballY } = snowball.attributes;
+      const offsetTop = snowballY - camera.top; // 算出小球距离 canvas 顶部的距离 而非整体场景顶部的距离
 
       if (Math.ceil(offsetTop) >= endPosition) {
         this.accelerationEnd = true;
         const { offsetY } = snowball.move();
-        // 小球滚动到 canvas 的一半的时候画布偏移的速度与小球向下位移的速度保持一致
-        renderer.translate(0, -offsetY);
+        // 小球滚动到 canvas 的一半的时候照相机的速度与小球向下位移的速度保持一致
+        camera.update({
+          top: camera.top + offsetY
+        });
       } else {
-        // 小球未滚动到 canvas 的一半将会呈加速度，画布偏移的速度也渐渐随着增加为小球运动的速度
+        // 小球未滚动到 canvas 的一半将会呈加速度，候照相机的速度也渐渐随着增加为小球运动的速度
         const ratio = 1 - (endPosition - offsetTop) / endPosition; // 计算 offsetTop 接近中点的比率
-        snowball.mergeConfig({ distance: ratio * 3 });
+        snowball.mergeAttributes({ distance: ratio * 3 });
         const { offsetY } = snowball.move();
 
-        renderer.translate(0, -(ratio * offsetY)); // 初始画布向上偏移的速度低于小球向下走的速度，使得小球看起来在向下走
+        camera.update({
+          top: camera.top + ratio * offsetY
+        });
       }
 
       // 递增分数改变小球颜色
-      const { addCount } = scoreEntity.config;
+      const { addCount } = scoreEntity.attributes;
       if (addCount > 30) {
-        snowball.mergeConfig({ color: '#df3108' });
+        snowball.mergeAttributes({ color: '#df3108' });
       } else if (addCount > 20) {
-        snowball.mergeConfig({ color: '#fb7626' });
+        snowball.mergeAttributes({ color: '#fb7626' });
       } else if (addCount > 10) {
-        snowball.mergeConfig({ color: '#ed9344' });
+        snowball.mergeAttributes({ color: '#ed9344' });
       } else if (addCount > 5) {
-        snowball.mergeConfig({ color: '#f5e885' });
+        snowball.mergeAttributes({ color: '#f5e885' });
       } else {
-        snowball.mergeConfig({ color: '#d2fdff' });
+        snowball.mergeAttributes({ color: '#d2fdff' });
       }
     }
 
     // 小球超出屏幕
-    const { config: snowballConfig } = snowball;
-    const { x, radius } = snowballConfig;
+    const { attributes: snowballAttributes } = snowball;
+    const { x, radius } = snowballAttributes;
     if (x - radius < 0 - radius * 2 || x - radius > rendererWidth) {
       // 允许超出屏幕一个小球的位置
       this.gamgeOver();
@@ -207,17 +224,17 @@ class SnowballGame {
 
     {
       // 树木逻辑
-      const { translateY } = renderer;
+      const translateY = camera.top;
       for (const [id, tree] of Array.from(treeList)) {
         {
           // 小球接近树木
           const { left, top, width, height } = tree.body;
           const treeX = left + width / 2;
           const treeY = top + height / 2;
-          if (isNear(snowball.config, { x: treeX, y: treeY }, 70)) {
-            const { count, addCount } = scoreEntity.config;
+          if (isNear(snowball.attributes, { x: treeX, y: treeY }, 70)) {
+            const { count, addCount } = scoreEntity.attributes;
             if (tree.dispatchScore(addCount)) {
-              scoreEntity.mergeConfig({
+              scoreEntity.mergeAttributes({
                 addCount: addCount + 1,
                 count: count + addCount
               });
@@ -227,7 +244,7 @@ class SnowballGame {
 
         {
           // 小球与🌲底部发生碰撞
-          if (checkRectCircleCollide(tree.body, snowballConfig)) {
+          if (checkRectCircleCollide(tree.body, snowballAttributes)) {
             this.gamgeOver();
             return false;
           }
@@ -235,8 +252,8 @@ class SnowballGame {
 
         {
           // 🌲超出场景移除
-          const { top, height } = tree.config;
-          if (top + height < -translateY) {
+          const { top, height } = tree.attributes;
+          if (top + height < translateY) {
             scene.remove(tree.id);
             treeList.delete(tree.id);
           }
@@ -248,9 +265,9 @@ class SnowballGame {
         // 将🌲保证在一定范围内
         const keys = Array.from(treeList.keys());
         const lastTree = treeList.get(keys[keys.length - 1]);
-        const { config } = lastTree!;
-        let minY = config.top + config.height;
-        const viewerTop = -translateY + rendererHeight;
+        const { attributes } = lastTree!;
+        let minY = attributes.top + attributes.height;
+        const viewerTop = translateY + rendererHeight;
         if (minY < viewerTop) minY = viewerTop;
         // 缺多少🌲补多少🌲
         createTree(maxTreeNum - treeList.size, {
@@ -281,13 +298,21 @@ class SnowballGame {
 
   // 游戏结束
   gamgeOver() {
-    const { uiRenderer, overMaskEntity, scoreEntity, settingIconEntity } = this;
+    const {
+      animation,
+      uiRenderer,
+      overMaskEntity,
+      scoreEntity,
+      settingIconEntity
+    } = this;
+    // 停止动画
+    animation.stop();
 
     // 游戏结束 使UI 界面可点击
     uiRenderer.setPenetrate(false);
     // 传入分数
-    overMaskEntity.mergeConfig({
-      score: scoreEntity.config.count
+    overMaskEntity.mergeAttributes({
+      score: scoreEntity.attributes.count
     });
     // 展示游戏结束提示
     overMaskEntity.setVisible(true);
@@ -306,7 +331,7 @@ class SnowballGame {
     uiRenderer.render(uiScene, uiCamera);
   }
 
-  snowball!: SnowBall;
+  snowball!: Snowball;
   treeList!: Map<string, Tree>;
 
   // 初始化游戏逻辑
@@ -319,21 +344,24 @@ class SnowballGame {
       throw Error('required resource');
     }
 
-    renderer.resetTranslate();
+    camera.update({
+      left: 0,
+      top: 0
+    });
     scene.clear();
 
     // 创建雪球
-    const snowball = new SnowBall({
+    const snowball = new Snowball({
       radius: 11,
       x: rendererWidth / 2,
       y: minTop / 2
     });
     this.snowball = scene.add(snowball);
 
-    this.maxTreeNum = 10;
     // 初始给前两屏幕总计创建 10 棵🌲
+    this.maxTreeNum = 10;
     this.treeList = new Map();
-    createTree(10, {
+    createTree(this.maxTreeNum, {
       minX: 0,
       maxX: rendererWidth,
       minY: minTop,
@@ -358,6 +386,8 @@ class SnowballGame {
   initializeUI() {
     const { renderer, uiScene, uiRenderer, uiCamera, handleType } = this;
     const { width: rendererWidth, height: rendererHeight } = renderer;
+
+    uiScene.clear();
 
     {
       // 分数显示
@@ -449,7 +479,7 @@ class SnowballGame {
         y: e.pointY
       };
       const checkSettingPointRectCollide = () => {
-        if (checkPointRectCollide(point, settingIconEntity.config)) {
+        if (checkPointRectCollide(point, settingIconEntity.attributes)) {
           this.setStatus('setting');
           scoreEntity.setVisible(false);
           startMaskEntity.setVisible(false);
@@ -477,7 +507,7 @@ class SnowballGame {
           if (checkSettingPointRectCollide() === 'handled') break;
           this.initializeGame();
           scoreEntity.setVisible(true);
-          scoreEntity.mergeConfig({
+          scoreEntity.mergeAttributes({
             count: 0,
             addCount: 1
           });
@@ -489,14 +519,17 @@ class SnowballGame {
           this.startGame();
           break;
         case 'setting':
-          const button1Config = settingMaskEntity.getButton1Config?.();
-          const button2Config = settingMaskEntity.getButton2Config?.();
-          if (button1Config && checkPointRectCollide(point, button1Config)) {
+          const button1Attributes = settingMaskEntity.getButton1Attributes?.();
+          const button2Attributes = settingMaskEntity.getButton2Attributes?.();
+          if (
+            button1Attributes &&
+            checkPointRectCollide(point, button1Attributes)
+          ) {
             // 点击第一个按钮
             this.setHandleType(1);
           } else if (
-            button2Config &&
-            checkPointRectCollide(point, button2Config)
+            button2Attributes &&
+            checkPointRectCollide(point, button2Attributes)
           ) {
             // 点击第二个按钮
             this.setHandleType(2);
@@ -519,14 +552,14 @@ class SnowballGame {
     gameEvent.add('touchStart', e => {
       const { snowball, status, handleType } = this;
       if (status !== 'game-start') return;
-      let { direction } = snowball.config;
+      let { direction } = snowball.attributes;
       if (handleType === 1) {
         let prevX = e.pointX;
         const move: TMJoinEvent = e => {
           direction = e.pointX - prevX;
           prevX = e.pointX;
           if (direction > 1 || direction < -1) {
-            snowball.mergeConfig({ turnTo: true, direction });
+            snowball.mergeAttributes({ turnTo: true, direction });
           }
         };
         gameEvent.add('touchMove', move);
@@ -538,14 +571,14 @@ class SnowballGame {
       } else {
         // 按下转向
         direction = -direction;
-        snowball.mergeConfig({ turnTo: true, direction });
+        snowball.mergeAttributes({ turnTo: true, direction });
       }
     });
 
     gameEvent.add('touchEnd', () => {
       const { snowball, status } = this;
       if (status !== 'game-start') return;
-      snowball.mergeConfig({ turnTo: false });
+      snowball.mergeAttributes({ turnTo: false });
     });
 
     this.setStatus('ready');

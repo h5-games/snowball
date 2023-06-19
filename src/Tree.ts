@@ -2,7 +2,7 @@ import { Entity } from './Engine';
 import { randomRange } from './utils';
 import paints from './utils/paints';
 
-interface CreateTreeConfig {
+interface CreateTreeAttributes {
   minX: number;
   minY: number;
   maxX: number;
@@ -25,7 +25,7 @@ interface Score {
  */
 export const createTree = (
   num: number,
-  { minX, minY, maxX, maxY, resource }: CreateTreeConfig
+  { minX, minY, maxX, maxY, resource }: CreateTreeAttributes
 ): TreeList => {
   const width = 40;
   const height = width * 2;
@@ -44,13 +44,17 @@ export const createTree = (
 
   // 按照树的最底部排序，使下面的树覆盖上面的树
   return trees.sort((x, y) => {
-    const xConfig = x.config;
-    const yConfig = y.config;
-    return xConfig.top + xConfig.height - (yConfig.top + yConfig.height);
+    const xAttributes = x.attributes;
+    const yAttributes = y.attributes;
+    return (
+      xAttributes.top +
+      xAttributes.height -
+      (yAttributes.top + yAttributes.height)
+    );
   });
 };
 
-interface TreeConfig {
+interface TreeAttributes {
   left: number;
   top: number;
   width: number;
@@ -65,14 +69,14 @@ interface TreeBody {
   height: number;
 }
 
-export default class Tree extends Entity<TreeConfig> {
+export default class Tree extends Entity<TreeAttributes> {
   body!: TreeBody;
-  constructor(config: TreeConfig) {
+  constructor(attributes: TreeAttributes) {
     super('tree');
 
     // 树干为可被撞击的区域
     // 根据图片比例计算树木树干的位置与大小
-    const { left, top, width, height } = config;
+    const { left, top, width, height } = attributes;
     const _width = width * 0.16;
     const _height = height * 0.1;
     const _top = top + height - _height - 1; // - 1 是为了减少小球扫到树木底部的可能性 让游戏更简单点
@@ -84,7 +88,7 @@ export default class Tree extends Entity<TreeConfig> {
       width: _width,
       height: _height
     };
-    this.mergeConfig(config);
+    this.mergeAttributes(attributes);
   }
 
   score: Score | null = null;
@@ -109,14 +113,14 @@ export default class Tree extends Entity<TreeConfig> {
     return true;
   }
   mergeScore(score: Partial<Score>) {
-    Object.assign(this.score, score);
+    this.score && Object.assign(this.score, score);
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    const { score, config } = this;
+    const { score, attributes } = this;
 
     // 绘制树木
-    const { resource, left, top, width, height } = config;
+    const { resource, left, top, width, height } = attributes;
     paints.paintImage(ctx, resource, left, top, width, height);
 
     // 绘制分数
